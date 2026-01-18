@@ -1,0 +1,38 @@
+# Xcode user/session
+xcuserdata/
+
+# Build products
+.build/
+DerivedData
+
+# Bundles / artifacts
+# Main app bundle (any variation)
+Keypress.app/
+Keypress *.app/
+Keypress_*.app/
+keypress.app/
+# Release artifacts
+*.ipa
+*.dSYM*
+*.zip
+*.delta
+*.dmg
+*.pkg
+*.tar.gz
+*.tgz
+Icon.iconset
+debug_*.swift
+
+# Misc
+.DS_Store
+
+# IDE
+.idea/
+
+# Debug/analysis docs
+docs/*-analysis.md
+docs/.astro/
+
+# Swift Package Manager metadata (leave sources tracked)
+# Packages/
+# Package.resolved
