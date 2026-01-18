@@ -5,12 +5,12 @@
 - **Language**: Swift 6 with strict concurrency
 - **UI Framework**: SwiftUI + AppKit (for menu bar, overlay window)
 - **Build System**: Swift Package Manager
-- **Minimum macOS**: 14+ (Sonoma) — TBD
+- **Minimum macOS**: 14+ (Sonoma)
 
 ## Key Dependencies
 
 - **KeyboardShortcuts** — Global hotkey registration
-- **Sparkle** — Auto-updates (future)
+- **Sparkle** — Auto-updates
 
 ## macOS APIs
 

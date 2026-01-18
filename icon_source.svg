@@ -1,0 +1,19 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle (for macOS icon shape) -->
+  <circle cx="512" cy="512" r="480" fill="#1a1a1a"/>
+
+  <!-- Key shape - outer -->
+  <rect x="200" y="280" width="624" height="464" rx="64" fill="#2d2d2d"/>
+
+  <!-- Key shape - top surface (3D effect) -->
+  <rect x="220" y="296" width="584" height="420" rx="48" fill="#3d3d3d"/>
+
+  <!-- Text: ⌘ K -->
+  <text x="512" y="560"
+        font-family="-apple-system, SF Pro Display, Helvetica Neue, sans-serif"
+        font-size="200"
+        font-weight="500"
+        fill="#ffffff"
+        text-anchor="middle"
+        dominant-baseline="middle">⌘ K</text>
+</svg>

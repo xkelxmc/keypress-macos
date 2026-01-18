@@ -18,8 +18,10 @@ Project documentation for keypress-macos.
 - [Technical Overview](./technical/README.md) — Tech stack and setup
 - [Architecture](./technical/architecture.md) — App architecture and modules
 
+### Assets
+
+- [App Icon](./icon.md) — Icon source files and build instructions
+
 ## Open Questions
 
-- Minimum macOS version (likely 14+ Sonoma, TBD)
 - Distribution method (GitHub releases / Mac App Store)
-- License (likely open source, TBD)
