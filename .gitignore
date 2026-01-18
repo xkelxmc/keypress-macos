@@ -27,6 +27,13 @@ debug_*.swift
 # Misc
 .DS_Store
 
+# Local plans
+plan/*
+!plan/.gitkeep
+!plan/claude/
+plan/claude/*
+!plan/claude/.gitkeep
+
 # IDE
 .idea/
 
