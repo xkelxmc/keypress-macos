@@ -438,3 +438,121 @@ struct ModifierCombinationTests {
         #expect(modifiers.contains { $0.display == "⇧" })
     }
 }
+
+// MARK: - KeyCategory Tests
+
+@Suite("KeyCategory Tests")
+struct KeyCategoryTests {
+    @Test("Command key returns command category")
+    func test_commandCategory() {
+        let symbol = KeySymbol(id: "command-left", display: "⌘", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbol) == .command)
+
+        let symbolRight = KeySymbol(id: "command-right", display: "⌘", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbolRight) == .command)
+    }
+
+    @Test("Shift key returns shift category")
+    func test_shiftCategory() {
+        let symbol = KeySymbol(id: "shift-left", display: "⇧", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbol) == .shift)
+
+        let symbolRight = KeySymbol(id: "shift-right", display: "⇧", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbolRight) == .shift)
+    }
+
+    @Test("Option key returns option category")
+    func test_optionCategory() {
+        let symbol = KeySymbol(id: "option-left", display: "⌥", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbol) == .option)
+
+        let symbolRight = KeySymbol(id: "option-right", display: "⌥", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbolRight) == .option)
+    }
+
+    @Test("Control key returns control category")
+    func test_controlCategory() {
+        let symbol = KeySymbol(id: "control-left", display: "⌃", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbol) == .control)
+
+        let symbolRight = KeySymbol(id: "control-right", display: "⌃", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbolRight) == .control)
+    }
+
+    @Test("Fn key returns command category")
+    func test_fnCategory() {
+        let symbol = KeySymbol(id: "fn", display: "fn", isModifier: true)
+        #expect(KeyCodeMapper.category(for: symbol) == .command)
+    }
+
+    @Test("Escape key returns escape category")
+    func test_escapeCategory() {
+        let symbol = KeySymbol(id: "escape", display: "ESC", isSpecial: true)
+        #expect(KeyCodeMapper.category(for: symbol) == .escape)
+    }
+
+    @Test("Function keys return function category")
+    func test_functionCategory() {
+        let functionKeys = ["f1", "f2", "f3", "f10", "f12", "f20"]
+        for keyId in functionKeys {
+            let symbol = KeySymbol(id: keyId, display: keyId.uppercased(), isSpecial: true)
+            #expect(KeyCodeMapper.category(for: symbol) == .function, "Key \(keyId) should be function category")
+        }
+    }
+
+    @Test("Arrow keys return navigation category")
+    func test_arrowCategory() {
+        let arrowKeys = [
+            ("arrow-left", "←"),
+            ("arrow-right", "→"),
+            ("arrow-up", "↑"),
+            ("arrow-down", "↓"),
+        ]
+        for (id, display) in arrowKeys {
+            let symbol = KeySymbol(id: id, display: display, isSpecial: true)
+            #expect(KeyCodeMapper.category(for: symbol) == .navigation, "Key \(id) should be navigation category")
+        }
+    }
+
+    @Test("Navigation keys return navigation category")
+    func test_navigationCategory() {
+        let navKeys = [
+            ("home", "↖"),
+            ("end", "↘"),
+            ("page-up", "⇞"),
+            ("page-down", "⇟"),
+        ]
+        for (id, display) in navKeys {
+            let symbol = KeySymbol(id: id, display: display, isSpecial: true)
+            #expect(KeyCodeMapper.category(for: symbol) == .navigation, "Key \(id) should be navigation category")
+        }
+    }
+
+    @Test("Editing keys return editing category")
+    func test_editingCategory() {
+        let editingKeys = [
+            ("space", "␣"),
+            ("tab", "⇥"),
+            ("return", "⏎"),
+            ("enter", "⌤"),
+            ("delete", "⌫"),
+            ("forward-delete", "⌦"),
+        ]
+        for (id, display) in editingKeys {
+            let symbol = KeySymbol(id: id, display: display, isSpecial: true)
+            #expect(KeyCodeMapper.category(for: symbol) == .editing, "Key \(id) should be editing category")
+        }
+    }
+
+    @Test("Letter keys return letter category")
+    func test_letterCategory() {
+        let letterSymbol = KeySymbol(id: "key-0", display: "A")
+        #expect(KeyCodeMapper.category(for: letterSymbol) == .letter)
+
+        let numberSymbol = KeySymbol(id: "key-18", display: "1")
+        #expect(KeyCodeMapper.category(for: numberSymbol) == .letter)
+
+        let punctSymbol = KeySymbol(id: "key-27", display: ";")
+        #expect(KeyCodeMapper.category(for: punctSymbol) == .letter)
+    }
+}

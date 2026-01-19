@@ -105,3 +105,159 @@ struct OverlaySizeTests {
         #expect(decoded == size)
     }
 }
+
+@Suite("AppearanceMode Tests")
+struct AppearanceModeTests {
+    @Test("All 4 modes exist")
+    func test_allModes() {
+        let modes = AppearanceMode.allCases
+        #expect(modes.count == 4)
+        #expect(modes.contains(.auto))
+        #expect(modes.contains(.dark))
+        #expect(modes.contains(.monochrome))
+        #expect(modes.contains(.light))
+    }
+
+    @Test("Display names are correct")
+    func test_displayNames() {
+        #expect(AppearanceMode.auto.displayName == "Auto")
+        #expect(AppearanceMode.dark.displayName == "Dark")
+        #expect(AppearanceMode.monochrome.displayName == "Mono")
+        #expect(AppearanceMode.light.displayName == "Light")
+    }
+
+    @Test("AppearanceMode is Codable")
+    func test_codable() throws {
+        for mode in AppearanceMode.allCases {
+            let encoded = try JSONEncoder().encode(mode)
+            let decoded = try JSONDecoder().decode(AppearanceMode.self, from: encoded)
+            #expect(decoded == mode)
+        }
+    }
+
+    @Test("Default appearanceMode is auto")
+    @MainActor
+    func test_defaultAppearanceMode() {
+        let defaults = UserDefaults(suiteName: "test.appearancemode.default")!
+        defaults.removePersistentDomain(forName: "test.appearancemode.default")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.appearanceMode == .auto)
+    }
+
+    @Test("AppearanceMode persists to UserDefaults")
+    @MainActor
+    func test_persistence() {
+        let defaults = UserDefaults(suiteName: "test.appearancemode.persist")!
+        defaults.removePersistentDomain(forName: "test.appearancemode.persist")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.appearanceMode = .dark
+        #expect(defaults.string(forKey: "settings.appearanceMode") == "dark")
+
+        settings.appearanceMode = .monochrome
+        #expect(defaults.string(forKey: "settings.appearanceMode") == "monochrome")
+
+        settings.appearanceMode = .light
+        #expect(defaults.string(forKey: "settings.appearanceMode") == "light")
+
+        settings.appearanceMode = .auto
+        #expect(defaults.string(forKey: "settings.appearanceMode") == "auto")
+    }
+
+    @Test("AppearanceMode updates colorScheme for fixed modes")
+    @MainActor
+    func test_fixedModeUpdatesColorScheme() {
+        let defaults = UserDefaults(suiteName: "test.appearancemode.colorscheme")!
+        defaults.removePersistentDomain(forName: "test.appearancemode.colorscheme")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.appearanceMode = .dark
+        #expect(settings.colorScheme == .dark)
+
+        settings.appearanceMode = .monochrome
+        #expect(settings.colorScheme == .monochromeDark)
+
+        settings.appearanceMode = .light
+        #expect(settings.colorScheme == .light)
+    }
+
+    @Test("Reset to defaults resets appearanceMode")
+    @MainActor
+    func test_resetToDefaults() {
+        let defaults = UserDefaults(suiteName: "test.appearancemode.reset")!
+        defaults.removePersistentDomain(forName: "test.appearancemode.reset")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.appearanceMode = .light
+        settings.resetToDefaults()
+
+        #expect(settings.appearanceMode == .auto)
+    }
+}
+
+@Suite("KeyColorScheme Tests")
+struct KeyColorSchemeTests {
+    @Test("Dark scheme has correct colors")
+    func test_darkScheme() {
+        let scheme = KeyColorScheme.dark
+        #expect(scheme.letter == .charcoal)
+        #expect(scheme.command == .commandGreen)
+        #expect(scheme.shift == .shiftRed)
+        #expect(scheme.option == .optionBlue)
+        #expect(scheme.control == .controlOrange)
+    }
+
+    @Test("Monochrome scheme has all charcoal colors")
+    func test_monochromeScheme() {
+        let scheme = KeyColorScheme.monochromeDark
+        #expect(scheme.letter == .charcoal)
+        #expect(scheme.command == .charcoal)
+        #expect(scheme.shift == .charcoal)
+        #expect(scheme.option == .charcoal)
+        #expect(scheme.control == .charcoal)
+    }
+
+    @Test("Light scheme has aluminum base")
+    func test_lightScheme() {
+        let scheme = KeyColorScheme.light
+        #expect(scheme.letter == .aluminum)
+        #expect(scheme.navigation == .aluminum)
+        #expect(scheme.editing == .aluminum)
+        // Modifiers are still colored
+        #expect(scheme.command == .commandGreen)
+        #expect(scheme.shift == .shiftRed)
+    }
+
+    @Test("color(for:) returns correct colors")
+    func test_colorForCategory() {
+        let scheme = KeyColorScheme.dark
+        #expect(scheme.color(for: .letter) == scheme.letter)
+        #expect(scheme.color(for: .command) == scheme.command)
+        #expect(scheme.color(for: .shift) == scheme.shift)
+        #expect(scheme.color(for: .option) == scheme.option)
+        #expect(scheme.color(for: .control) == scheme.control)
+        #expect(scheme.color(for: .escape) == scheme.escape)
+        #expect(scheme.color(for: .function) == scheme.function)
+        #expect(scheme.color(for: .navigation) == scheme.navigation)
+        #expect(scheme.color(for: .editing) == scheme.editing)
+    }
+
+    @Test("KeyColorScheme is Codable")
+    func test_codable() throws {
+        let scheme = KeyColorScheme.dark
+        let encoded = try JSONEncoder().encode(scheme)
+        let decoded = try JSONDecoder().decode(KeyColorScheme.self, from: encoded)
+        #expect(decoded == scheme)
+    }
+
+    @Test("KeyColorScheme is Equatable")
+    func test_equatable() {
+        #expect(KeyColorScheme.dark == KeyColorScheme.dark)
+        #expect(KeyColorScheme.dark != KeyColorScheme.light)
+        #expect(KeyColorScheme.monochromeDark != KeyColorScheme.dark)
+    }
+}

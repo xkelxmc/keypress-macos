@@ -1,43 +1,11 @@
 import KeypressCore
 import SwiftUI
 
-// MARK: - ColorSchemePreset
-
-enum ColorSchemePreset: String, CaseIterable {
-    case dark
-    case monochromeDark
-    case light
-
-    var displayName: String {
-        switch self {
-        case .dark: "Dark (Colored)"
-        case .monochromeDark: "Dark (Mono)"
-        case .light: "Light"
-        }
-    }
-
-    var scheme: KeyColorScheme {
-        switch self {
-        case .dark: .dark
-        case .monochromeDark: .monochromeDark
-        case .light: .light
-        }
-    }
-
-    static func from(_ scheme: KeyColorScheme) -> ColorSchemePreset? {
-        if scheme == .dark { return .dark }
-        if scheme == .monochromeDark { return .monochromeDark }
-        if scheme == .light { return .light }
-        return nil
-    }
-}
-
 // MARK: - AppearanceSettingsPane
 
 @MainActor
 struct AppearanceSettingsPane: View {
     @Bindable var config: KeypressConfig
-    @State private var selectedPreset: ColorSchemePreset = .dark
 
     var body: some View {
         ScrollView {
@@ -61,17 +29,17 @@ struct AppearanceSettingsPane: View {
 
                 // Color Scheme
                 SettingsSection("Color Scheme") {
-                    HStack(spacing: 12) {
-                        ForEach(ColorSchemePreset.allCases, id: \.self) { preset in
-                            ColorSchemeButton(
-                                preset: preset,
-                                isSelected: self.selectedPreset == preset
-                            ) {
-                                self.selectedPreset = preset
-                                self.config.colorScheme = preset.scheme
-                            }
+                    Picker("Appearance", selection: self.$config.appearanceMode) {
+                        ForEach(AppearanceMode.allCases, id: \.self) { mode in
+                            Text(mode.displayName).tag(mode)
                         }
                     }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 280)
+
+                    Text(self.appearanceModeDescription)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 Divider()
@@ -85,8 +53,14 @@ struct AppearanceSettingsPane: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .onAppear {
-            self.selectedPreset = ColorSchemePreset.from(self.config.colorScheme) ?? .dark
+    }
+
+    private var appearanceModeDescription: String {
+        switch self.config.appearanceMode {
+        case .auto: "Follows system light/dark mode."
+        case .dark: "Dark keys with colored modifiers."
+        case .monochrome: "All dark keys, no color."
+        case .light: "Light keys with colored modifiers."
         }
     }
 }
@@ -108,50 +82,6 @@ extension KeyCapStyle {
         case .flat: "Modern flat design with subtle shadows. (Coming soon)"
         case .minimal: "Text only with simple background. (Coming soon)"
         }
-    }
-}
-
-// MARK: - ColorSchemeButton
-
-@MainActor
-struct ColorSchemeButton: View {
-    let preset: ColorSchemePreset
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: self.action) {
-            VStack(spacing: 6) {
-                // Color preview squares
-                HStack(spacing: 4) {
-                    ForEach(self.previewColors, id: \.self) { color in
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(color)
-                            .frame(width: 20, height: 20)
-                    }
-                }
-
-                Text(self.preset.displayName)
-                    .font(.caption)
-                    .foregroundStyle(self.isSelected ? .primary : .secondary)
-            }
-            .padding(8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(self.isSelected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: 2)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var previewColors: [Color] {
-        let scheme = self.preset.scheme
-        return [
-            scheme.letter.color,
-            scheme.command.color,
-            scheme.shift.color,
-            scheme.option.color,
-        ]
     }
 }
 

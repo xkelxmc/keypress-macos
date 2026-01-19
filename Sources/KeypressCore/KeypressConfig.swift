@@ -87,6 +87,33 @@ public enum KeyCapStyle: String, CaseIterable, Codable, Sendable {
     case minimal
 }
 
+// MARK: - AppearanceMode
+
+/// Appearance mode for color scheme selection.
+public enum AppearanceMode: String, CaseIterable, Codable, Sendable {
+    /// Follow system light/dark mode automatically.
+    case auto
+
+    /// Fixed dark scheme with colored modifiers.
+    case dark
+
+    /// Fixed monochrome dark scheme.
+    case monochrome
+
+    /// Fixed light scheme with colored modifiers.
+    case light
+
+    /// Display name for UI.
+    public var displayName: String {
+        switch self {
+        case .auto: "Auto"
+        case .dark: "Dark"
+        case .monochrome: "Mono"
+        case .light: "Light"
+        }
+    }
+}
+
 // MARK: - KeyColor
 
 /// A color that can be stored in UserDefaults.
@@ -263,6 +290,7 @@ public final class KeypressConfig {
         // Appearance
         static let keyCapStyle = "settings.keyCapStyle"
         static let colorScheme = "settings.colorScheme"
+        static let appearanceMode = "settings.appearanceMode"
         // Monitor
         static let monitorSelection = "settings.monitorSelection"
     }
@@ -288,6 +316,7 @@ public final class KeypressConfig {
         // Appearance
         static let keyCapStyle = KeyCapStyle.mechanical
         static let colorScheme = KeyColorScheme.dark
+        static let appearanceMode = AppearanceMode.auto
         // Monitor
         static let monitorSelection = MonitorSelection.auto
     }
@@ -295,6 +324,7 @@ public final class KeypressConfig {
     // MARK: - Properties
 
     private let userDefaults: UserDefaults
+    private var themeObserver: NSObjectProtocol?
 
     /// Whether key visualization is enabled.
     public var enabled: Bool {
@@ -371,6 +401,14 @@ public final class KeypressConfig {
             if let encoded = try? JSONEncoder().encode(self.colorScheme) {
                 self.userDefaults.set(encoded, forKey: Keys.colorScheme)
             }
+        }
+    }
+
+    /// User's appearance mode preference (auto follows system, others are fixed).
+    public var appearanceMode: AppearanceMode {
+        didSet {
+            self.userDefaults.set(self.appearanceMode.rawValue, forKey: Keys.appearanceMode)
+            self.updateColorSchemeForAppearanceMode()
         }
     }
 
@@ -458,12 +496,59 @@ public final class KeypressConfig {
             self.colorScheme = Defaults.colorScheme
         }
 
+        if let modeRaw = userDefaults.string(forKey: Keys.appearanceMode),
+           let mode = AppearanceMode(rawValue: modeRaw) {
+            self.appearanceMode = mode
+        } else {
+            self.appearanceMode = Defaults.appearanceMode
+        }
+
         // Monitor settings
         if let monitorData = userDefaults.data(forKey: Keys.monitorSelection),
            let selection = try? JSONDecoder().decode(MonitorSelection.self, from: monitorData) {
             self.monitorSelection = selection
         } else {
             self.monitorSelection = Defaults.monitorSelection
+        }
+
+        // Setup system theme observer and sync color scheme
+        self.setupThemeObserver()
+        self.updateColorSchemeForAppearanceMode()
+    }
+
+    // MARK: - Theme Observer
+
+    /// Sets up observer for system appearance changes.
+    private func setupThemeObserver() {
+        self.themeObserver = DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("AppleInterfaceThemeChangedNotification"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.updateColorSchemeForAppearanceMode()
+            }
+        }
+    }
+
+    /// Returns true if system is in dark mode.
+    private func systemIsDark() -> Bool {
+        guard let appearance = NSApp?.effectiveAppearance else {
+            return true // Default to dark when running in tests or before app launch
+        }
+        return appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+    }
+
+    /// Updates colorScheme based on appearanceMode and system theme.
+    private func updateColorSchemeForAppearanceMode() {
+        let newScheme: KeyColorScheme = switch self.appearanceMode {
+        case .auto: self.systemIsDark() ? .dark : .light
+        case .dark: .dark
+        case .monochrome: .monochromeDark
+        case .light: .light
+        }
+        if self.colorScheme != newScheme {
+            self.colorScheme = newScheme
         }
     }
 
@@ -490,6 +575,7 @@ public final class KeypressConfig {
         self.limitIncludesModifiers = Defaults.limitIncludesModifiers
         self.keyCapStyle = Defaults.keyCapStyle
         self.colorScheme = Defaults.colorScheme
+        self.appearanceMode = Defaults.appearanceMode
         self.monitorSelection = Defaults.monitorSelection
     }
 }
