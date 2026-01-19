@@ -39,17 +39,30 @@
 - Settings button
 - Quit button
 
-## Settings (v1)
+## Settings
 
-| Setting | Description |
-|---------|-------------|
-| Position | Where on screen to show keys |
-| Size | Scale of the key visualization |
-| Enabled | Master on/off toggle |
-| Timeout | How long regular keys stay visible |
-| Opacity | Transparency of the overlay |
-| Launch at login | Auto-start with macOS |
-| Global hotkey | Keyboard shortcut to toggle visibility |
+Settings are organized into tabs:
+
+### General Tab
+- Position (8 preset positions with visual picker)
+- Monitor selection (Auto or fixed)
+- Size (Small/Medium/Large)
+- Opacity
+- Key timeout
+- Launch at login
+- Global hotkey
+
+### Display Tab
+- Display mode (Single/History)
+- Mode-specific options
+
+### Colors Tab
+- Color scheme (Auto/Dark/Mono/Light/Custom)
+- Key Style Editor (Custom mode) — master-detail UI for per-category customization
+
+### Style Tab
+- Keycap style (Mechanical/Flat/Minimal)
+- Background style (Frame/Overlay/None)
 
 ## Window Behavior
 

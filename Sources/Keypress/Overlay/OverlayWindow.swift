@@ -19,17 +19,14 @@ final class OverlayWindow: NSPanel {
             contentRect: NSRect(x: 0, y: 0, width: 600, height: 120),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
-            defer: false
-        )
+            defer: false)
 
         self.configureWindow()
         self.setupContentView(
             OverlayContainerView(
                 keysView: AnyView(KeyVisualizationView(keyState: keyState, config: config)),
                 hintState: hintState,
-                config: config
-            )
-        )
+                config: config))
         self.updatePosition()
     }
 
@@ -42,17 +39,14 @@ final class OverlayWindow: NSPanel {
             contentRect: NSRect(x: 0, y: 0, width: 600, height: 120),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
-            defer: false
-        )
+            defer: false)
 
         self.configureWindow()
         self.setupContentView(
             OverlayContainerView(
                 keysView: AnyView(SingleKeyVisualizationView(keyState: singleKeyState, config: config)),
                 hintState: hintState,
-                config: config
-            )
-        )
+                config: config))
         self.updatePosition()
     }
 
@@ -76,7 +70,7 @@ final class OverlayWindow: NSPanel {
         self.canBecomeMain = false
     }
 
-    private func setupContentView<V: View>(_ rootView: V) {
+    private func setupContentView(_ rootView: some View) {
         let hostingView = NSHostingView(rootView: AnyView(rootView))
         hostingView.frame = self.contentView?.bounds ?? .zero
         hostingView.autoresizingMask = [.width, .height] as NSView.AutoresizingMask
@@ -96,48 +90,39 @@ final class OverlayWindow: NSPanel {
         let windowSize = self.frame.size
         let margin: CGFloat = 20
 
-        let origin: NSPoint
-        switch self.config.position {
+        let origin = switch self.config.position {
         case .topLeft:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.minX + margin,
-                y: screenFrame.maxY - windowSize.height - margin
-            )
+                y: screenFrame.maxY - windowSize.height - margin)
         case .topCenter:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.maxY - windowSize.height - margin
-            )
+                y: screenFrame.maxY - windowSize.height - margin)
         case .topRight:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.maxX - windowSize.width - margin,
-                y: screenFrame.maxY - windowSize.height - margin
-            )
+                y: screenFrame.maxY - windowSize.height - margin)
         case .centerLeft:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.minX + margin,
-                y: screenFrame.midY - windowSize.height / 2
-            )
+                y: screenFrame.midY - windowSize.height / 2)
         case .centerRight:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.maxX - windowSize.width - margin,
-                y: screenFrame.midY - windowSize.height / 2
-            )
+                y: screenFrame.midY - windowSize.height / 2)
         case .bottomLeft:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.minX + margin,
-                y: screenFrame.minY + margin
-            )
+                y: screenFrame.minY + margin)
         case .bottomCenter:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.minY + margin
-            )
+                y: screenFrame.minY + margin)
         case .bottomRight:
-            origin = NSPoint(
+            NSPoint(
                 x: screenFrame.maxX - windowSize.width - margin,
-                y: screenFrame.minY + margin
-            )
+                y: screenFrame.minY + margin)
         }
 
         self.setFrameOrigin(origin)

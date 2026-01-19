@@ -95,7 +95,7 @@ public final class KeyState: KeyStateProtocol {
 
     /// Processes a key event and updates state.
     public func processEvent(_ event: KeyEvent, symbol: KeySymbol?) {
-        guard let symbol = symbol else { return }
+        guard let symbol else { return }
 
         switch event.type {
         case .keyDown:
@@ -166,9 +166,8 @@ public final class KeyState: KeyStateProtocol {
     private func associateKeyWithModifiers(keyId: String) {
         let modifierIds = Set(
             self.pressedKeys
-                .filter { $0.symbol.isModifier }
-                .map { $0.symbol.id }
-        )
+                .filter(\.symbol.isModifier)
+                .map(\.symbol.id))
         if !modifierIds.isEmpty {
             self.keyModifierAssociations[keyId] = modifierIds
         }
@@ -198,17 +197,17 @@ public final class KeyState: KeyStateProtocol {
     private func isModifierPressed(keyCode: Int64, flags: CGEventFlags) -> Bool {
         switch keyCode {
         case 0x37, 0x36: // Command
-            return flags.contains(.maskCommand)
+            flags.contains(.maskCommand)
         case 0x38, 0x3C: // Shift
-            return flags.contains(.maskShift)
+            flags.contains(.maskShift)
         case 0x3A, 0x3D: // Option
-            return flags.contains(.maskAlternate)
+            flags.contains(.maskAlternate)
         case 0x3B, 0x3E: // Control
-            return flags.contains(.maskControl)
+            flags.contains(.maskControl)
         case 0x3F: // Fn
-            return flags.contains(.maskSecondaryFn)
+            flags.contains(.maskSecondaryFn)
         default:
-            return false
+            false
         }
     }
 
@@ -262,8 +261,8 @@ public final class KeyState: KeyStateProtocol {
         }
 
         // Limit keys based on limitIncludesModifiers setting
-        let modifiers = self.pressedKeys.filter { $0.symbol.isModifier }
-        let special = self.pressedKeys.filter { $0.symbol.isSpecial }
+        let modifiers = self.pressedKeys.filter(\.symbol.isModifier)
+        let special = self.pressedKeys.filter(\.symbol.isSpecial)
         let regular = self.pressedKeys.filter { !$0.symbol.isModifier && !$0.symbol.isSpecial }
 
         if self.limitIncludesModifiers {
@@ -287,7 +286,7 @@ public final class KeyState: KeyStateProtocol {
                 result.append(contentsOf: keptRegular)
 
                 // Cancel timeouts for evicted keys
-                let keptIds = Set(result.map { $0.id })
+                let keptIds = Set(result.map(\.id))
                 for key in self.pressedKeys where !keptIds.contains(key.id) {
                     self.cancelTimeout(for: key.id)
                 }
@@ -313,7 +312,7 @@ public final class KeyState: KeyStateProtocol {
                 result.append(contentsOf: keptRegular)
 
                 // Cancel timeouts for evicted non-modifier keys
-                let keptIds = Set(result.map { $0.id })
+                let keptIds = Set(result.map(\.id))
                 for key in self.pressedKeys where !keptIds.contains(key.id) {
                     self.cancelTimeout(for: key.id)
                 }
@@ -392,7 +391,7 @@ public final class SingleKeyState: KeyStateProtocol {
 
     /// Processes a key event and updates state.
     public func processEvent(_ event: KeyEvent, symbol: KeySymbol?) {
-        guard let symbol = symbol else { return }
+        guard let symbol else { return }
 
         switch event.type {
         case .keyDown:
@@ -427,7 +426,7 @@ public final class SingleKeyState: KeyStateProtocol {
             self.updateDisplay()
         } else {
             // If showModifiersOnly and no modifiers, ignore this key entirely
-            if self.showModifiersOnly && self.activeModifiers.isEmpty {
+            if self.showModifiersOnly, self.activeModifiers.isEmpty {
                 return
             }
 
@@ -448,7 +447,7 @@ public final class SingleKeyState: KeyStateProtocol {
         if symbol.isModifier {
             self.activeModifiers.removeAll { $0.symbol.id == symbol.id }
             // If no more modifiers and showModifiersOnly, clear display
-            if self.showModifiersOnly && self.activeModifiers.isEmpty {
+            if self.showModifiersOnly, self.activeModifiers.isEmpty {
                 self.pressedKeys.removeAll()
             }
         }
@@ -484,12 +483,12 @@ public final class SingleKeyState: KeyStateProtocol {
 
     private func isModifierPressed(keyCode: Int64, flags: CGEventFlags) -> Bool {
         switch keyCode {
-        case 0x37, 0x36: return flags.contains(.maskCommand)
-        case 0x38, 0x3C: return flags.contains(.maskShift)
-        case 0x3A, 0x3D: return flags.contains(.maskAlternate)
-        case 0x3B, 0x3E: return flags.contains(.maskControl)
-        case 0x3F: return flags.contains(.maskSecondaryFn)
-        default: return false
+        case 0x37, 0x36: flags.contains(.maskCommand)
+        case 0x38, 0x3C: flags.contains(.maskShift)
+        case 0x3A, 0x3D: flags.contains(.maskAlternate)
+        case 0x3B, 0x3E: flags.contains(.maskControl)
+        case 0x3F: flags.contains(.maskSecondaryFn)
+        default: false
         }
     }
 
@@ -514,7 +513,7 @@ public final class SingleKeyState: KeyStateProtocol {
             // Only show if we have modifiers AND a non-modifier key
             if !hasModifiers || !hasNonModifier {
                 // Don't update display for non-modified keys
-                if self.lastNonModifierKey != nil && !hasModifiers {
+                if self.lastNonModifierKey != nil, !hasModifiers {
                     return
                 }
             }

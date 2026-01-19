@@ -41,8 +41,13 @@ Only shown when multiple monitors connected. Hidden for single monitor setups.
 
 | Option | Behavior |
 |--------|----------|
-| **Auto** (default) | Follow active window — overlay appears on the monitor where user is typing |
+| **Auto** (default) | Follow focused window — overlay appears on the monitor where user is typing |
 | **Monitor 1, 2, ...** | Fixed to specific monitor |
+
+**Auto mode details:**
+- Detects focused window's screen using Accessibility API (`kAXFocusedWindowAttribute`)
+- Updates position on each keypress to catch window switches within the same app
+- Example: 2 Chrome windows on different monitors — overlay follows the active Chrome window
 
 ### Display Mode
 
@@ -118,16 +123,47 @@ Different key types have distinct colors for better visual distinction.
 
 | Setting | Control Type | Options |
 |---------|-------------|---------|
-| Color scheme | Picker | Dark, Monochrome Dark, Light, Custom |
+| Color scheme | Picker | Auto, Dark, Monochrome, Light, Custom |
 
 **Built-in presets:**
-- **Dark** (default) — colored modifiers on charcoal base
-- **Monochrome Dark** — all keys charcoal
+- **Auto** (default) — follows system light/dark mode
+- **Dark** — colored modifiers on charcoal base
+- **Monochrome** — all keys charcoal
 - **Light** — colored modifiers on aluminum base
 
 **Custom scheme:**
-- User can override color for each category
-- Colors stored as RGB values in UserDefaults
+
+When Custom mode is selected, a full Key Style Editor appears with master-detail UI:
+
+```
+┌─────────────────┬──────────────────────────────┐
+│ Categories      │  Command ⌘              [on] │
+│                 │                              │
+│ ⌘ Command   [✓] │  Color     [████] [picker]   │
+│ ⇧ Shift     [ ] │  Depth     [────●────]       │
+│ ⌥ Option    [ ] │  Corners   [────●────]       │
+│ ⌃ Control   [ ] │  Shadow    [────●────]       │
+│ A Letters   [✓] │  Style     [Mechanical ▼]    │
+│ → Navigation[ ] │                              │
+│ ...             │                              │
+└─────────────────┴──────────────────────────────┘
+```
+
+- **Sidebar** — list of 10 key categories with checkboxes
+- **Checkbox** — enables custom style override for that category
+- **Detail panel** — style settings for selected category
+
+**Per-category style properties:**
+
+| Property | Range | Description |
+|----------|-------|-------------|
+| Color | Color picker | Base color for the keycap |
+| Depth | 0-100% | 3D depth effect intensity |
+| Corners | 0-100% | Corner radius (sharp to rounded) |
+| Shadow | 0-100% | Shadow intensity |
+| Style | Picker | Keycap visual style |
+
+Only customized categories are stored; others use defaults from the active color scheme.
 
 ### Behavior
 

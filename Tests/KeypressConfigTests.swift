@@ -6,7 +6,7 @@ import Testing
 struct KeypressConfigTests {
     @Test("Default values are correct")
     @MainActor
-    func test_defaultValues() {
+    func defaultValues() {
         let defaults = UserDefaults(suiteName: "test.settings.defaults")!
         defaults.removePersistentDomain(forName: "test.settings.defaults")
 
@@ -22,7 +22,7 @@ struct KeypressConfigTests {
 
     @Test("KeypressConfig persist to UserDefaults")
     @MainActor
-    func test_persistence() {
+    func persistence() {
         let defaults = UserDefaults(suiteName: "test.settings.persistence")!
         defaults.removePersistentDomain(forName: "test.settings.persistence")
 
@@ -66,7 +66,7 @@ struct KeypressConfigTests {
 @Suite("OverlayPosition Tests")
 struct OverlayPositionTests {
     @Test("All 8 positions exist")
-    func test_allPositions() {
+    func allPositions() {
         let positions = OverlayPosition.allCases
         #expect(positions.count == 8)
         #expect(positions.contains(.topLeft))
@@ -80,7 +80,7 @@ struct OverlayPositionTests {
     }
 
     @Test("Position is Codable")
-    func test_codable() throws {
+    func codable() throws {
         let position = OverlayPosition.topLeft
         let encoded = try JSONEncoder().encode(position)
         let decoded = try JSONDecoder().decode(OverlayPosition.self, from: encoded)
@@ -91,7 +91,7 @@ struct OverlayPositionTests {
 @Suite("OverlaySize Tests")
 struct OverlaySizeTests {
     @Test("Scale factors are correct")
-    func test_scaleFactors() {
+    func scaleFactors() {
         #expect(OverlaySize.small.scaleFactor == 0.75)
         #expect(OverlaySize.medium.scaleFactor == 1.0)
         #expect(OverlaySize.large.scaleFactor == 1.25)
@@ -108,22 +108,24 @@ struct OverlaySizeTests {
 
 @Suite("AppearanceMode Tests")
 struct AppearanceModeTests {
-    @Test("All 4 modes exist")
-    func test_allModes() {
+    @Test("All 5 modes exist")
+    func allModes() {
         let modes = AppearanceMode.allCases
-        #expect(modes.count == 4)
+        #expect(modes.count == 5)
         #expect(modes.contains(.auto))
         #expect(modes.contains(.dark))
         #expect(modes.contains(.monochrome))
         #expect(modes.contains(.light))
+        #expect(modes.contains(.custom))
     }
 
     @Test("Display names are correct")
-    func test_displayNames() {
+    func displayNames() {
         #expect(AppearanceMode.auto.displayName == "Auto")
         #expect(AppearanceMode.dark.displayName == "Dark")
         #expect(AppearanceMode.monochrome.displayName == "Mono")
         #expect(AppearanceMode.light.displayName == "Light")
+        #expect(AppearanceMode.custom.displayName == "Custom")
     }
 
     @Test("AppearanceMode is Codable")
@@ -137,7 +139,7 @@ struct AppearanceModeTests {
 
     @Test("Default appearanceMode is auto")
     @MainActor
-    func test_defaultAppearanceMode() {
+    func defaultAppearanceMode() {
         let defaults = UserDefaults(suiteName: "test.appearancemode.default")!
         defaults.removePersistentDomain(forName: "test.appearancemode.default")
 
@@ -168,7 +170,7 @@ struct AppearanceModeTests {
 
     @Test("AppearanceMode updates colorScheme for fixed modes")
     @MainActor
-    func test_fixedModeUpdatesColorScheme() {
+    func fixedModeUpdatesColorScheme() {
         let defaults = UserDefaults(suiteName: "test.appearancemode.colorscheme")!
         defaults.removePersistentDomain(forName: "test.appearancemode.colorscheme")
 
@@ -199,10 +201,150 @@ struct AppearanceModeTests {
     }
 }
 
+@Suite("KeyCategoryStyle Tests")
+struct KeyCategoryStyleTests {
+    @Test("Default style has correct values")
+    func test_defaultValues() {
+        let style = KeyCategoryStyle(color: .charcoal)
+        #expect(style.depth == 1.0)
+        #expect(style.cornerRadius == 0.5)
+        #expect(style.shadowIntensity == 1.0)
+        #expect(style.style == .mechanical)
+    }
+
+    @Test("Values are clamped to valid range")
+    func clamping() {
+        let style = KeyCategoryStyle(
+            color: .charcoal,
+            depth: 2.0,
+            cornerRadius: -0.5,
+            shadowIntensity: 1.5)
+        #expect(style.depth == 1.0)
+        #expect(style.cornerRadius == 0.0)
+        #expect(style.shadowIntensity == 1.0)
+    }
+
+    @Test("Default factory method uses scheme color")
+    func defaultForCategory() {
+        let style = KeyCategoryStyle.default(for: .command, scheme: .dark)
+        #expect(style.color == .commandGreen)
+        #expect(style.depth == 1.0)
+        #expect(style.cornerRadius == 0.5)
+    }
+
+    @Test("KeyCategoryStyle is Codable")
+    func test_codable() throws {
+        let style = KeyCategoryStyle(
+            color: .commandGreen,
+            depth: 0.8,
+            cornerRadius: 0.3,
+            shadowIntensity: 0.9,
+            style: .flat)
+        let encoded = try JSONEncoder().encode(style)
+        let decoded = try JSONDecoder().decode(KeyCategoryStyle.self, from: encoded)
+        #expect(decoded == style)
+    }
+
+    @Test("KeyCategoryStyle is Equatable")
+    func equatable() {
+        let style1 = KeyCategoryStyle(color: .charcoal, depth: 0.5)
+        let style2 = KeyCategoryStyle(color: .charcoal, depth: 0.5)
+        let style3 = KeyCategoryStyle(color: .charcoal, depth: 0.7)
+        #expect(style1 == style2)
+        #expect(style1 != style3)
+    }
+}
+
+@Suite("CategoryStyleOverrides Tests")
+struct CategoryStyleOverridesTests {
+    @Test("Default has no overrides")
+    @MainActor
+    func defaultNoOverrides() {
+        let defaults = UserDefaults(suiteName: "test.styleoverrides.default")!
+        defaults.removePersistentDomain(forName: "test.styleoverrides.default")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.categoryStyleOverrides.isEmpty)
+    }
+
+    @Test("effectiveStyle returns default when no override")
+    @MainActor
+    func effectiveStyleDefault() {
+        let defaults = UserDefaults(suiteName: "test.styleoverrides.effective")!
+        defaults.removePersistentDomain(forName: "test.styleoverrides.effective")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        let style = settings.effectiveStyle(for: .command)
+        #expect(style.color == settings.colorScheme.color(for: .command))
+    }
+
+    @Test("effectiveStyle returns override when set")
+    @MainActor
+    func effectiveStyleOverride() {
+        let defaults = UserDefaults(suiteName: "test.styleoverrides.override")!
+        defaults.removePersistentDomain(forName: "test.styleoverrides.override")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        let customStyle = KeyCategoryStyle(color: .shiftRed, depth: 0.5)
+        settings.setStyleOverride(customStyle, for: .command)
+
+        let style = settings.effectiveStyle(for: .command)
+        #expect(style.color == .shiftRed)
+        #expect(style.depth == 0.5)
+    }
+
+    @Test("hasStyleOverride returns correct value")
+    @MainActor
+    func test_hasStyleOverride() {
+        let defaults = UserDefaults(suiteName: "test.styleoverrides.has")!
+        defaults.removePersistentDomain(forName: "test.styleoverrides.has")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(!settings.hasStyleOverride(for: .command))
+
+        settings.setStyleOverride(KeyCategoryStyle(color: .charcoal), for: .command)
+        #expect(settings.hasStyleOverride(for: .command))
+
+        settings.setStyleOverride(nil, for: .command)
+        #expect(!settings.hasStyleOverride(for: .command))
+    }
+
+    @Test("Overrides persist to UserDefaults")
+    @MainActor
+    func test_persistence() {
+        let defaults = UserDefaults(suiteName: "test.styleoverrides.persist")!
+        defaults.removePersistentDomain(forName: "test.styleoverrides.persist")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        let customStyle = KeyCategoryStyle(color: .optionBlue, depth: 0.3)
+        settings.setStyleOverride(customStyle, for: .shift)
+
+        #expect(defaults.data(forKey: "settings.categoryStyleOverrides") != nil)
+    }
+
+    @Test("Reset to defaults clears overrides")
+    @MainActor
+    func resetClearsOverrides() {
+        let defaults = UserDefaults(suiteName: "test.styleoverrides.reset")!
+        defaults.removePersistentDomain(forName: "test.styleoverrides.reset")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.setStyleOverride(KeyCategoryStyle(color: .charcoal), for: .command)
+        settings.setStyleOverride(KeyCategoryStyle(color: .charcoal), for: .shift)
+
+        settings.resetToDefaults()
+
+        #expect(settings.categoryStyleOverrides.isEmpty)
+    }
+}
+
 @Suite("KeyColorScheme Tests")
 struct KeyColorSchemeTests {
     @Test("Dark scheme has correct colors")
-    func test_darkScheme() {
+    func darkScheme() {
         let scheme = KeyColorScheme.dark
         #expect(scheme.letter == .charcoal)
         #expect(scheme.command == .commandGreen)
@@ -212,7 +354,7 @@ struct KeyColorSchemeTests {
     }
 
     @Test("Monochrome scheme has all charcoal colors")
-    func test_monochromeScheme() {
+    func monochromeScheme() {
         let scheme = KeyColorScheme.monochromeDark
         #expect(scheme.letter == .charcoal)
         #expect(scheme.command == .charcoal)
@@ -222,7 +364,7 @@ struct KeyColorSchemeTests {
     }
 
     @Test("Light scheme has aluminum base")
-    func test_lightScheme() {
+    func lightScheme() {
         let scheme = KeyColorScheme.light
         #expect(scheme.letter == .aluminum)
         #expect(scheme.navigation == .aluminum)
@@ -233,7 +375,7 @@ struct KeyColorSchemeTests {
     }
 
     @Test("color(for:) returns correct colors")
-    func test_colorForCategory() {
+    func colorForCategory() {
         let scheme = KeyColorScheme.dark
         #expect(scheme.color(for: .letter) == scheme.letter)
         #expect(scheme.color(for: .command) == scheme.command)

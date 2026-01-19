@@ -51,16 +51,16 @@ public enum DisplayMode: String, CaseIterable, Codable, Sendable {
 
 /// Category of a key for color assignment.
 public enum KeyCategory: String, CaseIterable, Codable, Sendable {
-    case letter      // A-Z, 0-9
-    case command     // ⌘
-    case shift       // ⇧
-    case option      // ⌥
-    case control     // ⌃
-    case capsLock    // ⇪
-    case escape      // ⎋
-    case function    // F1-F20
-    case navigation  // Arrows, Page Up/Down, Home, End
-    case editing     // Space, Tab, Return, Delete, Backspace
+    case letter // A-Z, 0-9
+    case command // ⌘
+    case shift // ⇧
+    case option // ⌥
+    case control // ⌃
+    case capsLock // ⇪
+    case escape // ⎋
+    case function // F1-F20
+    case navigation // Arrows, Page Up/Down, Home, End
+    case editing // Space, Tab, Return, Delete, Backspace
 }
 
 // MARK: - MonitorSelection
@@ -117,6 +117,9 @@ public enum AppearanceMode: String, CaseIterable, Codable, Sendable {
     /// Fixed light scheme with colored modifiers.
     case light
 
+    /// Custom user-defined colors for each category.
+    case custom
+
     /// Display name for UI.
     public var displayName: String {
         switch self {
@@ -124,6 +127,7 @@ public enum AppearanceMode: String, CaseIterable, Codable, Sendable {
         case .dark: "Dark"
         case .monochrome: "Mono"
         case .light: "Light"
+        case .custom: "Custom"
         }
     }
 }
@@ -186,6 +190,58 @@ public struct KeyColor: Codable, Sendable, Equatable {
     public static let capsLockGray = KeyColor(red: 0.35, green: 0.35, blue: 0.38)
 }
 
+// MARK: - KeyCategoryStyle
+
+/// Complete style configuration for a key category.
+public struct KeyCategoryStyle: Codable, Sendable, Equatable {
+    /// Base color for the keycap.
+    public var color: KeyColor
+
+    /// 3D depth effect intensity (0.0 = flat, 1.0 = full 3D).
+    public var depth: Double
+
+    /// Corner radius multiplier (0.0 = sharp, 1.0 = maximum rounded).
+    public var cornerRadius: Double
+
+    /// Shadow intensity (0.0 = no shadow, 1.0 = full shadow).
+    public var shadowIntensity: Double
+
+    /// Visual style for the keycap.
+    public var style: KeyCapStyle
+
+    public init(
+        color: KeyColor,
+        depth: Double = 1.0,
+        cornerRadius: Double = 0.5,
+        shadowIntensity: Double = 1.0,
+        style: KeyCapStyle = .mechanical)
+    {
+        self.color = color
+        self.depth = depth.clamped(to: 0.0...1.0)
+        self.cornerRadius = cornerRadius.clamped(to: 0.0...1.0)
+        self.shadowIntensity = shadowIntensity.clamped(to: 0.0...1.0)
+        self.style = style
+    }
+
+    /// Creates a default style for a category based on a color scheme.
+    public static func `default`(for category: KeyCategory, scheme: KeyColorScheme) -> KeyCategoryStyle {
+        KeyCategoryStyle(
+            color: scheme.color(for: category),
+            depth: 1.0,
+            cornerRadius: 0.5,
+            shadowIntensity: 1.0,
+            style: .mechanical)
+    }
+}
+
+// MARK: - Double Extension
+
+extension Double {
+    fileprivate func clamped(to range: ClosedRange<Double>) -> Double {
+        min(max(self, range.lowerBound), range.upperBound)
+    }
+}
+
 // MARK: - KeyColorScheme
 
 /// Complete color scheme for all key categories.
@@ -211,8 +267,8 @@ public struct KeyColorScheme: Codable, Sendable, Equatable {
         escape: KeyColor = .escapeTeal,
         function: KeyColor = .functionPurple,
         navigation: KeyColor = .charcoal,
-        editing: KeyColor = .charcoal
-    ) {
+        editing: KeyColor = .charcoal)
+    {
         self.letter = letter
         self.command = command
         self.shift = shift
@@ -257,8 +313,7 @@ public struct KeyColorScheme: Codable, Sendable, Equatable {
         escape: .charcoal,
         function: .charcoal,
         navigation: .charcoal,
-        editing: .charcoal
-    )
+        editing: .charcoal)
 
     /// Light scheme with colored modifiers.
     public static let light = KeyColorScheme(
@@ -271,8 +326,7 @@ public struct KeyColorScheme: Codable, Sendable, Equatable {
         escape: .escapeTeal,
         function: .functionPurple,
         navigation: .aluminum,
-        editing: .aluminum
-    )
+        editing: .aluminum)
 }
 
 // MARK: - KeypressConfig
@@ -305,7 +359,9 @@ public final class KeypressConfig {
         static let keyCapStyle = "settings.keyCapStyle"
         static let colorScheme = "settings.colorScheme"
         static let appearanceMode = "settings.appearanceMode"
+        static let customColorScheme = "settings.customColorScheme"
         static let keyboardFrameStyle = "settings.keyboardFrameStyle"
+        static let categoryStyleOverrides = "settings.categoryStyleOverrides"
         // Monitor
         static let monitorSelection = "settings.monitorSelection"
     }
@@ -332,7 +388,9 @@ public final class KeypressConfig {
         static let keyCapStyle = KeyCapStyle.mechanical
         static let colorScheme = KeyColorScheme.dark
         static let appearanceMode = AppearanceMode.auto
+        static let customColorScheme = KeyColorScheme.dark
         static let keyboardFrameStyle = KeyboardFrameStyle.frame
+        static let categoryStyleOverrides: [KeyCategory: KeyCategoryStyle] = [:]
         // Monitor
         static let monitorSelection = MonitorSelection.auto
     }
@@ -411,11 +469,25 @@ public final class KeypressConfig {
         didSet { self.userDefaults.set(self.keyCapStyle.rawValue, forKey: Keys.keyCapStyle) }
     }
 
-    /// Color scheme for key categories.
+    /// Color scheme for key categories (active scheme, may be preset or custom).
     public var colorScheme: KeyColorScheme {
         didSet {
             if let encoded = try? JSONEncoder().encode(self.colorScheme) {
                 self.userDefaults.set(encoded, forKey: Keys.colorScheme)
+            }
+        }
+    }
+
+    /// Custom color scheme with user-defined colors for each category.
+    /// Only used when appearanceMode is .custom.
+    public var customColorScheme: KeyColorScheme {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(self.customColorScheme) {
+                self.userDefaults.set(encoded, forKey: Keys.customColorScheme)
+            }
+            // If in custom mode, sync to active colorScheme
+            if self.appearanceMode == .custom {
+                self.colorScheme = self.customColorScheme
             }
         }
     }
@@ -431,6 +503,15 @@ public final class KeypressConfig {
     /// Style for the container around keys (frame, overlay, or none).
     public var keyboardFrameStyle: KeyboardFrameStyle {
         didSet { self.userDefaults.set(self.keyboardFrameStyle.rawValue, forKey: Keys.keyboardFrameStyle) }
+    }
+
+    /// Custom style overrides for key categories (only stores customized categories).
+    public var categoryStyleOverrides: [KeyCategory: KeyCategoryStyle] {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(self.categoryStyleOverrides) {
+                self.userDefaults.set(encoded, forKey: Keys.categoryStyleOverrides)
+            }
+        }
     }
 
     // MARK: - Monitor Properties
@@ -454,14 +535,16 @@ public final class KeypressConfig {
         self.launchAtLogin = userDefaults.object(forKey: Keys.launchAtLogin) as? Bool ?? Defaults.launchAtLogin
 
         if let positionRaw = userDefaults.string(forKey: Keys.position),
-           let position = OverlayPosition(rawValue: positionRaw) {
+           let position = OverlayPosition(rawValue: positionRaw)
+        {
             self.position = position
         } else {
             self.position = Defaults.position
         }
 
         if let sizeRaw = userDefaults.string(forKey: Keys.size),
-           let size = OverlaySize(rawValue: sizeRaw) {
+           let size = OverlaySize(rawValue: sizeRaw)
+        {
             self.size = size
         } else {
             self.size = Defaults.size
@@ -481,7 +564,8 @@ public final class KeypressConfig {
 
         // Display mode settings
         if let displayModeRaw = userDefaults.string(forKey: Keys.displayMode),
-           let displayMode = DisplayMode(rawValue: displayModeRaw) {
+           let displayMode = DisplayMode(rawValue: displayModeRaw)
+        {
             self.displayMode = displayMode
         } else {
             self.displayMode = Defaults.displayMode
@@ -504,36 +588,57 @@ public final class KeypressConfig {
 
         // Appearance settings
         if let styleRaw = userDefaults.string(forKey: Keys.keyCapStyle),
-           let style = KeyCapStyle(rawValue: styleRaw) {
+           let style = KeyCapStyle(rawValue: styleRaw)
+        {
             self.keyCapStyle = style
         } else {
             self.keyCapStyle = Defaults.keyCapStyle
         }
 
         if let colorSchemeData = userDefaults.data(forKey: Keys.colorScheme),
-           let scheme = try? JSONDecoder().decode(KeyColorScheme.self, from: colorSchemeData) {
+           let scheme = try? JSONDecoder().decode(KeyColorScheme.self, from: colorSchemeData)
+        {
             self.colorScheme = scheme
         } else {
             self.colorScheme = Defaults.colorScheme
         }
 
+        if let customSchemeData = userDefaults.data(forKey: Keys.customColorScheme),
+           let scheme = try? JSONDecoder().decode(KeyColorScheme.self, from: customSchemeData)
+        {
+            self.customColorScheme = scheme
+        } else {
+            self.customColorScheme = Defaults.customColorScheme
+        }
+
         if let modeRaw = userDefaults.string(forKey: Keys.appearanceMode),
-           let mode = AppearanceMode(rawValue: modeRaw) {
+           let mode = AppearanceMode(rawValue: modeRaw)
+        {
             self.appearanceMode = mode
         } else {
             self.appearanceMode = Defaults.appearanceMode
         }
 
         if let styleRaw = userDefaults.string(forKey: Keys.keyboardFrameStyle),
-           let style = KeyboardFrameStyle(rawValue: styleRaw) {
+           let style = KeyboardFrameStyle(rawValue: styleRaw)
+        {
             self.keyboardFrameStyle = style
         } else {
             self.keyboardFrameStyle = Defaults.keyboardFrameStyle
         }
 
+        if let overridesData = userDefaults.data(forKey: Keys.categoryStyleOverrides),
+           let overrides = try? JSONDecoder().decode([KeyCategory: KeyCategoryStyle].self, from: overridesData)
+        {
+            self.categoryStyleOverrides = overrides
+        } else {
+            self.categoryStyleOverrides = Defaults.categoryStyleOverrides
+        }
+
         // Monitor settings
         if let monitorData = userDefaults.data(forKey: Keys.monitorSelection),
-           let selection = try? JSONDecoder().decode(MonitorSelection.self, from: monitorData) {
+           let selection = try? JSONDecoder().decode(MonitorSelection.self, from: monitorData)
+        {
             self.monitorSelection = selection
         } else {
             self.monitorSelection = Defaults.monitorSelection
@@ -551,8 +656,8 @@ public final class KeypressConfig {
         self.themeObserver = DistributedNotificationCenter.default().addObserver(
             forName: NSNotification.Name("AppleInterfaceThemeChangedNotification"),
             object: nil,
-            queue: .main
-        ) { [weak self] _ in
+            queue: .main)
+        { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.updateColorSchemeForAppearanceMode()
             }
@@ -574,16 +679,42 @@ public final class KeypressConfig {
         case .dark: .dark
         case .monochrome: .monochromeDark
         case .light: .light
+        case .custom: self.customColorScheme
         }
         if self.colorScheme != newScheme {
             self.colorScheme = newScheme
         }
     }
 
+    // MARK: - Style Access
+
+    /// Returns the effective style for a category.
+    /// Uses custom override if available, otherwise returns default style based on current color scheme.
+    public func effectiveStyle(for category: KeyCategory) -> KeyCategoryStyle {
+        if let override = self.categoryStyleOverrides[category] {
+            return override
+        }
+        return KeyCategoryStyle.default(for: category, scheme: self.colorScheme)
+    }
+
+    /// Returns true if a category has a custom style override.
+    public func hasStyleOverride(for category: KeyCategory) -> Bool {
+        self.categoryStyleOverrides[category] != nil
+    }
+
+    /// Sets or removes a style override for a category.
+    public func setStyleOverride(_ style: KeyCategoryStyle?, for category: KeyCategory) {
+        if let style {
+            self.categoryStyleOverrides[category] = style
+        } else {
+            self.categoryStyleOverrides.removeValue(forKey: category)
+        }
+    }
+
     // MARK: - Testing Support
 
     /// Creates a KeypressConfig instance with custom UserDefaults (for testing).
-    internal static func makeForTesting(userDefaults: UserDefaults) -> KeypressConfig {
+    static func makeForTesting(userDefaults: UserDefaults) -> KeypressConfig {
         let settings = KeypressConfig(userDefaults: userDefaults)
         return settings
     }
@@ -603,8 +734,10 @@ public final class KeypressConfig {
         self.limitIncludesModifiers = Defaults.limitIncludesModifiers
         self.keyCapStyle = Defaults.keyCapStyle
         self.colorScheme = Defaults.colorScheme
+        self.customColorScheme = Defaults.customColorScheme
         self.appearanceMode = Defaults.appearanceMode
         self.keyboardFrameStyle = Defaults.keyboardFrameStyle
+        self.categoryStyleOverrides = Defaults.categoryStyleOverrides
         self.monitorSelection = Defaults.monitorSelection
     }
 }

@@ -7,7 +7,7 @@ import Testing
 struct KeyStateTests {
     @Test("Initial state is empty")
     @MainActor
-    func test_initialState() {
+    func initialState() {
         let state = KeyState()
         #expect(state.pressedKeys.isEmpty)
         #expect(state.hasKeys == false)
@@ -15,7 +15,7 @@ struct KeyStateTests {
 
     @Test("KeyDown adds key to state")
     @MainActor
-    func test_keyDownAddsKey() {
+    func keyDownAddsKey() {
         let state = KeyState()
         let symbol = KeySymbol(id: "key-a", display: "A")
         let event = KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: [])
@@ -29,7 +29,7 @@ struct KeyStateTests {
 
     @Test("Modifier keyDown adds modifier")
     @MainActor
-    func test_modifierKeyDown() {
+    func modifierKeyDown() {
         let state = KeyState()
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
         let event = KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand)
@@ -42,7 +42,7 @@ struct KeyStateTests {
 
     @Test("Modifier keyUp removes modifier immediately")
     @MainActor
-    func test_modifierKeyUpRemoves() {
+    func modifierKeyUpRemoves() {
         let state = KeyState()
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
 
@@ -55,7 +55,7 @@ struct KeyStateTests {
 
     @Test("Regular key stays after keyUp (waits for timeout)")
     @MainActor
-    func test_regularKeyStaysAfterKeyUp() {
+    func regularKeyStaysAfterKeyUp() {
         let state = KeyState()
         let symbol = KeySymbol(id: "key-a", display: "A")
 
@@ -68,7 +68,7 @@ struct KeyStateTests {
 
     @Test("Duplicate modifier keyDown does not add duplicate")
     @MainActor
-    func test_noDuplicateModifiers() {
+    func noDuplicateModifiers() {
         let state = KeyState()
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
         let event = KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand)
@@ -82,7 +82,7 @@ struct KeyStateTests {
 
     @Test("Regular keys allow duplicates for typing (hello → 5 keys)")
     @MainActor
-    func test_regularKeysAllowDuplicates() {
+    func regularKeysAllowDuplicates() {
         let state = KeyState()
 
         // Type "hello" - each keypress is unique
@@ -108,12 +108,10 @@ struct KeyStateTests {
 
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
-        )
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         #expect(state.pressedKeys.count == 2)
 
@@ -124,20 +122,18 @@ struct KeyStateTests {
 
     @Test("Modifiers are sorted before regular keys")
     @MainActor
-    func test_modifiersSortedFirst() {
+    func modifiersSortedFirst() {
         let state = KeyState()
 
         // Add regular key first
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
 
         // Add modifier second
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
-        )
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         #expect(state.pressedKeys.count == 2)
         #expect(state.pressedKeys[0].symbol.isModifier == true)
@@ -146,16 +142,15 @@ struct KeyStateTests {
 
     @Test("Max 6 keys displayed")
     @MainActor
-    func test_maxKeysLimit() {
+    func maxKeysLimit() {
         let state = KeyState()
 
         // Add 8 keys
-        for i in 0 ..< 8 {
+        for i in 0..<8 {
             let symbol = KeySymbol(id: "key-\(i)", display: "\(i)")
             state.processEvent(
                 KeyEvent(type: .keyDown, keyCode: Int64(i), modifiers: []),
-                symbol: symbol
-            )
+                symbol: symbol)
         }
 
         #expect(state.pressedKeys.count == state.maxDisplayedKeys)
@@ -164,16 +159,15 @@ struct KeyStateTests {
 
     @Test("Modifiers prioritized when at max keys")
     @MainActor
-    func test_modifiersPrioritizedAtMax() {
+    func modifiersPrioritizedAtMax() {
         let state = KeyState()
 
         // Add 5 regular keys
-        for i in 0 ..< 5 {
+        for i in 0..<5 {
             let symbol = KeySymbol(id: "key-\(i)", display: "\(i)")
             state.processEvent(
                 KeyEvent(type: .keyDown, keyCode: Int64(i), modifiers: []),
-                symbol: symbol
-            )
+                symbol: symbol)
         }
 
         // Add 3 modifiers
@@ -186,20 +180,19 @@ struct KeyStateTests {
         for (i, mod) in modifiers.enumerated() {
             state.processEvent(
                 KeyEvent(type: .keyDown, keyCode: Int64(0x37 + i), modifiers: []),
-                symbol: mod
-            )
+                symbol: mod)
         }
 
         #expect(state.pressedKeys.count == 6)
 
         // All 3 modifiers should be present
-        let modifierCount = state.pressedKeys.filter { $0.symbol.isModifier }.count
+        let modifierCount = state.pressedKeys.count(where: { $0.symbol.isModifier })
         #expect(modifierCount == 3)
     }
 
     @Test("Null symbol is ignored")
     @MainActor
-    func test_nullSymbolIgnored() {
+    func nullSymbolIgnored() {
         let state = KeyState()
         let event = KeyEvent(type: .keyDown, keyCode: 0xFF, modifiers: [])
 
@@ -210,14 +203,13 @@ struct KeyStateTests {
 
     @Test("FlagsChanged adds modifier when pressed")
     @MainActor
-    func test_flagsChangedAddsModifier() {
+    func flagsChangedAddsModifier() {
         let state = KeyState()
         let symbol = KeySymbol(id: "command-left", display: "⌘", isModifier: true)
 
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: symbol
-        )
+            symbol: symbol)
 
         #expect(state.pressedKeys.count == 1)
         #expect(state.pressedKeys.first?.symbol.display == "⌘")
@@ -225,22 +217,20 @@ struct KeyStateTests {
 
     @Test("FlagsChanged removes modifier when released")
     @MainActor
-    func test_flagsChangedRemovesModifier() {
+    func flagsChangedRemovesModifier() {
         let state = KeyState()
         let symbol = KeySymbol(id: "command-left", display: "⌘", isModifier: true)
 
         // Press
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: symbol
-        )
+            symbol: symbol)
         #expect(state.pressedKeys.count == 1)
 
         // Release
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: []),
-            symbol: symbol
-        )
+            symbol: symbol)
         #expect(state.pressedKeys.isEmpty)
     }
 }
@@ -248,7 +238,7 @@ struct KeyStateTests {
 @Suite("PressedKey Tests")
 struct PressedKeyTests {
     @Test("Modifier PressedKey uses stable ID from symbol")
-    func test_modifierPressedKeyId() {
+    func modifierPressedKeyId() {
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
         let key = PressedKey(symbol: symbol)
 
@@ -258,7 +248,7 @@ struct PressedKeyTests {
     }
 
     @Test("Regular PressedKey uses unique ID with timestamp")
-    func test_regularPressedKeyId() {
+    func regularPressedKeyId() {
         let symbol = KeySymbol(id: "key-0", display: "A")
         let key = PressedKey(symbol: symbol)
 
@@ -269,7 +259,7 @@ struct PressedKeyTests {
     }
 
     @Test("Two regular keys with same symbol have different IDs")
-    func test_regularKeysHaveUniqueIds() {
+    func regularKeysHaveUniqueIds() {
         let symbol = KeySymbol(id: "key-0", display: "A")
         let key1 = PressedKey(symbol: symbol)
 
@@ -281,7 +271,7 @@ struct PressedKeyTests {
     }
 
     @Test("PressedKey is Equatable")
-    func test_equatable() {
+    func equatable() {
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
         let date = Date()
         let key1 = PressedKey(symbol: symbol, pressedAt: date)
@@ -306,14 +296,13 @@ struct SingleKeyStateTests {
 
     @Test("KeyDown shows key")
     @MainActor
-    func test_keyDownShowsKey() {
+    func keyDownShowsKey() {
         let state = SingleKeyState()
         let symbol = KeySymbol(id: "key-a", display: "A")
 
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: symbol
-        )
+            symbol: symbol)
 
         #expect(state.pressedKeys.count == 1)
         #expect(state.pressedKeys.first?.symbol.display == "A")
@@ -321,42 +310,38 @@ struct SingleKeyStateTests {
 
     @Test("New keypress replaces previous")
     @MainActor
-    func test_newKeyReplacesPrevious() {
+    func newKeyReplacesPrevious() {
         let state = SingleKeyState()
 
         // Press A
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
         #expect(state.pressedKeys.count == 1)
         #expect(state.pressedKeys.first?.symbol.display == "A")
 
         // Press B - should replace A
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x0B, modifiers: []),
-            symbol: KeySymbol(id: "key-b", display: "B")
-        )
+            symbol: KeySymbol(id: "key-b", display: "B"))
         #expect(state.pressedKeys.count == 1)
         #expect(state.pressedKeys.first?.symbol.display == "B")
     }
 
     @Test("Modifier + key shows combination")
     @MainActor
-    func test_modifierPlusKey() {
+    func modifierPlusKey() {
         let state = SingleKeyState()
 
         // Press Command
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
-        )
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press A
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.pressedKeys.count == 2)
         #expect(state.pressedKeys[0].symbol.display == "⌘")
@@ -365,26 +350,23 @@ struct SingleKeyStateTests {
 
     @Test("Multiple modifiers + key")
     @MainActor
-    func test_multipleModifiersPlusKey() {
+    func multipleModifiersPlusKey() {
         let state = SingleKeyState()
 
         // Press Command
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
-        )
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press Shift
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x38, modifiers: [.maskCommand, .maskShift]),
-            symbol: KeySymbol(id: "shift", display: "⇧", isModifier: true)
-        )
+            symbol: KeySymbol(id: "shift", display: "⇧", isModifier: true))
 
         // Press A
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: [.maskCommand, .maskShift]),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.pressedKeys.count == 3)
         // Modifiers first, then key
@@ -395,27 +377,24 @@ struct SingleKeyStateTests {
 
     @Test("Modifier stays with key after release, clears on new keypress")
     @MainActor
-    func test_modifierRelease() {
+    func modifierRelease() {
         let state = SingleKeyState()
 
         // Press Command
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
-        )
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press A (creates Cmd+A combination)
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
         #expect(state.pressedKeys.count == 2)
 
         // Release Command — modifier should stay with the key
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: []),
-            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
-        )
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Combination should stay together (Cmd+A)
         #expect(state.pressedKeys.count == 2)
@@ -424,8 +403,7 @@ struct SingleKeyStateTests {
         // Press new key without modifier — released modifier should clear
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x01, modifiers: []),
-            symbol: KeySymbol(id: "key-b", display: "B")
-        )
+            symbol: KeySymbol(id: "key-b", display: "B"))
 
         // Now only the new key should be shown
         #expect(state.pressedKeys.count == 1)
@@ -439,8 +417,7 @@ struct SingleKeyStateTests {
 
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
         #expect(state.hasKeys == true)
 
         state.clear()
@@ -451,43 +428,40 @@ struct SingleKeyStateTests {
 
     @Test("showModifiersOnly filters regular keys")
     @MainActor
-    func test_showModifiersOnlyFilters() {
+    func showModifiersOnlyFilters() {
         let state = SingleKeyState()
         state.showModifiersOnly = true
 
         // Press A (no modifier) - should NOT show
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.pressedKeys.isEmpty)
     }
 
     @Test("showModifiersOnly shows modifier + key combination")
     @MainActor
-    func test_showModifiersOnlyShowsCombination() {
+    func showModifiersOnlyShowsCombination() {
         let state = SingleKeyState()
         state.showModifiersOnly = true
 
         // Press Command
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
-        )
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press A (with modifier) - should show
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .maskCommand),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.pressedKeys.count == 2)
     }
 
     @Test("keyTimeout property is settable")
     @MainActor
-    func test_keyTimeoutSettable() {
+    func keyTimeoutSettable() {
         let state = SingleKeyState()
         #expect(state.keyTimeout == 1.5) // default
 
@@ -497,7 +471,7 @@ struct SingleKeyStateTests {
 
     @Test("Conforms to KeyStateProtocol")
     @MainActor
-    func test_conformsToProtocol() {
+    func conformsToProtocol() {
         let state: any KeyStateProtocol = SingleKeyState()
 
         #expect(state.pressedKeys.isEmpty)
@@ -505,8 +479,7 @@ struct SingleKeyStateTests {
 
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.hasKeys == true)
 
@@ -521,7 +494,7 @@ struct SingleKeyStateTests {
 struct KeyStateDuplicateLettersTests {
     @Test("duplicateLetters=true allows repeated keys")
     @MainActor
-    func test_duplicateLettersTrue() {
+    func duplicateLettersTrue() {
         let state = KeyState()
         state.duplicateLetters = true
 
@@ -535,7 +508,7 @@ struct KeyStateDuplicateLettersTests {
 
     @Test("duplicateLetters=false prevents repeated keys")
     @MainActor
-    func test_duplicateLettersFalse() {
+    func duplicateLettersFalse() {
         let state = KeyState()
         state.duplicateLetters = false
 
@@ -550,18 +523,16 @@ struct KeyStateDuplicateLettersTests {
 
     @Test("duplicateLetters=false still allows different keys")
     @MainActor
-    func test_duplicateLettersFalseDifferentKeys() {
+    func duplicateLettersFalseDifferentKeys() {
         let state = KeyState()
         state.duplicateLetters = false
 
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-            symbol: KeySymbol(id: "key-a", display: "A")
-        )
+            symbol: KeySymbol(id: "key-a", display: "A"))
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x0B, modifiers: []),
-            symbol: KeySymbol(id: "key-b", display: "B")
-        )
+            symbol: KeySymbol(id: "key-b", display: "B"))
 
         #expect(state.pressedKeys.count == 2)
     }
@@ -573,7 +544,7 @@ struct KeyStateDuplicateLettersTests {
 struct KeyStateMaxDisplayedKeysTests {
     @Test("maxDisplayedKeys is configurable")
     @MainActor
-    func test_maxDisplayedKeysConfigurable() {
+    func maxDisplayedKeysConfigurable() {
         let state = KeyState()
         #expect(state.maxDisplayedKeys == 6) // default
 
@@ -583,16 +554,15 @@ struct KeyStateMaxDisplayedKeysTests {
 
     @Test("Custom maxDisplayedKeys limits keys")
     @MainActor
-    func test_customMaxDisplayedKeysLimits() {
+    func customMaxDisplayedKeysLimits() {
         let state = KeyState()
         state.maxDisplayedKeys = 3
 
         // Add 5 keys
-        for i in 0 ..< 5 {
+        for i in 0..<5 {
             state.processEvent(
                 KeyEvent(type: .keyDown, keyCode: Int64(i), modifiers: []),
-                symbol: KeySymbol(id: "key-\(i)", display: "\(i)")
-            )
+                symbol: KeySymbol(id: "key-\(i)", display: "\(i)"))
         }
 
         #expect(state.pressedKeys.count == 3)

@@ -42,8 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let symbolName = self.config.enabled ? "keyboard.fill" : "keyboard"
         button.image = NSImage(
             systemSymbolName: symbolName,
-            accessibilityDescription: "Keypress"
-        )
+            accessibilityDescription: "Keypress")
     }
 
     private func setupMenu() {

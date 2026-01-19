@@ -78,7 +78,7 @@ public final class AccessibilityPermission: Sendable {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .milliseconds(500))
 
-                guard let self = self else { return }
+                guard let self else { return }
 
                 pollCount += 1
                 let axTrusted = Self.check()
@@ -86,7 +86,8 @@ public final class AccessibilityPermission: Sendable {
 
                 // Log every 10th poll or when state changes
                 if pollCount % 10 == 0 {
-                    print("[AccessibilityPermission] Poll #\(pollCount): AXIsProcessTrusted=\(axTrusted), functionalTest=\(functional)")
+                    print(
+                        "[AccessibilityPermission] Poll #\(pollCount): AXIsProcessTrusted=\(axTrusted), functionalTest=\(functional)")
                 }
 
                 // Use functional test as the source of truth
@@ -123,8 +124,8 @@ public final class AccessibilityPermission: Sendable {
             options: .listenOnly,
             eventsOfInterest: eventMask,
             callback: { _, _, event, _ in Unmanaged.passUnretained(event) },
-            userInfo: nil
-        ) else {
+            userInfo: nil)
+        else {
             return false
         }
 
@@ -141,14 +142,14 @@ public final class AccessibilityPermission: Sendable {
         self.notificationObserver = DistributedNotificationCenter.default().addObserver(
             forName: NSNotification.Name("com.apple.accessibility.api"),
             object: nil,
-            queue: nil
-        ) { [weak self] _ in
+            queue: nil)
+        { [weak self] _ in
             Task { @MainActor [weak self] in
                 // Important: Add delay before checking.
                 // The notification fires before the TCC database is fully updated.
                 try? await Task.sleep(for: .milliseconds(250))
 
-                guard let self = self else { return }
+                guard let self else { return }
                 self.refreshPermissionState()
             }
         }

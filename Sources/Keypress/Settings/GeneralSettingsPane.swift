@@ -12,20 +12,6 @@ struct GeneralSettingsPane: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                // Position
-                SettingsSection("Position") {
-                    PositionPicker(position: self.$config.position)
-
-                    // Monitor picker (only show when multiple monitors connected)
-                    if NSScreen.screens.count > 1 {
-                        SettingsRow("Monitor") {
-                            MonitorPicker(selection: self.$config.monitorSelection)
-                        }
-                    }
-                }
-
-                Divider()
-
                 // Appearance
                 SettingsSection("Appearance") {
                     SettingsRow("Size") {
@@ -41,7 +27,7 @@ struct GeneralSettingsPane: View {
 
                     SettingsRow("Opacity") {
                         HStack(spacing: 8) {
-                            Slider(value: self.$config.opacity, in: 0.3 ... 1.0)
+                            Slider(value: self.$config.opacity, in: 0.3...1.0)
                                 .frame(width: 120)
                             Text("\(Int(round(self.config.opacity * 100)))%")
                                 .font(.caption)
@@ -57,7 +43,7 @@ struct GeneralSettingsPane: View {
                 SettingsSection("Behavior") {
                     SettingsRow("Key timeout", subtitle: "How long keys stay visible") {
                         HStack(spacing: 8) {
-                            Slider(value: self.$config.keyTimeout, in: 0.5 ... 5.0, step: 0.5)
+                            Slider(value: self.$config.keyTimeout, in: 0.5...5.0, step: 0.5)
                                 .frame(width: 120)
                             Text(String(format: "%.1fs", self.config.keyTimeout))
                                 .font(.caption)
@@ -91,6 +77,8 @@ struct GeneralSettingsPane: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 12)
+            .padding(.horizontal, 12)
         }
     }
 
@@ -120,102 +108,3 @@ extension OverlaySize {
     }
 }
 
-// MARK: - PositionPicker
-
-@MainActor
-struct PositionPicker: View {
-    @Binding var position: OverlayPosition
-
-    private let gridSize: CGFloat = 160
-    private let dotSize: CGFloat = 16
-
-    var body: some View {
-        ZStack {
-            // Monitor frame
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.secondary.opacity(0.5), lineWidth: 2)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.secondary.opacity(0.1))
-                )
-
-            // Position dots
-            ForEach(OverlayPosition.allCases, id: \.self) { pos in
-                Circle()
-                    .fill(pos == self.position ? Color.accentColor : Color.secondary.opacity(0.4))
-                    .frame(width: self.dotSize, height: self.dotSize)
-                    .overlay(
-                        Circle()
-                            .stroke(pos == self.position ? Color.accentColor : Color.clear, lineWidth: 2)
-                            .frame(width: self.dotSize + 4, height: self.dotSize + 4)
-                    )
-                    .position(self.dotPosition(for: pos))
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            self.position = pos
-                        }
-                    }
-            }
-        }
-        .frame(width: self.gridSize, height: self.gridSize * 0.625) // 16:10 aspect ratio
-        .contentShape(Rectangle())
-    }
-
-    private func dotPosition(for pos: OverlayPosition) -> CGPoint {
-        let width = self.gridSize
-        let height = self.gridSize * 0.625
-        let margin: CGFloat = 16
-
-        switch pos {
-        case .topLeft:
-            return CGPoint(x: margin, y: margin)
-        case .topCenter:
-            return CGPoint(x: width / 2, y: margin)
-        case .topRight:
-            return CGPoint(x: width - margin, y: margin)
-        case .centerLeft:
-            return CGPoint(x: margin, y: height / 2)
-        case .centerRight:
-            return CGPoint(x: width - margin, y: height / 2)
-        case .bottomLeft:
-            return CGPoint(x: margin, y: height - margin)
-        case .bottomCenter:
-            return CGPoint(x: width / 2, y: height - margin)
-        case .bottomRight:
-            return CGPoint(x: width - margin, y: height - margin)
-        }
-    }
-}
-
-// MARK: - MonitorPicker
-
-@MainActor
-struct MonitorPicker: View {
-    @Binding var selection: MonitorSelection
-
-    var body: some View {
-        Picker("Monitor", selection: self.$selection) {
-            Text("Auto").tag(MonitorSelection.auto)
-
-            ForEach(0 ..< NSScreen.screens.count, id: \.self) { index in
-                Text(self.monitorName(for: index)).tag(MonitorSelection.fixed(index: index))
-            }
-        }
-        .labelsHidden()
-        .pickerStyle(.menu)
-        .frame(width: 140)
-    }
-
-    private func monitorName(for index: Int) -> String {
-        let screens = NSScreen.screens
-        guard index < screens.count else { return "Monitor \(index + 1)" }
-
-        let screen = screens[index]
-        let name = screen.localizedName
-        // Use localized name if available, otherwise "Monitor N"
-        if !name.isEmpty {
-            return name
-        }
-        return "Monitor \(index + 1)"
-    }
-}

@@ -139,8 +139,8 @@ public final class KeyMonitor: @unchecked Sendable {
             options: .listenOnly,
             eventsOfInterest: eventMask,
             callback: Self.eventCallback,
-            userInfo: refcon
-        ) else {
+            userInfo: refcon)
+        else {
             return false
         }
 
@@ -155,7 +155,7 @@ public final class KeyMonitor: @unchecked Sendable {
         self._isRunning = true
 
         let thread = Thread { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
 
             let runLoop = CFRunLoopGetCurrent()
             self.lock.withLock {
@@ -208,7 +208,7 @@ public final class KeyMonitor: @unchecked Sendable {
     // MARK: - Event Callback
 
     private static let eventCallback: CGEventTapCallBack = { _, type, event, refcon in
-        guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
+        guard let refcon else { return Unmanaged.passUnretained(event) }
 
         let monitor = Unmanaged<KeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
 
@@ -238,8 +238,7 @@ public final class KeyMonitor: @unchecked Sendable {
         let keyEvent = KeyEvent(
             type: eventType,
             keyCode: keyCode,
-            modifiers: modifiers
-        )
+            modifiers: modifiers)
 
         // Get symbol with current keyboard layout support
         let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: modifiers, event: event)
@@ -371,8 +370,8 @@ public enum KeyCodeMapper {
         }
 
         // For character keys, try to get the actual character from CGEvent
-        if characterKeycodes.contains(keyCode) {
-            if let event = event, let character = Self.extractCharacter(from: event) {
+        if self.characterKeycodes.contains(keyCode) {
+            if let event, let character = Self.extractCharacter(from: event) {
                 return KeySymbol(id: "key-\(keyCode)", display: character.uppercased())
             }
             // Fallback to US QWERTY when CGEvent returns control chars (Ctrl pressed)
@@ -384,7 +383,6 @@ public enum KeyCodeMapper {
 
         return nil
     }
-
 
     /// Extracts the character from a CGEvent using the current keyboard layout.
     /// Returns nil for control characters (when Ctrl is pressed).
@@ -414,7 +412,7 @@ public enum KeyCodeMapper {
 
     /// Returns true if the keycode represents a modifier key.
     public static func isModifier(_ keyCode: Int64) -> Bool {
-        modifierKeys[keyCode] != nil
+        self.modifierKeys[keyCode] != nil
     }
 
     /// Extracts active modifier symbols from event flags.
@@ -459,13 +457,15 @@ public enum KeyCodeMapper {
 
         // Navigation
         if id.hasPrefix("arrow") || id == "home" || id == "end" ||
-            id == "page-up" || id == "page-down" {
+            id == "page-up" || id == "page-down"
+        {
             return .navigation
         }
 
         // Editing
         if id == "space" || id == "tab" || id == "return" ||
-            id == "enter" || id == "delete" || id == "forward-delete" {
+            id == "enter" || id == "delete" || id == "forward-delete"
+        {
             return .editing
         }
 

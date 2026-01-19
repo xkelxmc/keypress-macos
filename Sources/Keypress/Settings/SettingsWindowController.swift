@@ -25,7 +25,7 @@ final class SettingsWindowController {
         let window = NSWindow(contentViewController: hostingController)
         window.title = "Keypress Settings"
         window.styleMask = [.titled, .closable]
-        window.setContentSize(NSSize(width: 480, height: 560))
+        window.setContentSize(NSSize(width: 820, height: 720))
         window.center()
         window.isReleasedWhenClosed = false
 

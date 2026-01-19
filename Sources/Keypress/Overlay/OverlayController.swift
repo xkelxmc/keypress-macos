@@ -25,6 +25,9 @@ final class OverlayController {
     private var screenParametersObserver: Any?
     private var workspaceObserver: Any?
 
+    // Cache for screen detection (to avoid unnecessary position updates)
+    private var lastDetectedScreen: NSScreen?
+
     /// Current key state protocol reference for common operations.
     private var currentKeyState: (any KeyStateProtocol)? {
         switch self.config.displayMode {
@@ -69,20 +72,23 @@ final class OverlayController {
             self.overlayWindow = OverlayWindow(
                 singleKeyState: self.singleKeyState!,
                 hintState: self.hintState,
-                config: self.config
-            )
+                config: self.config)
         case .history:
             self.overlayWindow = OverlayWindow(
                 keyState: self.historyKeyState!,
                 hintState: self.hintState,
-                config: self.config
-            )
+                config: self.config)
         }
 
         // Create key monitor with callback
         self.keyMonitor = KeyMonitor { [weak self] event, symbol in
             Task { @MainActor [weak self] in
-                self?.currentKeyState?.processEvent(event, symbol: symbol)
+                guard let self else { return }
+                // Update position on keyDown to catch window switches within the same app
+                if event.type == .keyDown {
+                    self.updatePositionIfScreenChanged()
+                }
+                self.currentKeyState?.processEvent(event, symbol: symbol)
             }
         }
 
@@ -144,7 +150,21 @@ final class OverlayController {
 
     /// Updates overlay position based on current settings.
     func updatePosition() {
-        self.overlayWindow?.updatePosition(on: self.selectedScreen())
+        let screen = self.selectedScreen()
+        self.lastDetectedScreen = screen
+        self.overlayWindow?.updatePosition(on: screen)
+    }
+
+    /// Updates overlay position if the focused window's screen has changed.
+    /// Called on each key event to handle window switches within the same app.
+    private func updatePositionIfScreenChanged() {
+        guard case .auto = self.config.monitorSelection else { return }
+
+        let currentScreen = self.screenOfFrontmostApp()
+        if currentScreen != self.lastDetectedScreen {
+            self.lastDetectedScreen = currentScreen
+            self.overlayWindow?.updatePosition(on: currentScreen ?? NSScreen.main)
+        }
     }
 
     /// Returns the screen to display the overlay on based on current settings.
@@ -153,7 +173,7 @@ final class OverlayController {
         case .auto:
             // Get screen of the frontmost application's key window
             return self.screenOfFrontmostApp() ?? NSScreen.main
-        case .fixed(let index):
+        case let .fixed(index):
             let screens = NSScreen.screens
             // Fallback to main screen if index is out of bounds (monitor disconnected)
             return index < screens.count ? screens[index] : NSScreen.main
@@ -172,14 +192,17 @@ final class OverlayController {
 
         var windowRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(appRef, kAXFocusedWindowAttribute as CFString, &windowRef) == .success,
-              let window = windowRef else {
+              let window = windowRef
+        else {
             return nil
         }
 
         // Get window position
         var positionRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(window as! AXUIElement, kAXPositionAttribute as CFString, &positionRef) == .success,
-              let positionValue = positionRef else {
+        guard AXUIElementCopyAttributeValue(window as! AXUIElement, kAXPositionAttribute as CFString, &positionRef) ==
+            .success,
+            let positionValue = positionRef
+        else {
             return nil
         }
 
@@ -256,7 +279,7 @@ final class OverlayController {
 
     private func startObservingKeyState() {
         self.observationTask = Task { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
 
             var wasVisible = false
 
@@ -297,7 +320,7 @@ final class OverlayController {
 
         Task { [weak self] in
             while !Task.isCancelled {
-                guard let self = self else { return }
+                guard let self else { return }
 
                 // Check for position change
                 if self.config.position != lastPosition {
@@ -379,8 +402,8 @@ final class OverlayController {
         self.screenParametersObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
             object: nil,
-            queue: .main
-        ) { [weak self] _ in
+            queue: .main)
+        { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.handleScreensChanged()
             }
@@ -390,10 +413,10 @@ final class OverlayController {
         self.workspaceObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
             object: nil,
-            queue: .main
-        ) { [weak self] _ in
+            queue: .main)
+        { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 // Only update position if in Auto mode
                 if case .auto = self.config.monitorSelection {
                     self.updatePosition()
@@ -415,7 +438,7 @@ final class OverlayController {
 
     private func handleScreensChanged() {
         // Validate current selection
-        if case .fixed(let index) = self.config.monitorSelection {
+        if case let .fixed(index) = self.config.monitorSelection {
             if index >= NSScreen.screens.count {
                 // Selected monitor was disconnected, reset to auto
                 self.config.monitorSelection = .auto

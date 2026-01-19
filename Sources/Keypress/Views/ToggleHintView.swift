@@ -12,9 +12,9 @@ enum HintPosition {
     static func from(overlayPosition: OverlayPosition) -> HintPosition {
         switch overlayPosition {
         case .topLeft, .centerLeft, .bottomLeft, .topCenter, .bottomCenter:
-            return .trailing
+            .trailing
         case .topRight, .centerRight, .bottomRight:
-            return .leading
+            .leading
         }
     }
 }
@@ -42,8 +42,7 @@ struct ToggleHintView: View {
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color.black.opacity(0.7))
-                .shadow(color: .black.opacity(0.4), radius: 16, x: 0, y: 8)
-        )
+                .shadow(color: .black.opacity(0.4), radius: 16, x: 0, y: 8))
         .scaleEffect(self.config.size.scaleFactor)
     }
 }
@@ -80,9 +79,7 @@ struct IndicatorLight: View {
                             Color(white: 0.4),
                         ],
                         startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                        endPoint: .bottomTrailing))
                 .frame(width: self.size + 4, height: self.size + 4)
 
             // Inner shadow (inset effect)
@@ -100,9 +97,7 @@ struct IndicatorLight: View {
                         ],
                         center: .center,
                         startRadius: 0,
-                        endRadius: self.size / 2
-                    )
-                )
+                        endRadius: self.size / 2))
                 .frame(width: self.size, height: self.size)
 
             // Glass highlight (top-left reflection)
@@ -114,9 +109,7 @@ struct IndicatorLight: View {
                             Color.white.opacity(0.0),
                         ],
                         startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                        endPoint: .bottomTrailing))
                 .frame(width: self.size * 0.5, height: self.size * 0.3)
                 .offset(x: -self.size * 0.12, y: -self.size * 0.18)
         }
@@ -130,12 +123,10 @@ struct IndicatorLight: View {
     VStack(spacing: 20) {
         ToggleHintView(
             hint: ToggleHint(isEnabled: true, shortcutText: "⇧⌘K"),
-            config: .shared
-        )
+            config: .shared)
         ToggleHintView(
             hint: ToggleHint(isEnabled: false, shortcutText: "⇧⌘K"),
-            config: .shared
-        )
+            config: .shared)
     }
     .padding(40)
     .background(Color.gray.opacity(0.3))

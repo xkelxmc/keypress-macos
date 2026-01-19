@@ -5,8 +5,10 @@ import SwiftUI
 
 enum SettingsTab: String, Hashable {
     case general
+    case position
     case display
     case appearance
+    case style
 }
 
 // MARK: - SettingsView
@@ -22,13 +24,21 @@ struct SettingsView: View {
                 .tabItem { Label("General", systemImage: "gearshape") }
                 .tag(SettingsTab.general)
 
+            PositionSettingsPane(config: self.config)
+                .tabItem { Label("Position", systemImage: "display") }
+                .tag(SettingsTab.position)
+
             DisplaySettingsPane(config: self.config)
                 .tabItem { Label("Display", systemImage: "rectangle.on.rectangle") }
                 .tag(SettingsTab.display)
 
             AppearanceSettingsPane(config: self.config)
-                .tabItem { Label("Appearance", systemImage: "paintpalette") }
+                .tabItem { Label("Colors", systemImage: "paintpalette") }
                 .tag(SettingsTab.appearance)
+
+            StyleSettingsPane(config: self.config)
+                .tabItem { Label("Style", systemImage: "cube") }
+                .tag(SettingsTab.style)
         }
         .padding(20)
         .frame(minWidth: 440, minHeight: 480)

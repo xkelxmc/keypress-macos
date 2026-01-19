@@ -76,6 +76,14 @@ Sources/
 - Manages positioning based on settings
 - Handles show/hide animations
 
+### OverlayController
+
+- Manages overlay window lifecycle and key monitoring
+- **Multi-monitor support:**
+  - Detects focused window's screen using Accessibility API
+  - Updates position on each keypress to handle window switches within same app
+  - Caches last detected screen to avoid unnecessary position updates
+
 ### MenuBarController
 
 - Creates `NSStatusItem`

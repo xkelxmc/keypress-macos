@@ -5,9 +5,9 @@ import SwiftUI
 
 /// Size category for keycap rendering.
 enum KeyCapSize {
-    case standard   // Regular letter keys (1u)
-    case modifier   // ⌘ ⌥ ⌃ ⇧ — wider with icon+label
-    case wide       // Space bar, Tab, Enter
+    case standard // Regular letter keys (1u)
+    case modifier // ⌘ ⌥ ⌃ ⇧ — wider with icon+label
+    case wide // Space bar, Tab, Enter
 
     var width: CGFloat {
         switch self {
@@ -49,19 +49,19 @@ private struct ModifierInfo {
     static func from(symbolId: String) -> ModifierInfo? {
         switch symbolId {
         case "command-left", "command-right", "command":
-            return ModifierInfo(icon: "⌘", label: "command")
+            ModifierInfo(icon: "⌘", label: "command")
         case "shift-left", "shift-right", "shift":
-            return ModifierInfo(icon: "⇧", label: "shift")
+            ModifierInfo(icon: "⇧", label: "shift")
         case "option-left", "option-right", "option":
-            return ModifierInfo(icon: "⌥", label: "option")
+            ModifierInfo(icon: "⌥", label: "option")
         case "control-left", "control-right", "control":
-            return ModifierInfo(icon: "⌃", label: "control")
+            ModifierInfo(icon: "⌃", label: "control")
         case "capslock":
-            return ModifierInfo(icon: "⇪", label: "caps lock")
+            ModifierInfo(icon: "⇪", label: "caps lock")
         case "fn":
-            return ModifierInfo(icon: "fn", label: "")
+            ModifierInfo(icon: "fn", label: "")
         default:
-            return nil
+            nil
         }
     }
 }
@@ -85,18 +85,32 @@ struct KeyCapView: View {
         KeyCapSize.from(symbol: self.symbol)
     }
 
-    private let cornerRadius: CGFloat = 8
-    private let depth: CGFloat = 6
-    private let topInset: CGFloat = 3
-
-    // MARK: - Colors
-
     private var category: KeyCategory {
         KeyCodeMapper.category(for: self.symbol)
     }
 
+    private var style: KeyCategoryStyle {
+        self.config.effectiveStyle(for: self.category)
+    }
+
+    /// Corner radius based on style setting (0.0-1.0 maps to 2-12).
+    private var cornerRadius: CGFloat {
+        let minRadius: CGFloat = 2
+        let maxRadius: CGFloat = 12
+        return minRadius + (maxRadius - minRadius) * self.style.cornerRadius
+    }
+
+    /// Depth based on style setting (0.0-1.0 maps to 0-6).
+    private var depth: CGFloat {
+        6 * self.style.depth
+    }
+
+    private let topInset: CGFloat = 3
+
+    // MARK: - Colors
+
     private var baseColor: Color {
-        self.config.colorScheme.color(for: self.category).color
+        self.style.color.color
     }
 
     /// Lighter version for top surface highlight.
@@ -111,7 +125,7 @@ struct KeyCapView: View {
 
     /// Text color based on background brightness.
     private var textColor: Color {
-        let keyColor = self.config.colorScheme.color(for: self.category)
+        let keyColor = self.style.color
         let brightness = (keyColor.red + keyColor.green + keyColor.blue) / 3
         return brightness > 0.5 ? .black : .white
     }
@@ -137,7 +151,7 @@ struct KeyCapView: View {
     /// Soft shadow beneath the entire key.
     private var keyShadow: some View {
         RoundedRectangle(cornerRadius: self.cornerRadius + 2)
-            .fill(Color.black.opacity(0.4))
+            .fill(Color.black.opacity(0.4 * self.style.shadowIntensity))
             .frame(width: self.size.width - 2, height: self.size.height)
             .blur(radius: 8)
             .offset(y: self.depth + 4)
@@ -174,9 +188,7 @@ struct KeyCapView: View {
                             self.baseColor.opacity(0.15),
                         ],
                         startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                        endPoint: .bottom))
                 .frame(width: self.size.width - 2, height: self.size.height)
                 .offset(y: self.depth / 2)
         }
@@ -195,13 +207,10 @@ struct KeyCapView: View {
                             self.baseColor.darker(by: 0.05),
                         ],
                         startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                        endPoint: .bottom))
                 .frame(
                     width: self.size.width - self.topInset * 2,
-                    height: self.size.height - self.topInset * 2
-                )
+                    height: self.size.height - self.topInset * 2)
 
             // Subtle inner border for depth
             RoundedRectangle(cornerRadius: self.cornerRadius - 1)
@@ -213,14 +222,11 @@ struct KeyCapView: View {
                             Color.black.opacity(0.1),
                         ],
                         startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 1
-                )
+                        endPoint: .bottom),
+                    lineWidth: 1)
                 .frame(
                     width: self.size.width - self.topInset * 2,
-                    height: self.size.height - self.topInset * 2
-                )
+                    height: self.size.height - self.topInset * 2)
 
             // Key label
             self.keyLabel
@@ -271,25 +277,23 @@ struct KeyCapView: View {
 
 // MARK: - Color Extensions
 
-private extension Color {
+extension Color {
     /// Returns a lighter version of the color.
-    func lighter(by amount: Double) -> Color {
+    fileprivate func lighter(by amount: Double) -> Color {
         let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
         return Color(
             red: min(1.0, Double(nsColor.redComponent) + amount),
             green: min(1.0, Double(nsColor.greenComponent) + amount),
-            blue: min(1.0, Double(nsColor.blueComponent) + amount)
-        )
+            blue: min(1.0, Double(nsColor.blueComponent) + amount))
     }
 
     /// Returns a darker version of the color.
-    func darker(by amount: Double) -> Color {
+    fileprivate func darker(by amount: Double) -> Color {
         let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
         return Color(
             red: max(0.0, Double(nsColor.redComponent) - amount),
             green: max(0.0, Double(nsColor.greenComponent) - amount),
-            blue: max(0.0, Double(nsColor.blueComponent) - amount)
-        )
+            blue: max(0.0, Double(nsColor.blueComponent) - amount))
     }
 }
 
@@ -340,8 +344,7 @@ private extension Color {
     .padding(16)
     .background(
         RoundedRectangle(cornerRadius: 12)
-            .fill(Color.gray.opacity(0.3))
-    )
+            .fill(Color.gray.opacity(0.3)))
     .padding(40)
     .background(Color.black)
 }

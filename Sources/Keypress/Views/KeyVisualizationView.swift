@@ -10,8 +10,7 @@ struct KeyVisualizationView: View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
             hasKeys: self.keyState.hasKeys,
-            config: self.config
-        )
+            config: self.config)
     }
 }
 
@@ -24,8 +23,7 @@ struct SingleKeyVisualizationView: View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
             hasKeys: self.keyState.hasKeys,
-            config: self.config
-        )
+            config: self.config)
     }
 }
 
@@ -55,8 +53,7 @@ private struct KeyVisualizationContent: View {
                     .background(
                         RoundedRectangle(cornerRadius: 14)
                             .fill(Color.black.opacity(0.7))
-                            .shadow(color: .black.opacity(0.4), radius: 16, x: 0, y: 8)
-                    )
+                            .shadow(color: .black.opacity(0.4), radius: 16, x: 0, y: 8))
             case .none:
                 keysView
                     .padding(.horizontal, 8)
@@ -144,8 +141,7 @@ struct KeyboardFrameView<Content: View>: View {
 
                     // Inner well (recessed area)
                     self.innerWell
-                }
-            )
+                })
     }
 
     // MARK: - Frame Components
@@ -161,9 +157,7 @@ struct KeyboardFrameView<Content: View>: View {
                         self.frameColor.darker(by: 0.05),
                     ],
                     startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
+                    endPoint: .bottom))
             .overlay(
                 // Subtle outer border
                 RoundedRectangle(cornerRadius: self.outerCornerRadius)
@@ -175,11 +169,8 @@ struct KeyboardFrameView<Content: View>: View {
                                 Color.black.opacity(self.isLightMode ? 0.1 : 0.3),
                             ],
                             startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 1
-                    )
-            )
+                            endPoint: .bottom),
+                        lineWidth: 1))
     }
 
     /// The recessed inner well where keys sit.
@@ -203,9 +194,7 @@ struct KeyboardFrameView<Content: View>: View {
                                 Color.clear,
                             ],
                             startPoint: .top,
-                            endPoint: .center
-                        )
-                    )
+                            endPoint: .center))
                     .frame(width: wellWidth, height: wellHeight)
 
                 // Inner border
@@ -218,10 +207,8 @@ struct KeyboardFrameView<Content: View>: View {
                                 self.isLightMode ? Color.white.opacity(0.3) : Color.white.opacity(0.05),
                             ],
                             startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 1.5
-                    )
+                            endPoint: .bottom),
+                        lineWidth: 1.5)
                     .frame(width: wellWidth, height: wellHeight)
             }
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
@@ -239,9 +226,7 @@ struct KeyboardFrameView<Content: View>: View {
                             Color.clear,
                         ],
                         startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                        endPoint: .bottom))
                 .frame(width: geometry.size.width * 0.6, height: 2)
                 .position(x: geometry.size.width / 2, y: 1.5)
         }
@@ -250,23 +235,21 @@ struct KeyboardFrameView<Content: View>: View {
 
 // MARK: - Color Extensions
 
-private extension Color {
-    func lighter(by amount: Double) -> Color {
+extension Color {
+    fileprivate func lighter(by amount: Double) -> Color {
         let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
         return Color(
             red: min(1.0, Double(nsColor.redComponent) + amount),
             green: min(1.0, Double(nsColor.greenComponent) + amount),
-            blue: min(1.0, Double(nsColor.blueComponent) + amount)
-        )
+            blue: min(1.0, Double(nsColor.blueComponent) + amount))
     }
 
-    func darker(by amount: Double) -> Color {
+    fileprivate func darker(by amount: Double) -> Color {
         let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
         return Color(
             red: max(0.0, Double(nsColor.redComponent) - amount),
             green: max(0.0, Double(nsColor.greenComponent) - amount),
-            blue: max(0.0, Double(nsColor.blueComponent) - amount)
-        )
+            blue: max(0.0, Double(nsColor.blueComponent) - amount))
     }
 }
 
@@ -282,16 +265,13 @@ private extension Color {
             Task { @MainActor in
                 keyState.processEvent(
                     KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand),
-                    symbol: KeySymbol(id: "cmd", display: "⌘", isModifier: true)
-                )
+                    symbol: KeySymbol(id: "cmd", display: "⌘", isModifier: true))
                 keyState.processEvent(
                     KeyEvent(type: .keyDown, keyCode: 0x38, modifiers: .maskShift),
-                    symbol: KeySymbol(id: "shift", display: "⇧", isModifier: true)
-                )
+                    symbol: KeySymbol(id: "shift", display: "⇧", isModifier: true))
                 keyState.processEvent(
                     KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-                    symbol: KeySymbol(id: "k", display: "K")
-                )
+                    symbol: KeySymbol(id: "k", display: "K"))
             }
         }
 }
