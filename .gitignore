@@ -37,6 +37,11 @@ plan/claude/*
 # IDE
 .idea/
 
+# Screenshots (only README tracked)
+assets/screenshots/*.png
+assets/screenshots/generated/*
+!assets/screenshots/generated/.gitkeep
+
 # Debug/analysis docs
 docs/*-analysis.md
 docs/.astro/

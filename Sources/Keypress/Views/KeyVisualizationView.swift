@@ -72,7 +72,14 @@ private struct KeyVisualizationContent: View {
 /// Creates a realistic "keyboard fragment" appearance with depth and materials.
 struct KeyboardFrameView<Content: View>: View {
     let config: KeypressConfig
+    let disableOuterShadow: Bool
     @ViewBuilder let content: () -> Content
+
+    init(config: KeypressConfig, disableOuterShadow: Bool = false, @ViewBuilder content: @escaping () -> Content) {
+        self.config = config
+        self.disableOuterShadow = disableOuterShadow
+        self.content = content
+    }
 
     // MARK: - Layout Constants
 
@@ -130,11 +137,13 @@ struct KeyboardFrameView<Content: View>: View {
             .padding(.vertical, self.frameThickness + 2)
             .background(
                 ZStack {
-                    // Outer drop shadow
-                    RoundedRectangle(cornerRadius: self.outerCornerRadius)
-                        .fill(Color.black.opacity(0.5))
-                        .blur(radius: 20)
-                        .offset(y: 8)
+                    // Outer drop shadow (can be disabled for screenshots)
+                    if !self.disableOuterShadow {
+                        RoundedRectangle(cornerRadius: self.outerCornerRadius)
+                            .fill(Color.black.opacity(0.5))
+                            .blur(radius: 20)
+                            .offset(y: 8)
+                    }
 
                     // Main frame body
                     self.frameBody
