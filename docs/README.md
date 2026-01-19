@@ -21,6 +21,7 @@ Project documentation for keypress-macos.
 ### Assets
 
 - [App Icon](./icon.md) — Icon source files and build instructions
+- [Screenshots](../assets/screenshots/README.md) — Generating promotional screenshots
 
 ## Open Questions
 

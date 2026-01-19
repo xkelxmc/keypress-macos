@@ -14,7 +14,8 @@ Sources/
 │   ├── MenuBar         # Status item, dropdown menu
 │   ├── Overlay         # Key visualization window
 │   ├── Views           # SwiftUI views (keys, settings)
-│   └── Settings        # Settings window
+│   ├── Settings        # Settings window
+│   └── ScreenshotGenerator  # CLI screenshot mode
 │
 └── KeypressTests/      # Unit tests
 ```
@@ -43,6 +44,7 @@ Sources/
 
 - `KeypressApp` — SwiftUI App, Settings scene
 - `AppDelegate` — Menu bar setup, event tap initialization
+- `ScreenshotGenerator` — CLI mode for promotional screenshots (`--screenshot`)
 
 ## Concurrency
 

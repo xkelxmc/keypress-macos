@@ -1,8 +1,6 @@
 # Keypress
 
 [![CI](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml/badge.svg)](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml)
-[![GitHub release](https://img.shields.io/github/v/release/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/releases)
-[![GitHub Downloads](https://img.shields.io/github/downloads/xkelxmc/keypress-macos/total)](https://github.com/xkelxmc/keypress-macos/releases)
 [![GitHub last commit](https://img.shields.io/github/last-commit/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/commits/main)
 
 [![GitHub stars](https://img.shields.io/github/stars/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/stargazers)
