@@ -33,6 +33,16 @@ Visual selector showing a mini monitor with 8 clickable regions:
 | Enabled | Toggle | On |
 | Launch at login | Toggle | Off |
 | Position | Visual picker | Bottom-right |
+| Monitor | Picker | Auto |
+
+#### Monitor Selection (v2)
+
+Only shown when multiple monitors connected. Hidden for single monitor setups.
+
+| Option | Behavior |
+|--------|----------|
+| **Auto** (default) | Follow active window — overlay appears on the monitor where user is typing |
+| **Monitor 1, 2, ...** | Fixed to specific monitor |
 
 ### Display Mode
 
