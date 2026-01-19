@@ -1,6 +1,21 @@
 # Keypress
 
+[![CI](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml/badge.svg)](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/releases)
+[![GitHub Downloads](https://img.shields.io/github/downloads/xkelxmc/keypress-macos/total)](https://github.com/xkelxmc/keypress-macos/releases)
+[![GitHub last commit](https://img.shields.io/github/last-commit/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/commits/main)
+
+[![GitHub stars](https://img.shields.io/github/stars/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/stargazers)
+[![License: MIT](https://img.shields.io/github/license/xkelxmc/keypress-macos)](./LICENSE)
+[![Swift](https://img.shields.io/github/languages/top/xkelxmc/keypress-macos)](https://swift.org/)
+[![macOS 14+](https://img.shields.io/badge/macOS-14+-blue)](https://www.apple.com/macos/)
+
 A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 3D mechanical key aesthetics.
+
+<p align="center">
+  <img src="assets/images/preview-light.png" width="49%" alt="Light mode">
+  <img src="assets/images/preview-dark.png" width="49%" alt="Dark mode">
+</p>
 
 ## Features
 
