@@ -6,11 +6,35 @@
 
 Keys should look like real mechanical keyboard keycaps:
 
-- **Top surface** — Slightly concave, lighter color
-- **Sides** — Visible depth, darker shade
-- **Base** — Shadow beneath the key
+- **Key well** — Dark recessed background the key sits in
+- **Top surface** — Slightly concave with gradient (lighter at top)
+- **Sides** — Visible depth between well and top surface
+- **Shadow** — Soft blur beneath the entire key
 
 The key is NOT a flat rectangle with text — it's a 3D object with volume.
+
+### Keycap Structure
+
+```
+┌──────────────────────────┐  ← Key well (dark background)
+│  ┌──────────────────┐    │
+│  │                  │    │  ← Top surface (colored, with gradient)
+│  │       ⌘         │    │
+│  │    command       │    │  ← Label (icon + text for modifiers)
+│  │                  │    │
+│  └──────────────────┘    │
+│         ▓▓▓▓▓▓           │  ← Visible depth/sides
+└──────────────────────────┘
+        ░░░░░░░░              ← Soft shadow
+```
+
+### Key Sizes
+
+| Size | Width | Height | Usage |
+|------|-------|--------|-------|
+| Standard | 48pt | 48pt | Letters, digits, punctuation |
+| Modifier | 72pt | 48pt | ⌘ ⌥ ⌃ ⇧ with icon + label |
+| Wide | 80pt | 48pt | Space, Tab, Return, Delete |
 
 ## Press Animation
 
@@ -55,10 +79,39 @@ When pressing just one key, still show within the "fragment" context:
 
 ## Key Labels
 
-- Use SF Symbols for special keys where appropriate
-- Standard symbols: ⌘ ⌥ ⌃ ⇧ ⎋ ⏎ ⌫ ⇥
-- Letters displayed uppercase
-- Function keys: F1, F2, etc.
+### Regular Keys
+- Letters displayed uppercase (A, B, C...)
+- Digits as-is (0-9)
+- Single symbol centered on keycap
+
+### Modifier Keys
+Modifiers show **icon + label** stacked vertically:
+
+```
+┌────────────┐
+│     ⇧      │  ← Icon (large)
+│   shift    │  ← Label (small)
+└────────────┘
+```
+
+| Modifier | Icon | Label |
+|----------|------|-------|
+| Command | ⌘ | command |
+| Shift | ⇧ | shift |
+| Option | ⌥ | option |
+| Control | ⌃ | control |
+| Caps Lock | ⇪ | caps lock |
+| Fn | fn | (no label) |
+
+### Special Keys
+- Escape: ⎋
+- Return: ⏎
+- Tab: ⇥
+- Delete/Backspace: ⌫
+- Forward Delete: ⌦
+- Space: ␣
+- Arrows: ← → ↑ ↓
+- Function keys: F1, F2, ... F20
 
 ### Keyboard Layout Support
 

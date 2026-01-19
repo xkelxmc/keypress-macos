@@ -74,34 +74,48 @@ When enabled, only shows combinations with modifiers (⌘, ⌥, ⌃, ⇧). Regul
 | Size | Slider (Small → Large) | Medium |
 | Opacity | Slider (0% → 100%) | 100% |
 
+### Keycap Style
+
+| Setting | Control Type | Default |
+|---------|-------------|---------|
+| Style | Picker | Mechanical |
+
+**Styles:**
+- **Mechanical** — 3D skeuomorphic keycaps with depth, shadows, and beveled edges
+- **Flat** — Modern flat design with subtle shadows (future)
+- **Minimal** — Text only with background (future)
+
 ### Key Colors
 
 Different key types have distinct colors for better visual distinction.
 
-| Key Category | Examples | Default Color |
-|--------------|----------|---------------|
-| Letters & Digits | A-Z, 0-9 | Gray (neutral) |
-| Command ⌘ | Left/Right Command | Blue |
-| Shift ⇧ | Left/Right Shift | Orange |
-| Option ⌥ | Left/Right Option | Purple |
-| Control ⌃ | Left/Right Control | Pink |
-| Special keys | ⏎ ⇥ ␣ ⌫ ← → ↑ ↓ | Green |
-| Escape ⎋ | Escape | Teal |
-| Function keys | F1-F20 | Cyan |
+| Key Category | Examples | Default Color (Dark) |
+|--------------|----------|----------------------|
+| Letters & Digits | A-Z, 0-9 | Charcoal `#262628` |
+| Command ⌘ | Left/Right Command | Green `#33B373` |
+| Shift ⇧ | Left/Right Shift | Red `#E64D40` |
+| Option ⌥ | Left/Right Option | Blue `#4073F2` |
+| Control ⌃ | Left/Right Control | Orange `#F28C33` |
+| Caps Lock ⇪ | Caps Lock | Dark Gray `#595961` |
+| Escape ⎋ | Escape | Teal `#33BFB3` |
+| Function keys | F1-F20 | Purple `#9966CC` |
+| Navigation | ← → ↑ ↓ Home End PgUp PgDn | Charcoal `#262628` |
+| Editing | ⏎ ⇥ ␣ ⌫ ⌦ | Charcoal `#262628` |
 
-#### Color customization
-
-Each category can be customized:
+#### Color Schemes
 
 | Setting | Control Type | Options |
 |---------|-------------|---------|
-| Color scheme | Picker | Default, Monochrome, Custom |
-| [Category] color | Color picker | Per-category override |
+| Color scheme | Picker | Dark, Monochrome Dark, Light, Custom |
 
-**Presets:**
-- **Default** — distinct colors per category (as above)
-- **Monochrome** — all keys same color (gray/white)
-- **Custom** — user picks each category color
+**Built-in presets:**
+- **Dark** (default) — colored modifiers on charcoal base
+- **Monochrome Dark** — all keys charcoal
+- **Light** — colored modifiers on aluminum base
+
+**Custom scheme:**
+- User can override color for each category
+- Colors stored as RGB values in UserDefaults
 
 ### Behavior
 
