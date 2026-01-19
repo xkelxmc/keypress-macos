@@ -85,8 +85,14 @@ Sources/
 Scripts/             # Build, package, release scripts
 Tests/               # Unit tests
 docs/                # Documentation
+plan/                # Implementation plan & notes (gitignored)
 .github/workflows/   # CI configuration
 ```
+
+## Git Rules
+
+- **Never commit `plan/` folder** — it's in `.gitignore`, used for local planning only
+- Commit `docs/` changes normally — that's the public documentation
 
 ## Scripts
 
