@@ -5,19 +5,25 @@ import SwiftUI
 
 /// Size category for keycap rendering.
 enum KeyCapSize {
-    case standard   // Regular letter keys
-    case modifier   // ⌘ ⌥ ⌃ ⇧
+    case standard   // Regular letter keys (1u)
+    case modifier   // ⌘ ⌥ ⌃ ⇧ — wider with icon+label
     case wide       // Space bar, Tab, Enter
 
     var width: CGFloat {
         switch self {
-        case .standard: 44
-        case .modifier: 52
-        case .wide: 72
+        case .standard: 48
+        case .modifier: 72
+        case .wide: 80
         }
     }
 
-    var height: CGFloat { 44 }
+    var height: CGFloat {
+        switch self {
+        case .standard: 48
+        case .modifier: 48
+        case .wide: 48
+        }
+    }
 
     static func from(symbol: KeySymbol) -> KeyCapSize {
         if symbol.isModifier {
@@ -33,17 +39,44 @@ enum KeyCapSize {
     }
 }
 
+// MARK: - ModifierInfo
+
+/// Display info for modifier keys (icon + label).
+private struct ModifierInfo {
+    let icon: String
+    let label: String
+
+    static func from(symbolId: String) -> ModifierInfo? {
+        switch symbolId {
+        case "command-left", "command-right", "command":
+            return ModifierInfo(icon: "⌘", label: "command")
+        case "shift-left", "shift-right", "shift":
+            return ModifierInfo(icon: "⇧", label: "shift")
+        case "option-left", "option-right", "option":
+            return ModifierInfo(icon: "⌥", label: "option")
+        case "control-left", "control-right", "control":
+            return ModifierInfo(icon: "⌃", label: "control")
+        case "capslock":
+            return ModifierInfo(icon: "⇪", label: "caps lock")
+        case "fn":
+            return ModifierInfo(icon: "fn", label: "")
+        default:
+            return nil
+        }
+    }
+}
+
 // MARK: - KeyCapView
 
 /// Skeuomorphic 3D mechanical keycap view.
-/// Renders a realistic keycap with top surface, sides, and shadow.
+/// Renders a realistic keycap with depth, beveled edges, and shadows.
 struct KeyCapView: View {
     let symbol: KeySymbol
-    let isPressed: Bool
+    let config: KeypressConfig
 
-    init(symbol: KeySymbol, isPressed: Bool = true) {
+    init(symbol: KeySymbol, config: KeypressConfig = .shared) {
         self.symbol = symbol
-        self.isPressed = isPressed
+        self.config = config
     }
 
     // MARK: - Layout Constants
@@ -52,94 +85,131 @@ struct KeyCapView: View {
         KeyCapSize.from(symbol: self.symbol)
     }
 
-    private let cornerRadius: CGFloat = 6
-    private let depthOffset: CGFloat = 4
-    private let shadowBlur: CGFloat = 6
-    private let pressedOffset: CGFloat = 2
+    private let cornerRadius: CGFloat = 8
+    private let depth: CGFloat = 6
+    private let topInset: CGFloat = 3
 
     // MARK: - Colors
 
-    /// Top surface color (lighter)
-    private var topColor: Color {
-        self.symbol.isModifier
-            ? Color(light: .init(white: 0.92, alpha: 1), dark: .init(white: 0.28, alpha: 1))
-            : Color(light: .init(white: 0.96, alpha: 1), dark: .init(white: 0.24, alpha: 1))
+    private var category: KeyCategory {
+        KeyCodeMapper.category(for: self.symbol)
     }
 
-    /// Side/body color (darker)
+    private var baseColor: Color {
+        self.config.colorScheme.color(for: self.category).color
+    }
+
+    /// Lighter version for top surface highlight.
+    private var highlightColor: Color {
+        self.baseColor.opacity(0.95)
+    }
+
+    /// Darker version for sides/depth.
     private var sideColor: Color {
-        self.symbol.isModifier
-            ? Color(light: .init(white: 0.82, alpha: 1), dark: .init(white: 0.18, alpha: 1))
-            : Color(light: .init(white: 0.88, alpha: 1), dark: .init(white: 0.15, alpha: 1))
+        Color.black.opacity(0.5)
     }
 
-    /// Border color
-    private var borderColor: Color {
-        Color(light: .init(white: 0.7, alpha: 1), dark: .init(white: 0.35, alpha: 1))
-    }
-
-    /// Text color
+    /// Text color based on background brightness.
     private var textColor: Color {
-        Color(light: .init(white: 0.1, alpha: 1), dark: .init(white: 0.95, alpha: 1))
-    }
-
-    /// Shadow color
-    private var shadowColor: Color {
-        Color.black.opacity(0.25)
+        let keyColor = self.config.colorScheme.color(for: self.category)
+        let brightness = (keyColor.red + keyColor.green + keyColor.blue) / 3
+        return brightness > 0.5 ? .black : .white
     }
 
     // MARK: - Body
 
     var body: some View {
         ZStack {
-            // Base shadow (beneath the key)
-            self.baseShadow
+            // Shadow beneath key
+            self.keyShadow
 
-            // Key body (sides visible when not pressed)
-            self.keyBody
+            // Key well (the dark "hole" the key sits in)
+            self.keyWell
 
-            // Top surface (the pressable cap)
-            self.topSurface
+            // The 3D keycap itself
+            self.keycap
         }
-        .frame(width: self.size.width, height: self.size.height + self.depthOffset)
+        .frame(width: self.size.width, height: self.size.height + self.depth)
     }
 
     // MARK: - Subviews
 
-    /// Shadow beneath the keycap.
-    private var baseShadow: some View {
-        RoundedRectangle(cornerRadius: self.cornerRadius)
-            .fill(self.shadowColor)
-            .frame(width: self.size.width - 2, height: self.size.height - 2)
-            .blur(radius: self.isPressed ? self.shadowBlur * 0.5 : self.shadowBlur)
-            .offset(y: self.isPressed ? self.depthOffset * 0.5 : self.depthOffset + 2)
+    /// Soft shadow beneath the entire key.
+    private var keyShadow: some View {
+        RoundedRectangle(cornerRadius: self.cornerRadius + 2)
+            .fill(Color.black.opacity(0.4))
+            .frame(width: self.size.width - 2, height: self.size.height)
+            .blur(radius: 8)
+            .offset(y: self.depth + 4)
     }
 
-    /// The keycap body (darker sides).
-    private var keyBody: some View {
-        RoundedRectangle(cornerRadius: self.cornerRadius + 1)
-            .fill(self.sideColor)
-            .frame(width: self.size.width, height: self.size.height + self.depthOffset)
-            .overlay(
-                RoundedRectangle(cornerRadius: self.cornerRadius + 1)
-                    .strokeBorder(self.borderColor, lineWidth: 0.5)
-            )
+    /// The dark well/recess the key sits in.
+    private var keyWell: some View {
+        RoundedRectangle(cornerRadius: self.cornerRadius + 2)
+            .fill(Color.black.opacity(0.85))
+            .frame(width: self.size.width, height: self.size.height + self.depth)
     }
 
-    /// The top surface of the keycap.
-    private var topSurface: some View {
+    /// The 3D keycap with top surface and beveled sides.
+    private var keycap: some View {
         ZStack {
-            // Main surface
-            RoundedRectangle(cornerRadius: self.cornerRadius)
-                .fill(self.topColor)
-                .frame(width: self.size.width - 4, height: self.size.height - 4)
+            // Side/bevel (visible depth)
+            self.keycapSides
 
-            // Inner border for depth
+            // Top surface
+            self.keycapTop
+        }
+        .offset(y: -self.depth / 2)
+    }
+
+    /// The visible sides of the keycap (creates 3D depth effect).
+    private var keycapSides: some View {
+        ZStack {
+            // Bottom edge (darkest)
             RoundedRectangle(cornerRadius: self.cornerRadius)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            self.baseColor.opacity(0.3),
+                            self.baseColor.opacity(0.15),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: self.size.width - 2, height: self.size.height)
+                .offset(y: self.depth / 2)
+        }
+    }
+
+    /// The top pressable surface of the keycap.
+    private var keycapTop: some View {
+        ZStack {
+            // Main surface with gradient for concave effect
+            RoundedRectangle(cornerRadius: self.cornerRadius - 1)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            self.baseColor.lighter(by: 0.1),
+                            self.baseColor,
+                            self.baseColor.darker(by: 0.05),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(
+                    width: self.size.width - self.topInset * 2,
+                    height: self.size.height - self.topInset * 2
+                )
+
+            // Subtle inner border for depth
+            RoundedRectangle(cornerRadius: self.cornerRadius - 1)
                 .strokeBorder(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.4),
+                            Color.white.opacity(0.25),
+                            Color.white.opacity(0.05),
                             Color.black.opacity(0.1),
                         ],
                         startPoint: .top,
@@ -147,15 +217,37 @@ struct KeyCapView: View {
                     ),
                     lineWidth: 1
                 )
-                .frame(width: self.size.width - 4, height: self.size.height - 4)
+                .frame(
+                    width: self.size.width - self.topInset * 2,
+                    height: self.size.height - self.topInset * 2
+                )
 
             // Key label
+            self.keyLabel
+        }
+        .offset(y: -self.depth / 2 + 1)
+    }
+
+    /// The label displayed on the keycap.
+    @ViewBuilder
+    private var keyLabel: some View {
+        if self.symbol.isModifier, let info = ModifierInfo.from(symbolId: self.symbol.id) {
+            // Modifier: icon + label stacked
+            VStack(spacing: 2) {
+                Text(info.icon)
+                    .font(.system(size: 16, weight: .medium))
+                if !info.label.isEmpty {
+                    Text(info.label)
+                        .font(.system(size: 9, weight: .medium))
+                }
+            }
+            .foregroundColor(self.textColor)
+        } else {
+            // Regular key: single label
             Text(self.symbol.display)
-                .font(.system(size: self.fontSize, weight: .medium, design: .rounded))
+                .font(.system(size: self.fontSize, weight: .medium, design: .default))
                 .foregroundColor(self.textColor)
         }
-        .offset(y: self.isPressed ? 0 : -self.pressedOffset)
-        .animation(.easeOut(duration: 0.05), value: self.isPressed)
     }
 
     // MARK: - Helpers
@@ -165,7 +257,7 @@ struct KeyCapView: View {
 
         // Single character symbols get larger font
         if display.count == 1 {
-            return 18
+            return 20
         }
 
         // Function keys and longer text get smaller font
@@ -173,58 +265,83 @@ struct KeyCapView: View {
             return 12
         }
 
-        return 14
+        return 16
     }
 }
 
-// MARK: - Color Extension
+// MARK: - Color Extensions
 
 private extension Color {
-    /// Creates a color that adapts to light/dark mode.
-    init(light: NSColor, dark: NSColor) {
-        self.init(nsColor: NSColor(name: nil) { appearance in
-            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
-        })
+    /// Returns a lighter version of the color.
+    func lighter(by amount: Double) -> Color {
+        let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
+        return Color(
+            red: min(1.0, Double(nsColor.redComponent) + amount),
+            green: min(1.0, Double(nsColor.greenComponent) + amount),
+            blue: min(1.0, Double(nsColor.blueComponent) + amount)
+        )
+    }
+
+    /// Returns a darker version of the color.
+    func darker(by amount: Double) -> Color {
+        let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
+        return Color(
+            red: max(0.0, Double(nsColor.redComponent) - amount),
+            green: max(0.0, Double(nsColor.greenComponent) - amount),
+            blue: max(0.0, Double(nsColor.blueComponent) - amount)
+        )
     }
 }
 
 // MARK: - Previews
 
-#Preview("Single Keycap") {
-    VStack(spacing: 20) {
+#Preview("All Key Types") {
+    let config = KeypressConfig.shared
+
+    VStack(spacing: 16) {
+        // Modifiers
         HStack(spacing: 8) {
-            KeyCapView(symbol: KeySymbol(id: "a", display: "A"))
-            KeyCapView(symbol: KeySymbol(id: "cmd", display: "⌘", isModifier: true))
-            KeyCapView(symbol: KeySymbol(id: "space", display: "␣"))
+            KeyCapView(symbol: KeySymbol(id: "command-left", display: "⌘", isModifier: true), config: config)
+            KeyCapView(symbol: KeySymbol(id: "shift-left", display: "⇧", isModifier: true), config: config)
+            KeyCapView(symbol: KeySymbol(id: "option-left", display: "⌥", isModifier: true), config: config)
+            KeyCapView(symbol: KeySymbol(id: "control-left", display: "⌃", isModifier: true), config: config)
         }
 
+        // Letters
         HStack(spacing: 8) {
-            KeyCapView(symbol: KeySymbol(id: "shift", display: "⇧", isModifier: true))
-            KeyCapView(symbol: KeySymbol(id: "k", display: "K"))
-            KeyCapView(symbol: KeySymbol(id: "return", display: "⏎"))
+            KeyCapView(symbol: KeySymbol(id: "a", display: "A"), config: config)
+            KeyCapView(symbol: KeySymbol(id: "k", display: "K"), config: config)
+            KeyCapView(symbol: KeySymbol(id: "1", display: "1"), config: config)
         }
 
+        // Special keys
         HStack(spacing: 8) {
-            KeyCapView(symbol: KeySymbol(id: "esc", display: "⎋"))
-            KeyCapView(symbol: KeySymbol(id: "delete", display: "⌫"))
-            KeyCapView(symbol: KeySymbol(id: "f12", display: "F12"))
+            KeyCapView(symbol: KeySymbol(id: "escape", display: "⎋", isSpecial: true), config: config)
+            KeyCapView(symbol: KeySymbol(id: "delete", display: "⌫", isSpecial: true), config: config)
+            KeyCapView(symbol: KeySymbol(id: "return", display: "⏎", isSpecial: true), config: config)
+        }
+
+        // Function keys
+        HStack(spacing: 8) {
+            KeyCapView(symbol: KeySymbol(id: "f1", display: "F1", isSpecial: true), config: config)
+            KeyCapView(symbol: KeySymbol(id: "f12", display: "F12", isSpecial: true), config: config)
         }
     }
     .padding(40)
-    .background(Color.gray.opacity(0.2))
+    .background(Color.black)
 }
 
-#Preview("Pressed States") {
-    HStack(spacing: 20) {
-        VStack {
-            KeyCapView(symbol: KeySymbol(id: "a", display: "A"), isPressed: false)
-            Text("Resting").font(.caption)
-        }
-        VStack {
-            KeyCapView(symbol: KeySymbol(id: "a", display: "A"), isPressed: true)
-            Text("Pressed").font(.caption)
-        }
+#Preview("Combination") {
+    HStack(spacing: 6) {
+        KeyCapView(symbol: KeySymbol(id: "shift-left", display: "⇧", isModifier: true))
+        KeyCapView(symbol: KeySymbol(id: "command-left", display: "⌘", isModifier: true))
+        KeyCapView(symbol: KeySymbol(id: "a", display: "A"))
     }
+    .padding(16)
+    .background(
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.gray.opacity(0.3))
+    )
     .padding(40)
-    .background(Color.gray.opacity(0.2))
+    .background(Color.black)
 }

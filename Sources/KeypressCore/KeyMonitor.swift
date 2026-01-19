@@ -383,4 +383,40 @@ public enum KeyCodeMapper {
 
         return modifiers
     }
+
+    /// Returns the category for a given symbol.
+    public static func category(for symbol: KeySymbol) -> KeyCategory {
+        let id = symbol.id
+
+        // Modifiers
+        if id.hasPrefix("command") { return .command }
+        if id.hasPrefix("shift") { return .shift }
+        if id.hasPrefix("option") { return .option }
+        if id.hasPrefix("control") { return .control }
+        if id == "capslock" { return .capsLock }
+        if id == "fn" { return .command } // Fn grouped with command
+
+        // Special keys
+        if id == "escape" { return .escape }
+
+        // Function keys
+        if id.hasPrefix("f") && id.dropFirst().allSatisfy(\.isNumber) {
+            return .function
+        }
+
+        // Navigation
+        if id.hasPrefix("arrow") || id == "home" || id == "end" ||
+            id == "page-up" || id == "page-down" {
+            return .navigation
+        }
+
+        // Editing
+        if id == "space" || id == "tab" || id == "return" ||
+            id == "enter" || id == "delete" || id == "forward-delete" {
+            return .editing
+        }
+
+        // Default: letter (includes numbers, punctuation, etc.)
+        return .letter
+    }
 }

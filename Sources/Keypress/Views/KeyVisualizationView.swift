@@ -11,7 +11,7 @@ struct KeyVisualizationView: View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
             hasKeys: self.keyState.hasKeys,
-            scaleFactor: self.config.size.scaleFactor
+            config: self.config
         )
     }
 }
@@ -25,7 +25,7 @@ struct SingleKeyVisualizationView: View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
             hasKeys: self.keyState.hasKeys,
-            scaleFactor: self.config.size.scaleFactor
+            config: self.config
         )
     }
 }
@@ -34,24 +34,24 @@ struct SingleKeyVisualizationView: View {
 private struct KeyVisualizationContent: View {
     let pressedKeys: [PressedKey]
     let hasKeys: Bool
-    let scaleFactor: CGFloat
+    let config: KeypressConfig
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             ForEach(self.pressedKeys) { key in
-                KeyBadgeView(symbol: key.symbol)
+                KeyCapView(symbol: key.symbol, config: self.config)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.black.opacity(0.7))
+                .shadow(color: .black.opacity(0.4), radius: 16, x: 0, y: 8)
         )
+        .scaleEffect(self.config.size.scaleFactor)
         .opacity(self.hasKeys ? 1 : 0)
-        .animation(.easeInOut(duration: 0.15), value: self.hasKeys)
-        .scaleEffect(self.scaleFactor)
+        .animation(.easeOut(duration: 0.2), value: self.hasKeys)
     }
 }
 
@@ -89,8 +89,8 @@ struct KeyBadgeView: View {
     @Previewable @State var keyState = KeyState()
 
     KeyVisualizationView(keyState: keyState, config: KeypressConfig.shared)
-        .frame(width: 400, height: 100)
-        .background(Color.gray.opacity(0.2))
+        .frame(width: 500, height: 120)
+        .background(Color.gray.opacity(0.3))
         .onAppear {
             Task { @MainActor in
                 keyState.processEvent(
