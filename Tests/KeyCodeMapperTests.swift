@@ -64,19 +64,24 @@ struct KeyCodeMapperTests {
         #expect(KeyCodeMapper.symbol(for: 0x7E)?.display == "↑")
     }
 
-    @Test("Maps letter keys correctly")
+    @Test("Letter keycodes are recognized")
     func test_letterKeys() {
-        #expect(KeyCodeMapper.symbol(for: 0x00)?.display == "A")
-        #expect(KeyCodeMapper.symbol(for: 0x0B)?.display == "B")
-        #expect(KeyCodeMapper.symbol(for: 0x08)?.display == "C")
-        #expect(KeyCodeMapper.symbol(for: 0x06)?.display == "Z")
+        // Without CGEvent, character keys return "?" (actual char comes from CGEvent at runtime)
+        // We just verify the keycodes are recognized as valid keys
+        #expect(KeyCodeMapper.symbol(for: 0x00) != nil) // A
+        #expect(KeyCodeMapper.symbol(for: 0x0B) != nil) // B
+        #expect(KeyCodeMapper.symbol(for: 0x08) != nil) // C
+        #expect(KeyCodeMapper.symbol(for: 0x06) != nil) // Z
+        #expect(KeyCodeMapper.isModifier(0x00) == false)
     }
 
-    @Test("Maps number keys correctly")
+    @Test("Number keycodes are recognized")
     func test_numberKeys() {
-        #expect(KeyCodeMapper.symbol(for: 0x12)?.display == "1")
-        #expect(KeyCodeMapper.symbol(for: 0x13)?.display == "2")
-        #expect(KeyCodeMapper.symbol(for: 0x1D)?.display == "0")
+        // Without CGEvent, character keys return "?" (actual char comes from CGEvent at runtime)
+        #expect(KeyCodeMapper.symbol(for: 0x12) != nil) // 1
+        #expect(KeyCodeMapper.symbol(for: 0x13) != nil) // 2
+        #expect(KeyCodeMapper.symbol(for: 0x1D) != nil) // 0
+        #expect(KeyCodeMapper.isModifier(0x12) == false)
     }
 
     @Test("Maps function keys correctly")
@@ -167,5 +172,271 @@ struct KeySymbolTests {
     func test_identifiable() {
         let symbol = KeySymbol(id: "test-id", display: "T")
         #expect(symbol.id == "test-id")
+    }
+}
+
+// MARK: - Full Keyboard Tests
+
+@Suite("Full Keyboard Tests")
+struct FullKeyboardTests {
+    // MARK: - All Modifier Keys
+
+    @Test("All modifier keys (left and right)")
+    func test_allModifierKeys() {
+        let modifierKeycodes: [(Int64, String)] = [
+            // Left modifiers
+            (0x37, "⌘"), // Command Left
+            (0x38, "⇧"), // Shift Left
+            (0x3A, "⌥"), // Option Left
+            (0x3B, "⌃"), // Control Left
+            // Right modifiers
+            (0x36, "⌘"), // Command Right
+            (0x3C, "⇧"), // Shift Right
+            (0x3D, "⌥"), // Option Right
+            (0x3E, "⌃"), // Control Right
+            // Special modifiers
+            (0x39, "⇪"), // Caps Lock
+            (0x3F, "fn"), // Fn
+        ]
+
+        for (keyCode, expectedDisplay) in modifierKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Modifier keycode \(String(format: "0x%02X", keyCode)) should produce a symbol")
+            #expect(symbol?.display == expectedDisplay, "Keycode \(String(format: "0x%02X", keyCode)) should display \(expectedDisplay)")
+            #expect(symbol?.isModifier == true, "Keycode \(String(format: "0x%02X", keyCode)) should be a modifier")
+        }
+    }
+
+    // MARK: - All Function Keys F1-F20
+
+    @Test("All function keys F1-F20")
+    func test_allFunctionKeys() {
+        let functionKeycodes: [(Int64, String)] = [
+            (0x7A, "F1"),
+            (0x78, "F2"),
+            (0x63, "F3"),
+            (0x76, "F4"),
+            (0x60, "F5"),
+            (0x61, "F6"),
+            (0x62, "F7"),
+            (0x64, "F8"),
+            (0x65, "F9"),
+            (0x6D, "F10"),
+            (0x67, "F11"),
+            (0x6F, "F12"),
+            (0x69, "F13"),
+            (0x6B, "F14"),
+            (0x71, "F15"),
+            (0x6A, "F16"),
+            (0x40, "F17"),
+            (0x4F, "F18"),
+            (0x50, "F19"),
+            (0x5A, "F20"),
+        ]
+
+        for (keyCode, expectedDisplay) in functionKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Function key \(expectedDisplay) should produce a symbol")
+            #expect(symbol?.display == expectedDisplay, "Function key \(String(format: "0x%02X", keyCode)) should display \(expectedDisplay)")
+            #expect(symbol?.isModifier == false, "Function keys should not be modifiers")
+        }
+    }
+
+    // MARK: - All Letter Keys A-Z
+
+    @Test("All letter keys A-Z")
+    func test_allLetterKeys() {
+        let letterKeycodes: [(Int64, String)] = [
+            (0x00, "A"), (0x0B, "B"), (0x08, "C"), (0x02, "D"), (0x0E, "E"),
+            (0x03, "F"), (0x05, "G"), (0x04, "H"), (0x22, "I"), (0x26, "J"),
+            (0x28, "K"), (0x25, "L"), (0x2E, "M"), (0x2D, "N"), (0x1F, "O"),
+            (0x23, "P"), (0x0C, "Q"), (0x0F, "R"), (0x01, "S"), (0x11, "T"),
+            (0x20, "U"), (0x09, "V"), (0x0D, "W"), (0x07, "X"), (0x10, "Y"),
+            (0x06, "Z"),
+        ]
+
+        for (keyCode, expectedDisplay) in letterKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Letter \(expectedDisplay) should produce a symbol")
+            // Note: with CGEvent, actual display depends on keyboard layout
+            // Without CGEvent, we get "?" for character keys
+            #expect(symbol?.isModifier == false, "Letter keys should not be modifiers")
+        }
+    }
+
+    // MARK: - All Number Keys 0-9
+
+    @Test("All number keys 0-9")
+    func test_allNumberKeys() {
+        let numberKeycodes: [(Int64, String)] = [
+            (0x1D, "0"),
+            (0x12, "1"),
+            (0x13, "2"),
+            (0x14, "3"),
+            (0x15, "4"),
+            (0x17, "5"),
+            (0x16, "6"),
+            (0x1A, "7"),
+            (0x1C, "8"),
+            (0x19, "9"),
+        ]
+
+        for (keyCode, expectedDisplay) in numberKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Number \(expectedDisplay) should produce a symbol")
+            #expect(symbol?.isModifier == false, "Number keys should not be modifiers")
+        }
+    }
+
+    // MARK: - All Special Keys
+
+    @Test("All special keys")
+    func test_allSpecialKeys() {
+        let specialKeycodes: [(Int64, String)] = [
+            (0x24, "⏎"), // Return
+            (0x30, "⇥"), // Tab
+            (0x31, "␣"), // Space
+            (0x33, "⌫"), // Delete
+            (0x35, "⎋"), // Escape
+            (0x4C, "⌤"), // Enter (numpad)
+            (0x75, "⌦"), // Forward Delete
+        ]
+
+        for (keyCode, expectedDisplay) in specialKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Special key \(expectedDisplay) should produce a symbol")
+            #expect(symbol?.display == expectedDisplay, "Keycode \(String(format: "0x%02X", keyCode)) should display \(expectedDisplay)")
+        }
+    }
+
+    // MARK: - All Arrow Keys
+
+    @Test("All arrow keys")
+    func test_allArrowKeys() {
+        let arrowKeycodes: [(Int64, String)] = [
+            (0x7B, "←"), // Left
+            (0x7C, "→"), // Right
+            (0x7D, "↓"), // Down
+            (0x7E, "↑"), // Up
+        ]
+
+        for (keyCode, expectedDisplay) in arrowKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Arrow key should produce a symbol")
+            #expect(symbol?.display == expectedDisplay)
+        }
+    }
+
+    // MARK: - All Navigation Keys
+
+    @Test("All navigation keys")
+    func test_allNavigationKeys() {
+        let navKeycodes: [(Int64, String)] = [
+            (0x73, "↖"), // Home
+            (0x77, "↘"), // End
+            (0x74, "⇞"), // Page Up
+            (0x79, "⇟"), // Page Down
+        ]
+
+        for (keyCode, expectedDisplay) in navKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Navigation key should produce a symbol")
+            #expect(symbol?.display == expectedDisplay)
+        }
+    }
+
+    // MARK: - All Numpad Keys
+
+    @Test("All numpad keys")
+    func test_allNumpadKeys() {
+        let numpadKeycodes: [(Int64, String)] = [
+            (0x52, "0"), (0x53, "1"), (0x54, "2"), (0x55, "3"),
+            (0x56, "4"), (0x57, "5"), (0x58, "6"), (0x59, "7"),
+            (0x5B, "8"), (0x5C, "9"),
+            (0x41, "."), // Decimal
+            (0x43, "*"), // Multiply
+            (0x45, "+"), // Plus
+            (0x4B, "/"), // Divide
+            (0x4E, "-"), // Minus
+            (0x51, "="), // Equals
+            (0x47, "⌧"), // Clear
+        ]
+
+        for (keyCode, expectedDisplay) in numpadKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Numpad key should produce a symbol")
+            // Without CGEvent, character keys return "?"
+        }
+    }
+
+    // MARK: - Punctuation Keys
+
+    @Test("All punctuation keys")
+    func test_allPunctuationKeys() {
+        let punctKeycodes: [Int64] = [
+            0x1E, // ]
+            0x21, // [
+            0x27, // '
+            0x29, // ;
+            0x2A, // \
+            0x2B, // ,
+            0x2C, // /
+            0x2F, // .
+            0x32, // `
+            0x18, // =
+            0x1B, // -
+        ]
+
+        for keyCode in punctKeycodes {
+            let symbol = KeyCodeMapper.symbol(for: keyCode)
+            #expect(symbol != nil, "Punctuation keycode \(String(format: "0x%02X", keyCode)) should produce a symbol")
+        }
+    }
+}
+
+// MARK: - Modifier Combination Tests
+
+@Suite("Modifier Combination Tests")
+struct ModifierCombinationTests {
+    @Test("Command + Shift combination flags")
+    func test_cmdShiftFlags() {
+        let flags: CGEventFlags = [.maskCommand, .maskShift]
+        let modifiers = KeyCodeMapper.activeModifiers(from: flags)
+
+        #expect(modifiers.count == 2)
+        #expect(modifiers.contains { $0.display == "⌘" })
+        #expect(modifiers.contains { $0.display == "⇧" })
+    }
+
+    @Test("All four modifiers combination")
+    func test_allFourModifiers() {
+        let flags: CGEventFlags = [.maskCommand, .maskShift, .maskAlternate, .maskControl]
+        let modifiers = KeyCodeMapper.activeModifiers(from: flags)
+
+        #expect(modifiers.count == 4)
+        #expect(modifiers.contains { $0.display == "⌘" })
+        #expect(modifiers.contains { $0.display == "⇧" })
+        #expect(modifiers.contains { $0.display == "⌥" })
+        #expect(modifiers.contains { $0.display == "⌃" })
+    }
+
+    @Test("Command + Option combination")
+    func test_cmdOptionFlags() {
+        let flags: CGEventFlags = [.maskCommand, .maskAlternate]
+        let modifiers = KeyCodeMapper.activeModifiers(from: flags)
+
+        #expect(modifiers.count == 2)
+        #expect(modifiers.contains { $0.display == "⌘" })
+        #expect(modifiers.contains { $0.display == "⌥" })
+    }
+
+    @Test("Control + Shift combination")
+    func test_ctrlShiftFlags() {
+        let flags: CGEventFlags = [.maskControl, .maskShift]
+        let modifiers = KeyCodeMapper.activeModifiers(from: flags)
+
+        #expect(modifiers.count == 2)
+        #expect(modifiers.contains { $0.display == "⌃" })
+        #expect(modifiers.contains { $0.display == "⇧" })
     }
 }

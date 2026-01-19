@@ -7,14 +7,12 @@ import SwiftUI
 final class OverlayWindow: NSPanel {
     // MARK: - Properties
 
-    private let keyState: KeyState
     private let config: KeypressConfig
     private var contentHostingView: NSHostingView<AnyView>?
 
-    // MARK: - Initialization
+    // MARK: - Initialization (History mode)
 
     init(keyState: KeyState, config: KeypressConfig) {
-        self.keyState = keyState
         self.config = config
 
         super.init(
@@ -25,7 +23,24 @@ final class OverlayWindow: NSPanel {
         )
 
         self.configureWindow()
-        self.setupContentView()
+        self.setupContentView(KeyVisualizationView(keyState: keyState, config: config))
+        self.updatePosition()
+    }
+
+    // MARK: - Initialization (Single mode)
+
+    init(singleKeyState: SingleKeyState, config: KeypressConfig) {
+        self.config = config
+
+        super.init(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 80),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+
+        self.configureWindow()
+        self.setupContentView(SingleKeyVisualizationView(keyState: singleKeyState, config: config))
         self.updatePosition()
     }
 
@@ -49,8 +64,7 @@ final class OverlayWindow: NSPanel {
         self.canBecomeMain = false
     }
 
-    private func setupContentView() {
-        let rootView = KeyVisualizationView(keyState: self.keyState, config: self.config)
+    private func setupContentView<V: View>(_ rootView: V) {
         let hostingView = NSHostingView(rootView: AnyView(rootView))
         hostingView.frame = self.contentView?.bounds ?? .zero
         hostingView.autoresizingMask = [.width, .height] as NSView.AutoresizingMask

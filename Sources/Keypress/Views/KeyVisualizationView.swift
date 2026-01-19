@@ -8,8 +8,37 @@ struct KeyVisualizationView: View {
     let config: KeypressConfig
 
     var body: some View {
+        KeyVisualizationContent(
+            pressedKeys: self.keyState.pressedKeys,
+            hasKeys: self.keyState.hasKeys,
+            scaleFactor: self.config.size.scaleFactor
+        )
+    }
+}
+
+/// View for Single mode (SingleKeyState).
+struct SingleKeyVisualizationView: View {
+    @Bindable var keyState: SingleKeyState
+    let config: KeypressConfig
+
+    var body: some View {
+        KeyVisualizationContent(
+            pressedKeys: self.keyState.pressedKeys,
+            hasKeys: self.keyState.hasKeys,
+            scaleFactor: self.config.size.scaleFactor
+        )
+    }
+}
+
+/// Shared visualization content (used by both modes).
+private struct KeyVisualizationContent: View {
+    let pressedKeys: [PressedKey]
+    let hasKeys: Bool
+    let scaleFactor: CGFloat
+
+    var body: some View {
         HStack(spacing: 8) {
-            ForEach(self.keyState.pressedKeys) { key in
+            ForEach(self.pressedKeys) { key in
                 KeyBadgeView(symbol: key.symbol)
             }
         }
@@ -20,9 +49,9 @@ struct KeyVisualizationView: View {
                 .fill(.ultraThinMaterial)
                 .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         )
-        .opacity(self.keyState.hasKeys ? 1 : 0)
-        .animation(.easeInOut(duration: 0.15), value: self.keyState.hasKeys)
-        .scaleEffect(self.config.size.scaleFactor)
+        .opacity(self.hasKeys ? 1 : 0)
+        .animation(.easeInOut(duration: 0.15), value: self.hasKeys)
+        .scaleEffect(self.scaleFactor)
     }
 }
 

@@ -33,6 +33,19 @@ public enum OverlaySize: String, CaseIterable, Codable, Sendable {
     }
 }
 
+// MARK: - DisplayMode
+
+/// Display mode for key visualization.
+public enum DisplayMode: String, CaseIterable, Codable, Sendable {
+    /// Only latest keystroke/combination visible. Each new key replaces previous.
+    /// Best for shortcut demos, teaching.
+    case single
+
+    /// Queue of recent keystrokes. Keys accumulate and fade over time.
+    /// Best for typing demos, streaming.
+    case history
+}
+
 // MARK: - KeypressConfig
 
 /// Application settings with UserDefaults persistence.
@@ -53,6 +66,11 @@ public final class KeypressConfig {
         static let size = "settings.size"
         static let opacity = "settings.opacity"
         static let keyTimeout = "settings.keyTimeout"
+        // Display mode
+        static let displayMode = "settings.displayMode"
+        static let showModifiersOnly = "settings.showModifiersOnly"
+        static let maxKeys = "settings.maxKeys"
+        static let duplicateLetters = "settings.duplicateLetters"
     }
 
     /// Key name for global hotkey (used by KeyboardShortcuts in main app).
@@ -67,6 +85,11 @@ public final class KeypressConfig {
         static let size = OverlaySize.medium
         static let opacity: Double = 1.0
         static let keyTimeout: Double = 1.5
+        // Display mode
+        static let displayMode = DisplayMode.single
+        static let showModifiersOnly = false
+        static let maxKeys = 6
+        static let duplicateLetters = true
     }
 
     // MARK: - Properties
@@ -104,6 +127,31 @@ public final class KeypressConfig {
         didSet { self.userDefaults.set(self.keyTimeout, forKey: Keys.keyTimeout) }
     }
 
+    // MARK: - Display Mode Properties
+
+    /// Current display mode (single or history).
+    public var displayMode: DisplayMode {
+        didSet { self.userDefaults.set(self.displayMode.rawValue, forKey: Keys.displayMode) }
+    }
+
+    /// (Single mode) Only show key combinations that include modifiers.
+    /// When true, regular letters/numbers without modifiers are hidden.
+    public var showModifiersOnly: Bool {
+        didSet { self.userDefaults.set(self.showModifiersOnly, forKey: Keys.showModifiersOnly) }
+    }
+
+    /// (History mode) Maximum number of keys to display at once.
+    /// Range: 3 to 12.
+    public var maxKeys: Int {
+        didSet { self.userDefaults.set(self.maxKeys, forKey: Keys.maxKeys) }
+    }
+
+    /// (History mode) Whether to allow duplicate letters when typing.
+    /// When true, "hello" shows 5 keys; when false, shows 4 (no repeat).
+    public var duplicateLetters: Bool {
+        didSet { self.userDefaults.set(self.duplicateLetters, forKey: Keys.duplicateLetters) }
+    }
+
     // MARK: - Initialization
 
     private init(userDefaults: UserDefaults = .standard) {
@@ -138,6 +186,26 @@ public final class KeypressConfig {
         } else {
             self.keyTimeout = Defaults.keyTimeout
         }
+
+        // Display mode settings
+        if let displayModeRaw = userDefaults.string(forKey: Keys.displayMode),
+           let displayMode = DisplayMode(rawValue: displayModeRaw) {
+            self.displayMode = displayMode
+        } else {
+            self.displayMode = Defaults.displayMode
+        }
+
+        self.showModifiersOnly = userDefaults.object(forKey: Keys.showModifiersOnly) as? Bool
+            ?? Defaults.showModifiersOnly
+
+        if userDefaults.object(forKey: Keys.maxKeys) != nil {
+            self.maxKeys = userDefaults.integer(forKey: Keys.maxKeys)
+        } else {
+            self.maxKeys = Defaults.maxKeys
+        }
+
+        self.duplicateLetters = userDefaults.object(forKey: Keys.duplicateLetters) as? Bool
+            ?? Defaults.duplicateLetters
     }
 
     // MARK: - Testing Support
@@ -156,5 +224,9 @@ public final class KeypressConfig {
         self.size = Defaults.size
         self.opacity = Defaults.opacity
         self.keyTimeout = Defaults.keyTimeout
+        self.displayMode = Defaults.displayMode
+        self.showModifiersOnly = Defaults.showModifiersOnly
+        self.maxKeys = Defaults.maxKeys
+        self.duplicateLetters = Defaults.duplicateLetters
     }
 }

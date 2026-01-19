@@ -56,15 +56,18 @@ Sources/
 
 - Creates `CGEvent` tap for keyboard events
 - Filters relevant events (keyDown, keyUp, flagsChanged)
-- Translates keycodes to displayable symbols
+- Translates keycodes to displayable symbols using `CGEvent.keyboardGetUnicodeString`
+- **Respects current keyboard layout** (Russian, German, etc.) — not hardcoded English
 - Publishes to KeyState
 
 ### KeyState
 
 - `@Observable` class
 - Tracks currently pressed keys with timestamps
-- Handles modifier vs regular key logic
-- Triggers fade-out timers
+- Handles modifier vs regular key logic:
+  - **Modifiers** — stable ID, no duplicates while held
+  - **Regular keys** — unique ID per press (allows "hello" → h e l l o)
+- Triggers fade-out timers for regular keys
 
 ### OverlayWindow
 

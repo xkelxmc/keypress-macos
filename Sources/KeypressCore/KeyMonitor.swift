@@ -33,11 +33,14 @@ public struct KeySymbol: Sendable, Equatable, Hashable, Identifiable {
     public let id: String
     public let display: String
     public let isModifier: Bool
+    /// Special keys (backspace, space, arrows, etc.) — shown with modifiers, no duplicates, but use timeout
+    public let isSpecial: Bool
 
-    public init(id: String, display: String, isModifier: Bool = false) {
+    public init(id: String, display: String, isModifier: Bool = false, isSpecial: Bool = false) {
         self.id = id
         self.display = display
         self.isModifier = isModifier
+        self.isSpecial = isSpecial
     }
 }
 
@@ -214,7 +217,8 @@ public final class KeyMonitor: @unchecked Sendable {
             modifiers: modifiers
         )
 
-        let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: modifiers)
+        // Get symbol with current keyboard layout support
+        let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: modifiers, event: event)
         monitor.eventHandler(keyEvent, symbol)
 
         return Unmanaged.passUnretained(event)
@@ -244,84 +248,74 @@ public enum KeyCodeMapper {
         0x39: KeySymbol(id: "capslock", display: "⇪", isModifier: true),
     ]
 
-    // MARK: - Special Keys
+    // MARK: - Special Keys (shown with modifiers, no duplicates, timeout-based removal)
 
     private static let specialKeys: [Int64: KeySymbol] = [
-        0x24: KeySymbol(id: "return", display: "⏎"),
-        0x30: KeySymbol(id: "tab", display: "⇥"),
-        0x31: KeySymbol(id: "space", display: "␣"),
-        0x33: KeySymbol(id: "delete", display: "⌫"),
-        0x35: KeySymbol(id: "escape", display: "⎋"),
-        0x4C: KeySymbol(id: "enter", display: "⌤"),
-        0x75: KeySymbol(id: "forward-delete", display: "⌦"),
+        0x24: KeySymbol(id: "return", display: "⏎", isSpecial: true),
+        0x30: KeySymbol(id: "tab", display: "⇥", isSpecial: true),
+        0x31: KeySymbol(id: "space", display: "␣", isSpecial: true),
+        0x33: KeySymbol(id: "delete", display: "⌫", isSpecial: true),
+        0x35: KeySymbol(id: "escape", display: "⎋", isSpecial: true),
+        0x4C: KeySymbol(id: "enter", display: "⌤", isSpecial: true),
+        0x75: KeySymbol(id: "forward-delete", display: "⌦", isSpecial: true),
 
         // Arrow keys
-        0x7B: KeySymbol(id: "arrow-left", display: "←"),
-        0x7C: KeySymbol(id: "arrow-right", display: "→"),
-        0x7D: KeySymbol(id: "arrow-down", display: "↓"),
-        0x7E: KeySymbol(id: "arrow-up", display: "↑"),
+        0x7B: KeySymbol(id: "arrow-left", display: "←", isSpecial: true),
+        0x7C: KeySymbol(id: "arrow-right", display: "→", isSpecial: true),
+        0x7D: KeySymbol(id: "arrow-down", display: "↓", isSpecial: true),
+        0x7E: KeySymbol(id: "arrow-up", display: "↑", isSpecial: true),
 
         // Navigation
-        0x73: KeySymbol(id: "home", display: "↖"),
-        0x77: KeySymbol(id: "end", display: "↘"),
-        0x74: KeySymbol(id: "page-up", display: "⇞"),
-        0x79: KeySymbol(id: "page-down", display: "⇟"),
+        0x73: KeySymbol(id: "home", display: "↖", isSpecial: true),
+        0x77: KeySymbol(id: "end", display: "↘", isSpecial: true),
+        0x74: KeySymbol(id: "page-up", display: "⇞", isSpecial: true),
+        0x79: KeySymbol(id: "page-down", display: "⇟", isSpecial: true),
 
         // Function keys
-        0x7A: KeySymbol(id: "f1", display: "F1"),
-        0x78: KeySymbol(id: "f2", display: "F2"),
-        0x63: KeySymbol(id: "f3", display: "F3"),
-        0x76: KeySymbol(id: "f4", display: "F4"),
-        0x60: KeySymbol(id: "f5", display: "F5"),
-        0x61: KeySymbol(id: "f6", display: "F6"),
-        0x62: KeySymbol(id: "f7", display: "F7"),
-        0x64: KeySymbol(id: "f8", display: "F8"),
-        0x65: KeySymbol(id: "f9", display: "F9"),
-        0x6D: KeySymbol(id: "f10", display: "F10"),
-        0x67: KeySymbol(id: "f11", display: "F11"),
-        0x6F: KeySymbol(id: "f12", display: "F12"),
-        0x69: KeySymbol(id: "f13", display: "F13"),
-        0x6B: KeySymbol(id: "f14", display: "F14"),
-        0x71: KeySymbol(id: "f15", display: "F15"),
-        0x6A: KeySymbol(id: "f16", display: "F16"),
-        0x40: KeySymbol(id: "f17", display: "F17"),
-        0x4F: KeySymbol(id: "f18", display: "F18"),
-        0x50: KeySymbol(id: "f19", display: "F19"),
-        0x5A: KeySymbol(id: "f20", display: "F20"),
+        0x7A: KeySymbol(id: "f1", display: "F1", isSpecial: true),
+        0x78: KeySymbol(id: "f2", display: "F2", isSpecial: true),
+        0x63: KeySymbol(id: "f3", display: "F3", isSpecial: true),
+        0x76: KeySymbol(id: "f4", display: "F4", isSpecial: true),
+        0x60: KeySymbol(id: "f5", display: "F5", isSpecial: true),
+        0x61: KeySymbol(id: "f6", display: "F6", isSpecial: true),
+        0x62: KeySymbol(id: "f7", display: "F7", isSpecial: true),
+        0x64: KeySymbol(id: "f8", display: "F8", isSpecial: true),
+        0x65: KeySymbol(id: "f9", display: "F9", isSpecial: true),
+        0x6D: KeySymbol(id: "f10", display: "F10", isSpecial: true),
+        0x67: KeySymbol(id: "f11", display: "F11", isSpecial: true),
+        0x6F: KeySymbol(id: "f12", display: "F12", isSpecial: true),
+        0x69: KeySymbol(id: "f13", display: "F13", isSpecial: true),
+        0x6B: KeySymbol(id: "f14", display: "F14", isSpecial: true),
+        0x71: KeySymbol(id: "f15", display: "F15", isSpecial: true),
+        0x6A: KeySymbol(id: "f16", display: "F16", isSpecial: true),
+        0x40: KeySymbol(id: "f17", display: "F17", isSpecial: true),
+        0x4F: KeySymbol(id: "f18", display: "F18", isSpecial: true),
+        0x50: KeySymbol(id: "f19", display: "F19", isSpecial: true),
+        0x5A: KeySymbol(id: "f20", display: "F20", isSpecial: true),
     ]
 
-    // MARK: - Character Keys
+    // MARK: - Keycodes that produce characters (for layout detection)
 
-    private static let characterKeys: [Int64: String] = [
-        // Letters (QWERTY layout)
-        0x00: "A", 0x0B: "B", 0x08: "C", 0x02: "D", 0x0E: "E",
-        0x03: "F", 0x05: "G", 0x04: "H", 0x22: "I", 0x26: "J",
-        0x28: "K", 0x25: "L", 0x2E: "M", 0x2D: "N", 0x1F: "O",
-        0x23: "P", 0x0C: "Q", 0x0F: "R", 0x01: "S", 0x11: "T",
-        0x20: "U", 0x09: "V", 0x0D: "W", 0x07: "X", 0x10: "Y",
-        0x06: "Z",
-
+    /// Keycodes that typically produce visible characters (letters, numbers, punctuation).
+    private static let characterKeycodes: Set<Int64> = [
+        // Letters
+        0x00, 0x0B, 0x08, 0x02, 0x0E, 0x03, 0x05, 0x04, 0x22, 0x26,
+        0x28, 0x25, 0x2E, 0x2D, 0x1F, 0x23, 0x0C, 0x0F, 0x01, 0x11,
+        0x20, 0x09, 0x0D, 0x07, 0x10, 0x06,
         // Numbers
-        0x12: "1", 0x13: "2", 0x14: "3", 0x15: "4", 0x16: "6",
-        0x17: "5", 0x18: "=", 0x19: "9", 0x1A: "7", 0x1B: "-",
-        0x1C: "8", 0x1D: "0",
-
+        0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D,
         // Punctuation
-        0x1E: "]", 0x21: "[", 0x27: "'", 0x29: ";", 0x2A: "\\",
-        0x2B: ",", 0x2C: "/", 0x2F: ".", 0x32: "`",
-
+        0x1E, 0x21, 0x27, 0x29, 0x2A, 0x2B, 0x2C, 0x2F, 0x32,
         // Numpad
-        0x41: ".", 0x43: "*", 0x45: "+", 0x47: "⌧", // Clear
-        0x4B: "/", 0x4E: "-", 0x51: "=",
-        0x52: "0", 0x53: "1", 0x54: "2", 0x55: "3",
-        0x56: "4", 0x57: "5", 0x58: "6", 0x59: "7",
-        0x5B: "8", 0x5C: "9",
+        0x41, 0x43, 0x45, 0x47, 0x4B, 0x4E, 0x51,
+        0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5B, 0x5C,
     ]
 
     // MARK: - Public Methods
 
-    /// Returns the symbol for a given keycode.
-    public static func symbol(for keyCode: Int64, modifiers: CGEventFlags = []) -> KeySymbol? {
+    /// Returns the symbol for a given keycode, using CGEvent for accurate character representation.
+    /// This method respects the current keyboard layout (e.g., Russian, German, etc.).
+    public static func symbol(for keyCode: Int64, modifiers: CGEventFlags = [], event: CGEvent? = nil) -> KeySymbol? {
         // Check modifier keys first
         if let modifier = modifierKeys[keyCode] {
             return modifier
@@ -332,12 +326,37 @@ public enum KeyCodeMapper {
             return special
         }
 
-        // Check character keys
-        if let character = characterKeys[keyCode] {
-            return KeySymbol(id: "key-\(keyCode)", display: character)
+        // For character keys, try to get the actual character from CGEvent
+        if characterKeycodes.contains(keyCode) {
+            if let event = event, let character = Self.extractCharacter(from: event) {
+                return KeySymbol(id: "key-\(keyCode)", display: character.uppercased())
+            }
+            // Fallback to keycode-based lookup if no event provided
+            return KeySymbol(id: "key-\(keyCode)", display: "?")
         }
 
         return nil
+    }
+
+
+    /// Extracts the character from a CGEvent using the current keyboard layout.
+    private static func extractCharacter(from event: CGEvent) -> String? {
+        var length = 0
+        event.keyboardGetUnicodeString(maxStringLength: 0, actualStringLength: &length, unicodeString: nil)
+
+        guard length > 0 else { return nil }
+
+        var buffer = [UniChar](repeating: 0, count: length)
+        event.keyboardGetUnicodeString(maxStringLength: length, actualStringLength: &length, unicodeString: &buffer)
+
+        let string = String(utf16CodeUnits: buffer, count: length)
+
+        // Filter out control characters
+        guard let firstChar = string.first, !firstChar.isNewline, firstChar.isLetter || firstChar.isNumber || firstChar.isPunctuation || firstChar.isSymbol else {
+            return string.isEmpty ? nil : string
+        }
+
+        return string
     }
 
     /// Returns true if the keycode represents a modifier key.

@@ -8,11 +8,22 @@ final class OverlayController {
     // MARK: - Properties
 
     private let config: KeypressConfig
-    private let keyState: KeyState
     private let permission = AccessibilityPermission.shared
     private var keyMonitor: KeyMonitor?
     private var overlayWindow: OverlayWindow?
     private var observationTask: Task<Void, Never>?
+
+    // Key state (one of these will be used based on display mode)
+    private var historyKeyState: KeyState?
+    private var singleKeyState: SingleKeyState?
+
+    /// Current key state protocol reference for common operations.
+    private var currentKeyState: (any KeyStateProtocol)? {
+        switch self.config.displayMode {
+        case .single: self.singleKeyState
+        case .history: self.historyKeyState
+        }
+    }
 
     var isRunning: Bool {
         self.keyMonitor?.isRunning ?? false
@@ -20,10 +31,8 @@ final class OverlayController {
 
     // MARK: - Initialization
 
-    init(config: KeypressConfig = .shared, keyState: KeyState = KeyState()) {
+    init(config: KeypressConfig = .shared) {
         self.config = config
-        self.keyState = keyState
-        self.keyState.keyTimeout = config.keyTimeout
     }
 
     deinit {
@@ -36,13 +45,21 @@ final class OverlayController {
     func start() {
         guard self.keyMonitor == nil else { return }
 
-        // Create overlay window
-        self.overlayWindow = OverlayWindow(keyState: self.keyState, config: self.config)
+        // Create appropriate key state based on display mode
+        self.createKeyState()
+
+        // Create overlay window based on display mode
+        switch self.config.displayMode {
+        case .single:
+            self.overlayWindow = OverlayWindow(singleKeyState: self.singleKeyState!, config: self.config)
+        case .history:
+            self.overlayWindow = OverlayWindow(keyState: self.historyKeyState!, config: self.config)
+        }
 
         // Create key monitor with callback
         self.keyMonitor = KeyMonitor { [weak self] event, symbol in
             Task { @MainActor [weak self] in
-                self?.keyState.processEvent(event, symbol: symbol)
+                self?.currentKeyState?.processEvent(event, symbol: symbol)
             }
         }
 
@@ -80,7 +97,9 @@ final class OverlayController {
         self.overlayWindow?.hideOverlay()
         self.overlayWindow = nil
 
-        self.keyState.clear()
+        self.currentKeyState?.clear()
+        self.historyKeyState = nil
+        self.singleKeyState = nil
     }
 
     /// Updates overlay position based on current settings.
@@ -95,10 +114,38 @@ final class OverlayController {
 
     /// Updates key timeout based on current settings.
     func updateKeyTimeout() {
-        self.keyState.keyTimeout = self.config.keyTimeout
+        self.historyKeyState?.keyTimeout = self.config.keyTimeout
+        self.singleKeyState?.keyTimeout = self.config.keyTimeout
+    }
+
+    /// Updates history mode settings.
+    func updateHistorySettings() {
+        self.historyKeyState?.maxDisplayedKeys = self.config.maxKeys
+        self.historyKeyState?.duplicateLetters = self.config.duplicateLetters
+    }
+
+    /// Updates single mode settings.
+    func updateSingleSettings() {
+        self.singleKeyState?.showModifiersOnly = self.config.showModifiersOnly
     }
 
     // MARK: - Private Methods
+
+    private func createKeyState() {
+        switch self.config.displayMode {
+        case .single:
+            let state = SingleKeyState()
+            state.keyTimeout = self.config.keyTimeout
+            state.showModifiersOnly = self.config.showModifiersOnly
+            self.singleKeyState = state
+        case .history:
+            let state = KeyState()
+            state.keyTimeout = self.config.keyTimeout
+            state.maxDisplayedKeys = self.config.maxKeys
+            state.duplicateLetters = self.config.duplicateLetters
+            self.historyKeyState = state
+        }
+    }
 
     private func startMonitoring() {
         let started = self.keyMonitor?.start() ?? false
@@ -115,7 +162,7 @@ final class OverlayController {
             var wasVisible = false
 
             while !Task.isCancelled {
-                let hasKeys = self.keyState.hasKeys
+                let hasKeys = self.currentKeyState?.hasKeys ?? false
 
                 if hasKeys != wasVisible {
                     if hasKeys {
