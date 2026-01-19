@@ -86,6 +86,17 @@ struct DisplaySettingsPane: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Divider()
+                .padding(.vertical, 4)
+
+            Toggle("Limit includes modifiers", isOn: self.$config.limitIncludesModifiers)
+                .toggleStyle(.checkbox)
+
+            Text("When enabled, max keys limit applies to all keys. When disabled, modifiers don't count towards the limit.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

@@ -75,6 +75,10 @@ public final class KeyState: KeyStateProtocol {
     /// When true, "hello" shows 5 keys; when false, shows 4 (no repeat).
     public var duplicateLetters: Bool = true
 
+    /// Whether modifiers count towards the max keys limit.
+    /// When true, limit is total keys. When false, limit is only for non-modifiers.
+    public var limitIncludesModifiers: Bool = true
+
     private var timeoutTasks: [String: Task<Void, Never>] = [:]
 
     /// Modifiers that were released but are kept visible because they're associated with a key
@@ -257,37 +261,65 @@ public final class KeyState: KeyStateProtocol {
             return lhs.pressedAt < rhs.pressedAt
         }
 
-        // Limit to max displayed keys
-        // Priority: modifiers > special > regular (evict oldest regular first)
-        if self.pressedKeys.count > self.maxDisplayedKeys {
-            let modifiers = self.pressedKeys.filter { $0.symbol.isModifier }
-            let special = self.pressedKeys.filter { $0.symbol.isSpecial }
-            let regular = self.pressedKeys.filter { !$0.symbol.isModifier && !$0.symbol.isSpecial }
+        // Limit keys based on limitIncludesModifiers setting
+        let modifiers = self.pressedKeys.filter { $0.symbol.isModifier }
+        let special = self.pressedKeys.filter { $0.symbol.isSpecial }
+        let regular = self.pressedKeys.filter { !$0.symbol.isModifier && !$0.symbol.isSpecial }
 
-            var result: [PressedKey] = []
-            var remaining = self.maxDisplayedKeys
+        if self.limitIncludesModifiers {
+            // Total limit applies to all keys
+            if self.pressedKeys.count > self.maxDisplayedKeys {
+                var result: [PressedKey] = []
+                var remaining = self.maxDisplayedKeys
 
-            // Keep all modifiers (up to limit)
-            let keptModifiers = Array(modifiers.prefix(remaining))
-            result.append(contentsOf: keptModifiers)
-            remaining -= keptModifiers.count
+                // Keep all modifiers (up to limit)
+                let keptModifiers = Array(modifiers.prefix(remaining))
+                result.append(contentsOf: keptModifiers)
+                remaining -= keptModifiers.count
 
-            // Keep special keys (up to remaining)
-            let keptSpecial = Array(special.suffix(remaining))
-            result.append(contentsOf: keptSpecial)
-            remaining -= keptSpecial.count
+                // Keep special keys (up to remaining)
+                let keptSpecial = Array(special.suffix(remaining))
+                result.append(contentsOf: keptSpecial)
+                remaining -= keptSpecial.count
 
-            // Keep most RECENT regular keys
-            let keptRegular = Array(regular.suffix(remaining))
-            result.append(contentsOf: keptRegular)
+                // Keep most RECENT regular keys
+                let keptRegular = Array(regular.suffix(remaining))
+                result.append(contentsOf: keptRegular)
 
-            // Cancel timeouts for evicted keys
-            let keptIds = Set(result.map { $0.id })
-            for key in self.pressedKeys where !keptIds.contains(key.id) {
-                self.cancelTimeout(for: key.id)
+                // Cancel timeouts for evicted keys
+                let keptIds = Set(result.map { $0.id })
+                for key in self.pressedKeys where !keptIds.contains(key.id) {
+                    self.cancelTimeout(for: key.id)
+                }
+
+                self.pressedKeys = result
             }
+        } else {
+            // Limit applies only to non-modifiers (regular + special)
+            let nonModifiers = special + regular
+            if nonModifiers.count > self.maxDisplayedKeys {
+                // Keep all modifiers
+                var result: [PressedKey] = modifiers
 
-            self.pressedKeys = result
+                var remaining = self.maxDisplayedKeys
+
+                // Keep special keys (up to limit)
+                let keptSpecial = Array(special.suffix(remaining))
+                result.append(contentsOf: keptSpecial)
+                remaining -= keptSpecial.count
+
+                // Keep most RECENT regular keys
+                let keptRegular = Array(regular.suffix(remaining))
+                result.append(contentsOf: keptRegular)
+
+                // Cancel timeouts for evicted non-modifier keys
+                let keptIds = Set(result.map { $0.id })
+                for key in self.pressedKeys where !keptIds.contains(key.id) {
+                    self.cancelTimeout(for: key.id)
+                }
+
+                self.pressedKeys = result
+            }
         }
     }
 
@@ -394,6 +426,11 @@ public final class SingleKeyState: KeyStateProtocol {
             // Update display with current modifiers (preserve last non-modifier key)
             self.updateDisplay()
         } else {
+            // If showModifiersOnly and no modifiers, ignore this key entirely
+            if self.showModifiersOnly && self.activeModifiers.isEmpty {
+                return
+            }
+
             // Non-modifier key: clear released modifiers first (they're not part of this new combo)
             for modifierId in self.releasedModifiers {
                 self.activeModifiers.removeAll { $0.symbol.id == modifierId }

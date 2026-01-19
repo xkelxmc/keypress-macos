@@ -49,6 +49,11 @@ final class OverlayController {
     func start() {
         guard self.keyMonitor == nil else { return }
 
+        // Clean up any existing overlay window (e.g., from delayed stop)
+        self.overlayWindow?.hideOverlay()
+        self.overlayWindow = nil
+        self.hintState.hide()
+
         // Create appropriate key state based on display mode
         self.createKeyState()
 
@@ -146,6 +151,7 @@ final class OverlayController {
     func updateHistorySettings() {
         self.historyKeyState?.maxDisplayedKeys = self.config.maxKeys
         self.historyKeyState?.duplicateLetters = self.config.duplicateLetters
+        self.historyKeyState?.limitIncludesModifiers = self.config.limitIncludesModifiers
     }
 
     /// Updates single mode settings.
@@ -173,6 +179,7 @@ final class OverlayController {
             state.keyTimeout = self.config.keyTimeout
             state.maxDisplayedKeys = self.config.maxKeys
             state.duplicateLetters = self.config.duplicateLetters
+            state.limitIncludesModifiers = self.config.limitIncludesModifiers
             self.historyKeyState = state
         }
     }
@@ -221,6 +228,7 @@ final class OverlayController {
         var lastKeyTimeout = self.config.keyTimeout
         var lastMaxKeys = self.config.maxKeys
         var lastDuplicateLetters = self.config.duplicateLetters
+        var lastLimitIncludesModifiers = self.config.limitIncludesModifiers
         var lastShowModifiersOnly = self.config.showModifiersOnly
         var lastDisplayMode = self.config.displayMode
 
@@ -259,6 +267,10 @@ final class OverlayController {
                 }
                 if self.config.duplicateLetters != lastDuplicateLetters {
                     lastDuplicateLetters = self.config.duplicateLetters
+                    self.updateHistorySettings()
+                }
+                if self.config.limitIncludesModifiers != lastLimitIncludesModifiers {
+                    lastLimitIncludesModifiers = self.config.limitIncludesModifiers
                     self.updateHistorySettings()
                 }
 

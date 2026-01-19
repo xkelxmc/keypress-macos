@@ -73,9 +73,11 @@ When enabled, only shows combinations with modifiers (⌘, ⌥, ⌃, ⇧). Regul
 |---------|-------------|---------|
 | Max keys | Slider (3 → 12) | 6 |
 | Duplicate letters | Toggle | On |
+| Limit includes modifiers | Toggle | On |
 
 - `Max keys` — maximum keys displayed at once
 - `Duplicate letters` — when On, "hello" shows 5 keys; when Off, shows 4 (no repeat)
+- `Limit includes modifiers` — when On, max keys applies to all keys; when Off, modifiers don't count towards the limit
 
 ### Appearance
 

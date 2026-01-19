@@ -62,5 +62,4 @@
 
 - Statistics/analytics (typing speed, key frequency)
 - Multiple visual themes
-- Mouse click visualization
 - Custom key filtering (show only shortcuts)

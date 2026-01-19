@@ -11,14 +11,10 @@ enum HintPosition {
     /// Determines hint position based on overlay position.
     static func from(overlayPosition: OverlayPosition) -> HintPosition {
         switch overlayPosition {
-        case .topLeft, .centerLeft, .bottomLeft:
+        case .topLeft, .centerLeft, .bottomLeft, .topCenter, .bottomCenter:
             return .trailing
         case .topRight, .centerRight, .bottomRight:
             return .leading
-        case .topCenter:
-            return .bottom
-        case .bottomCenter:
-            return .top
         }
     }
 }

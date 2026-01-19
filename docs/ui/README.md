@@ -32,6 +32,7 @@ Native macOS settings window. See [Settings](./settings.md).
 
 ## Color Scheme
 
-- Follows system appearance (light/dark mode)
+- Manual scheme selection (Dark, Monochrome, Light)
+- Auto light/dark mode (v2)
 - Key colors should work on any background
 - Subtle shadows for depth perception

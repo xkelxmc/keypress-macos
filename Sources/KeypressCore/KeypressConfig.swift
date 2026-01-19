@@ -249,6 +249,7 @@ public final class KeypressConfig {
         static let showModifiersOnly = "settings.showModifiersOnly"
         static let maxKeys = "settings.maxKeys"
         static let duplicateLetters = "settings.duplicateLetters"
+        static let limitIncludesModifiers = "settings.limitIncludesModifiers"
         // Appearance
         static let keyCapStyle = "settings.keyCapStyle"
         static let colorScheme = "settings.colorScheme"
@@ -271,6 +272,7 @@ public final class KeypressConfig {
         static let showModifiersOnly = false
         static let maxKeys = 6
         static let duplicateLetters = true
+        static let limitIncludesModifiers = true
         // Appearance
         static let keyCapStyle = KeyCapStyle.mechanical
         static let colorScheme = KeyColorScheme.dark
@@ -334,6 +336,12 @@ public final class KeypressConfig {
     /// When true, "hello" shows 5 keys; when false, shows 4 (no repeat).
     public var duplicateLetters: Bool {
         didSet { self.userDefaults.set(self.duplicateLetters, forKey: Keys.duplicateLetters) }
+    }
+
+    /// (History mode) Whether modifiers count towards the max keys limit.
+    /// When true (default), limit is total keys. When false, limit is only for letters.
+    public var limitIncludesModifiers: Bool {
+        didSet { self.userDefaults.set(self.limitIncludesModifiers, forKey: Keys.limitIncludesModifiers) }
     }
 
     // MARK: - Appearance Properties
@@ -407,6 +415,9 @@ public final class KeypressConfig {
         self.duplicateLetters = userDefaults.object(forKey: Keys.duplicateLetters) as? Bool
             ?? Defaults.duplicateLetters
 
+        self.limitIncludesModifiers = userDefaults.object(forKey: Keys.limitIncludesModifiers) as? Bool
+            ?? Defaults.limitIncludesModifiers
+
         // Appearance settings
         if let styleRaw = userDefaults.string(forKey: Keys.keyCapStyle),
            let style = KeyCapStyle(rawValue: styleRaw) {
@@ -443,6 +454,7 @@ public final class KeypressConfig {
         self.showModifiersOnly = Defaults.showModifiersOnly
         self.maxKeys = Defaults.maxKeys
         self.duplicateLetters = Defaults.duplicateLetters
+        self.limitIncludesModifiers = Defaults.limitIncludesModifiers
         self.keyCapStyle = Defaults.keyCapStyle
         self.colorScheme = Defaults.colorScheme
     }

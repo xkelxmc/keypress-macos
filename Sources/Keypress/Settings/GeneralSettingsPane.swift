@@ -34,9 +34,9 @@ struct GeneralSettingsPane: View {
 
                     SettingsRow("Opacity") {
                         HStack(spacing: 8) {
-                            Slider(value: self.$config.opacity, in: 0.3 ... 1.0, step: 0.1)
+                            Slider(value: self.$config.opacity, in: 0.3 ... 1.0)
                                 .frame(width: 120)
-                            Text("\(Int(self.config.opacity * 100))%")
+                            Text("\(Int(round(self.config.opacity * 100)))%")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .frame(width: 36, alignment: .trailing)

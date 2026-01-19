@@ -2,7 +2,7 @@
   "name": "keypress-macos",
   "private": true,
   "scripts": {
-    "start": "pkill -x Keypress 2>/dev/null; ./Scripts/package_app.sh && ./Keypress.app/Contents/MacOS/Keypress &",
+    "start": "(pkill -x Keypress || true) && ./Scripts/package_app.sh && ./Keypress.app/Contents/MacOS/Keypress &",
     "start:open": "./Scripts/compile_and_run.sh",
     "start:test": "./Scripts/compile_and_run.sh --test",
     "stop": "pkill -x Keypress 2>/dev/null || true",
