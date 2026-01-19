@@ -88,10 +88,11 @@ final class OverlayWindow: NSPanel {
     // MARK: - Positioning
 
     /// Updates window position based on current config.
-    func updatePosition() {
-        guard let screen = NSScreen.main else { return }
+    /// - Parameter screen: The screen to position the overlay on. If nil, uses NSScreen.main.
+    func updatePosition(on screen: NSScreen? = nil) {
+        guard let targetScreen = screen ?? NSScreen.main else { return }
 
-        let screenFrame = screen.visibleFrame
+        let screenFrame = targetScreen.visibleFrame
         let windowSize = self.frame.size
         let margin: CGFloat = 20
 

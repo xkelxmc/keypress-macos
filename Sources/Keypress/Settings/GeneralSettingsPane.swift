@@ -15,6 +15,13 @@ struct GeneralSettingsPane: View {
                 // Position
                 SettingsSection("Position") {
                     PositionPicker(position: self.$config.position)
+
+                    // Monitor picker (only show when multiple monitors connected)
+                    if NSScreen.screens.count > 1 {
+                        SettingsRow("Monitor") {
+                            MonitorPicker(selection: self.$config.monitorSelection)
+                        }
+                    }
                 }
 
                 Divider()
@@ -177,5 +184,38 @@ struct PositionPicker: View {
         case .bottomRight:
             return CGPoint(x: width - margin, y: height - margin)
         }
+    }
+}
+
+// MARK: - MonitorPicker
+
+@MainActor
+struct MonitorPicker: View {
+    @Binding var selection: MonitorSelection
+
+    var body: some View {
+        Picker("Monitor", selection: self.$selection) {
+            Text("Auto").tag(MonitorSelection.auto)
+
+            ForEach(0 ..< NSScreen.screens.count, id: \.self) { index in
+                Text(self.monitorName(for: index)).tag(MonitorSelection.fixed(index: index))
+            }
+        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .frame(width: 140)
+    }
+
+    private func monitorName(for index: Int) -> String {
+        let screens = NSScreen.screens
+        guard index < screens.count else { return "Monitor \(index + 1)" }
+
+        let screen = screens[index]
+        let name = screen.localizedName
+        // Use localized name if available, otherwise "Monitor N"
+        if !name.isEmpty {
+            return name
+        }
+        return "Monitor \(index + 1)"
     }
 }

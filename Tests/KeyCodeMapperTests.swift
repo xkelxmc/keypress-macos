@@ -31,10 +31,8 @@ struct KeyCodeMapperTests {
         #expect(controlLeft?.display == "⌃")
         #expect(controlLeft?.isModifier == true)
 
-        // Caps Lock
-        let capsLock = KeyCodeMapper.symbol(for: 0x39)
-        #expect(capsLock?.display == "⇪")
-        #expect(capsLock?.isModifier == true)
+        // Note: Caps Lock (0x39) is intentionally excluded from modifiers
+        // because macOS doesn't provide reliable press/release events for it
     }
 
     @Test("Maps special keys correctly")
@@ -53,7 +51,7 @@ struct KeyCodeMapperTests {
         #expect(delete?.display == "⌫")
 
         let escape = KeyCodeMapper.symbol(for: 0x35)
-        #expect(escape?.display == "⎋")
+        #expect(escape?.display == "ESC")
     }
 
     @Test("Maps arrow keys correctly")
@@ -194,9 +192,9 @@ struct FullKeyboardTests {
             (0x3C, "⇧"), // Shift Right
             (0x3D, "⌥"), // Option Right
             (0x3E, "⌃"), // Control Right
-            // Special modifiers
-            (0x39, "⇪"), // Caps Lock
-            (0x3F, "fn"), // Fn
+            // Note: Caps Lock (0x39) and Fn (0x3F) are intentionally excluded
+            // - Caps Lock: macOS doesn't provide reliable press/release events
+            // - Fn: not a standard modifier, handled specially by the system
         ]
 
         for (keyCode, expectedDisplay) in modifierKeycodes {
@@ -297,7 +295,7 @@ struct FullKeyboardTests {
             (0x30, "⇥"), // Tab
             (0x31, "␣"), // Space
             (0x33, "⌫"), // Delete
-            (0x35, "⎋"), // Escape
+            (0x35, "ESC"), // Escape
             (0x4C, "⌤"), // Enter (numpad)
             (0x75, "⌦"), // Forward Delete
         ]

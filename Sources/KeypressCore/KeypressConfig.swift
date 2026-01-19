@@ -63,6 +63,16 @@ public enum KeyCategory: String, CaseIterable, Codable, Sendable {
     case editing     // Space, Tab, Return, Delete, Backspace
 }
 
+// MARK: - MonitorSelection
+
+/// Selection for which monitor to display the overlay on.
+public enum MonitorSelection: Codable, Sendable, Equatable, Hashable {
+    /// Automatically follow active window (overlay appears on monitor where user is typing).
+    case auto
+    /// Fixed to a specific monitor by index (0-based into NSScreen.screens).
+    case fixed(index: Int)
+}
+
 // MARK: - KeyCapStyle
 
 /// Visual style for keycap rendering.
@@ -253,6 +263,8 @@ public final class KeypressConfig {
         // Appearance
         static let keyCapStyle = "settings.keyCapStyle"
         static let colorScheme = "settings.colorScheme"
+        // Monitor
+        static let monitorSelection = "settings.monitorSelection"
     }
 
     /// Key name for global hotkey (used by KeyboardShortcuts in main app).
@@ -276,6 +288,8 @@ public final class KeypressConfig {
         // Appearance
         static let keyCapStyle = KeyCapStyle.mechanical
         static let colorScheme = KeyColorScheme.dark
+        // Monitor
+        static let monitorSelection = MonitorSelection.auto
     }
 
     // MARK: - Properties
@@ -360,6 +374,17 @@ public final class KeypressConfig {
         }
     }
 
+    // MARK: - Monitor Properties
+
+    /// Which monitor to display the overlay on.
+    public var monitorSelection: MonitorSelection {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(self.monitorSelection) {
+                self.userDefaults.set(encoded, forKey: Keys.monitorSelection)
+            }
+        }
+    }
+
     // MARK: - Initialization
 
     private init(userDefaults: UserDefaults = .standard) {
@@ -432,6 +457,14 @@ public final class KeypressConfig {
         } else {
             self.colorScheme = Defaults.colorScheme
         }
+
+        // Monitor settings
+        if let monitorData = userDefaults.data(forKey: Keys.monitorSelection),
+           let selection = try? JSONDecoder().decode(MonitorSelection.self, from: monitorData) {
+            self.monitorSelection = selection
+        } else {
+            self.monitorSelection = Defaults.monitorSelection
+        }
     }
 
     // MARK: - Testing Support
@@ -457,5 +490,6 @@ public final class KeypressConfig {
         self.limitIncludesModifiers = Defaults.limitIncludesModifiers
         self.keyCapStyle = Defaults.keyCapStyle
         self.colorScheme = Defaults.colorScheme
+        self.monitorSelection = Defaults.monitorSelection
     }
 }
