@@ -145,12 +145,12 @@ final class OverlayWindow: NSPanel {
 
     override var canBecomeKey: Bool {
         get { false }
-        set {} // swiftlint:disable:this unused_setter_value
+        set {}
     }
 
     override var canBecomeMain: Bool {
         get { false }
-        set {} // swiftlint:disable:this unused_setter_value
+        set {}
     }
 }
 

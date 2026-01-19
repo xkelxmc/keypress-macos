@@ -198,24 +198,24 @@ final class OverlayController {
         }
 
         // Get window position
+        // swiftlint:disable:next force_cast
+        let windowElement = window as! AXUIElement
         var positionRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(window as! AXUIElement, kAXPositionAttribute as CFString, &positionRef) ==
-            .success,
-            let positionValue = positionRef
+        guard AXUIElementCopyAttributeValue(windowElement, kAXPositionAttribute as CFString, &positionRef) == .success,
+              let positionValue = positionRef
         else {
             return nil
         }
 
         var position = CGPoint.zero
+        // swiftlint:disable:next force_cast
         guard AXValueGetValue(positionValue as! AXValue, .cgPoint, &position) else {
             return nil
         }
 
         // Find the screen that contains this position
-        for screen in NSScreen.screens {
-            if screen.frame.contains(position) {
-                return screen
-            }
+        for screen in NSScreen.screens where screen.frame.contains(position) {
+            return screen
         }
 
         return nil

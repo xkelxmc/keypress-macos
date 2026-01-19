@@ -75,9 +75,9 @@ private struct MonitorVisualization: View {
     private func isMonitorSelected(_ index: Int) -> Bool {
         switch self.config.monitorSelection {
         case .auto:
-            return false
+            false
         case let .fixed(selectedIndex):
-            return index == selectedIndex
+            index == selectedIndex
         }
     }
 }
@@ -150,7 +150,7 @@ private struct MonitorLayout {
     let containerSize: CGSize
 
     private var unionFrame: CGRect {
-        screens.reduce(.null) { $0.union($1.frame) }
+        self.screens.reduce(.null) { $0.union($1.frame) }
     }
 
     private var scale: CGFloat {
@@ -313,14 +313,14 @@ private struct PositionIndicatorsView: View {
     }
 
     private func indicatorFillColor(for position: OverlayPosition) -> Color {
-        if self.isSelected && self.config.position == position {
+        if self.isSelected, self.config.position == position {
             return Color.green.opacity(0.9)
         }
         return Color(white: 0.3).opacity(0.8)
     }
 
     private func indicatorStrokeColor(for position: OverlayPosition) -> Color {
-        if self.isSelected && self.config.position == position {
+        if self.isSelected, self.config.position == position {
             return Color.green
         }
         return Color(white: 0.6)
@@ -329,7 +329,7 @@ private struct PositionIndicatorsView: View {
     private func selectPosition(_ position: OverlayPosition) {
         withAnimation(.easeInOut(duration: 0.15)) {
             // Select this monitor if not in auto mode
-            if !self.isAutoMode && NSScreen.screens.count > 1 {
+            if !self.isAutoMode, NSScreen.screens.count > 1 {
                 self.config.monitorSelection = .fixed(index: self.monitorIndex)
             }
             // Select position
@@ -337,7 +337,11 @@ private struct PositionIndicatorsView: View {
         }
     }
 
-    private func indicatorPosition(for position: OverlayPosition, in containerSize: CGSize, indicatorSize: CGSize) -> CGPoint {
+    private func indicatorPosition(
+        for position: OverlayPosition,
+        in containerSize: CGSize,
+        indicatorSize: CGSize) -> CGPoint
+    {
         let marginX: CGFloat = indicatorSize.width / 2 + 8
         let marginY: CGFloat = indicatorSize.height / 2 + 8
 
@@ -488,9 +492,9 @@ private struct MonitorRowView: View {
     private var isSelected: Bool {
         switch self.config.monitorSelection {
         case .auto:
-            return false
+            false
         case let .fixed(selectedIndex):
-            return self.index == selectedIndex
+            self.index == selectedIndex
         }
     }
 

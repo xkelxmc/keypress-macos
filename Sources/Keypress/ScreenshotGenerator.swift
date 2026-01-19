@@ -16,14 +16,12 @@ enum ScreenshotGenerator {
         var mode = "both"
         var customWallpaperPath: String?
 
-        for (index, arg) in args.enumerated() {
-            if arg == "--screenshot" {
-                if index + 1 < args.count && !args[index + 1].hasPrefix("-") {
-                    mode = args[index + 1]
-                }
-                if index + 2 < args.count && !args[index + 2].hasPrefix("-") {
-                    customWallpaperPath = args[index + 2]
-                }
+        for (index, arg) in args.enumerated() where arg == "--screenshot" {
+            if index + 1 < args.count, !args[index + 1].hasPrefix("-") {
+                mode = args[index + 1]
+            }
+            if index + 2 < args.count, !args[index + 2].hasPrefix("-") {
+                customWallpaperPath = args[index + 2]
             }
         }
 
@@ -84,16 +82,14 @@ enum ScreenshotGenerator {
             try self.generateScreenshot(
                 wallpaperPath: lightWallpaper,
                 outputPath: "\(self.outputDir)/keypress-light_\(timestamp).png",
-                isDark: false
-            )
+                isDark: false)
         }
 
         if mode == "dark" || mode == "both" {
             try self.generateScreenshot(
                 wallpaperPath: darkWallpaper,
                 outputPath: "\(self.outputDir)/keypress-dark_\(timestamp).png",
-                isDark: true
-            )
+                isDark: true)
         }
     }
 
@@ -136,21 +132,18 @@ enum ScreenshotGenerator {
             in: CGRect(origin: .zero, size: self.outputSize),
             from: .zero,
             operation: .copy,
-            fraction: 1.0
-        )
+            fraction: 1.0)
 
         // Draw keys centered
         let keysSize = keysImage.size
         let keysOrigin = CGPoint(
             x: (self.outputSize.width - keysSize.width) / 2,
-            y: (self.outputSize.height - keysSize.height) / 2
-        )
+            y: (self.outputSize.height - keysSize.height) / 2)
         keysImage.draw(
             in: CGRect(origin: keysOrigin, size: keysSize),
             from: .zero,
             operation: .sourceOver,
-            fraction: 1.0
-        )
+            fraction: 1.0)
 
         finalImage.unlockFocus()
 
@@ -183,16 +176,13 @@ private struct ScreenshotKeysView: View {
         HStack(spacing: 6) {
             KeyCapView(
                 symbol: KeySymbol(id: "command-left", display: "⌘", isModifier: true),
-                config: self.config
-            )
+                config: self.config)
             KeyCapView(
                 symbol: KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
-                config: self.config
-            )
+                config: self.config)
             KeyCapView(
                 symbol: KeySymbol(id: "k", display: "K"),
-                config: self.config
-            )
+                config: self.config)
         }
     }
 

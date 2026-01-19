@@ -8,7 +8,7 @@ private let logger = Logger(subsystem: "dev.keypress.app", category: "Accessibil
 /// Manages Accessibility permission state with live updates.
 /// Uses DistributedNotificationCenter to detect permission changes without app restart.
 @MainActor
-public final class AccessibilityPermission: Sendable {
+public final class AccessibilityPermission {
     // MARK: - Singleton
 
     public static let shared = AccessibilityPermission()
@@ -86,8 +86,7 @@ public final class AccessibilityPermission: Sendable {
 
                 // Log every 10th poll or when state changes
                 if pollCount % 10 == 0 {
-                    print(
-                        "[AccessibilityPermission] Poll #\(pollCount): AXIsProcessTrusted=\(axTrusted), functionalTest=\(functional)")
+                    print("[AccessibilityPermission] Poll #\(pollCount): AX=\(axTrusted), func=\(functional)")
                 }
 
                 // Use functional test as the source of truth

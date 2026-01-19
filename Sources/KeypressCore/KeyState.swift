@@ -222,15 +222,13 @@ public final class KeyState: KeyStateProtocol {
 
         // Clean up associated modifiers
         if let associatedModifiers = self.keyModifierAssociations.removeValue(forKey: id) {
-            for modifierId in associatedModifiers {
-                // Only remove if this modifier is in releasedModifiers (physically released)
-                // and no other key is associated with it
-                if self.releasedModifiers.contains(modifierId) {
-                    let stillHasAssociations = self.keyModifierAssociations.values.contains { $0.contains(modifierId) }
-                    if !stillHasAssociations {
-                        self.releasedModifiers.remove(modifierId)
-                        self.pressedKeys.removeAll { $0.symbol.id == modifierId }
-                    }
+            // Only process modifiers that are in releasedModifiers (physically released)
+            for modifierId in associatedModifiers where self.releasedModifiers.contains(modifierId) {
+                // Check if no other key is associated with this modifier
+                let stillHasAssociations = self.keyModifierAssociations.values.contains { $0.contains(modifierId) }
+                if !stillHasAssociations {
+                    self.releasedModifiers.remove(modifierId)
+                    self.pressedKeys.removeAll { $0.symbol.id == modifierId }
                 }
             }
         }

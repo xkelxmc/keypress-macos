@@ -35,6 +35,7 @@ extension KeyboardShortcuts.Shortcut {
         return parts.joined()
     }
 
+    // swiftlint:disable cyclomatic_complexity
     /// Maps KeyboardShortcuts.Key to English display string by physical position.
     static func keyDisplayString(for key: KeyboardShortcuts.Key) -> String {
         switch Int(key.rawValue) {
@@ -102,4 +103,5 @@ extension KeyboardShortcuts.Shortcut {
         default: "?"
         }
     }
+    // swiftlint:enable cyclomatic_complexity
 }
