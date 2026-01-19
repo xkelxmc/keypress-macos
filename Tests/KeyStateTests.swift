@@ -393,7 +393,7 @@ struct SingleKeyStateTests {
         #expect(state.pressedKeys[2].symbol.display == "A")
     }
 
-    @Test("Modifier release updates display")
+    @Test("Modifier stays with key after release, clears on new keypress")
     @MainActor
     func test_modifierRelease() {
         let state = SingleKeyState()
@@ -411,15 +411,25 @@ struct SingleKeyStateTests {
         )
         #expect(state.pressedKeys.count == 2)
 
-        // Release Command
+        // Release Command — modifier should stay with the key
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: []),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true)
         )
 
-        // Display should update (A still shown from timeout, but no modifier)
+        // Combination should stay together (Cmd+A)
+        #expect(state.pressedKeys.count == 2)
+        #expect(state.pressedKeys.first?.symbol.display == "⌘")
+
+        // Press new key without modifier — released modifier should clear
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0x01, modifiers: []),
+            symbol: KeySymbol(id: "key-b", display: "B")
+        )
+
+        // Now only the new key should be shown
         #expect(state.pressedKeys.count == 1)
-        #expect(state.pressedKeys.first?.symbol.display == "A")
+        #expect(state.pressedKeys.first?.symbol.display == "B")
     }
 
     @Test("Clear removes all keys")

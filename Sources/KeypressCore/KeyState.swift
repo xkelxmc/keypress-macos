@@ -77,6 +77,12 @@ public final class KeyState: KeyStateProtocol {
 
     private var timeoutTasks: [String: Task<Void, Never>] = [:]
 
+    /// Modifiers that were released but are kept visible because they're associated with a key
+    private var releasedModifiers: Set<String> = []
+
+    /// Maps key IDs to their associated modifier symbol IDs (for keeping combos together)
+    private var keyModifierAssociations: [String: Set<String>] = [:]
+
     // MARK: - Initialization
 
     public init() {}
@@ -103,6 +109,8 @@ public final class KeyState: KeyStateProtocol {
             task.cancel()
         }
         self.timeoutTasks.removeAll()
+        self.releasedModifiers.removeAll()
+        self.keyModifierAssociations.removeAll()
         self.pressedKeys.removeAll()
     }
 
@@ -115,12 +123,16 @@ public final class KeyState: KeyStateProtocol {
                 let key = PressedKey(symbol: symbol)
                 self.addKey(key)
             }
+            // If this modifier was in releasedModifiers, it's being pressed again
+            self.releasedModifiers.remove(symbol.id)
         } else if symbol.isSpecial {
             // Special keys: don't duplicate, but use timeout (refresh timeout on re-press)
             self.cancelTimeout(for: symbol.id)
             if !self.pressedKeys.contains(where: { $0.symbol.id == symbol.id }) {
                 let key = PressedKey(symbol: symbol)
                 self.addKey(key)
+                // Associate with current modifiers
+                self.associateKeyWithModifiers(keyId: key.id)
             }
             self.scheduleTimeout(for: symbol.id)
         } else {
@@ -129,6 +141,8 @@ public final class KeyState: KeyStateProtocol {
                 // Allow duplicates: each press is unique (typing "hello" → h e l l o)
                 let key = PressedKey(symbol: symbol)
                 self.addKey(key)
+                // Associate with current modifiers
+                self.associateKeyWithModifiers(keyId: key.id)
                 self.scheduleTimeout(for: key.id)
             } else {
                 // No duplicates: refresh timeout on re-press, don't add if already present
@@ -136,9 +150,23 @@ public final class KeyState: KeyStateProtocol {
                 if !self.pressedKeys.contains(where: { $0.symbol.id == symbol.id }) {
                     let key = PressedKey(symbol: symbol)
                     self.addKey(key)
+                    // Associate with current modifiers
+                    self.associateKeyWithModifiers(keyId: key.id)
                 }
                 self.scheduleTimeout(for: symbol.id)
             }
+        }
+    }
+
+    /// Associates a key with currently active modifiers
+    private func associateKeyWithModifiers(keyId: String) {
+        let modifierIds = Set(
+            self.pressedKeys
+                .filter { $0.symbol.isModifier }
+                .map { $0.symbol.id }
+        )
+        if !modifierIds.isEmpty {
+            self.keyModifierAssociations[keyId] = modifierIds
         }
     }
 
@@ -151,6 +179,12 @@ public final class KeyState: KeyStateProtocol {
     }
 
     private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
+        // Special handling for CapsLock — check actual system state after delay
+        if keyCode == 0x39 {
+            self.handleCapsLockChanged(symbol: symbol)
+            return
+        }
+
         // Determine if this modifier is now pressed or released
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
 
@@ -161,6 +195,21 @@ public final class KeyState: KeyStateProtocol {
             }
         } else {
             self.removeModifier(symbolId: symbol.id)
+        }
+    }
+
+    private func handleCapsLockChanged(symbol: KeySymbol) {
+        // Simple toggle: each flagsChanged event toggles visibility
+        // This mirrors physical key press/release behavior
+        let isShown = self.pressedKeys.contains(where: { $0.symbol.id == symbol.id })
+
+        if isShown {
+            // Key is shown → this is key release → remove
+            self.removeModifier(symbolId: symbol.id)
+        } else {
+            // Key is not shown → this is key press → show
+            let key = PressedKey(symbol: symbol)
+            self.addKey(key)
         }
     }
 
@@ -191,10 +240,34 @@ public final class KeyState: KeyStateProtocol {
     private func removeKey(id: String) {
         self.cancelTimeout(for: id)
         self.pressedKeys.removeAll { $0.id == id }
+
+        // Clean up associated modifiers
+        if let associatedModifiers = self.keyModifierAssociations.removeValue(forKey: id) {
+            for modifierId in associatedModifiers {
+                // Only remove if this modifier is in releasedModifiers (physically released)
+                // and no other key is associated with it
+                if self.releasedModifiers.contains(modifierId) {
+                    let stillHasAssociations = self.keyModifierAssociations.values.contains { $0.contains(modifierId) }
+                    if !stillHasAssociations {
+                        self.releasedModifiers.remove(modifierId)
+                        self.pressedKeys.removeAll { $0.symbol.id == modifierId }
+                    }
+                }
+            }
+        }
     }
 
     private func removeModifier(symbolId: String) {
-        self.pressedKeys.removeAll { $0.symbol.id == symbolId }
+        // Check if any key is associated with this modifier
+        let hasAssociatedKeys = self.keyModifierAssociations.values.contains { $0.contains(symbolId) }
+
+        if hasAssociatedKeys {
+            // Don't remove yet — mark as released but keep visible
+            self.releasedModifiers.insert(symbolId)
+        } else {
+            // No associated keys — remove immediately
+            self.pressedKeys.removeAll { $0.symbol.id == symbolId }
+        }
     }
 
     private func sortAndLimit() {
@@ -298,6 +371,9 @@ public final class SingleKeyState: KeyStateProtocol {
     /// Last non-modifier key pressed (kept for display when modifiers change).
     private var lastNonModifierKey: PressedKey?
 
+    /// Modifiers that were released but kept visible because lastNonModifierKey exists
+    private var releasedModifiers: Set<String> = []
+
     private var timeoutTask: Task<Void, Never>?
 
     // MARK: - Initialization
@@ -326,6 +402,7 @@ public final class SingleKeyState: KeyStateProtocol {
         self.timeoutTask = nil
         self.pressedKeys.removeAll()
         self.activeModifiers.removeAll()
+        self.releasedModifiers.removeAll()
         self.lastNonModifierKey = nil
     }
 
@@ -341,7 +418,13 @@ public final class SingleKeyState: KeyStateProtocol {
             // Update display with current modifiers (preserve last non-modifier key)
             self.updateDisplay()
         } else {
-            // Non-modifier key: store it and show combination
+            // Non-modifier key: clear released modifiers first (they're not part of this new combo)
+            for modifierId in self.releasedModifiers {
+                self.activeModifiers.removeAll { $0.symbol.id == modifierId }
+            }
+            self.releasedModifiers.removeAll()
+
+            // Store new key and show combination
             self.lastNonModifierKey = PressedKey(symbol: symbol)
             self.updateDisplay()
             self.scheduleTimeout()
@@ -359,6 +442,12 @@ public final class SingleKeyState: KeyStateProtocol {
     }
 
     private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
+        // Special handling for CapsLock — check actual system state after delay
+        if keyCode == 0x39 {
+            self.handleCapsLockChanged(symbol: symbol)
+            return
+        }
+
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
 
         if isPressed {
@@ -366,8 +455,17 @@ public final class SingleKeyState: KeyStateProtocol {
                 let key = PressedKey(symbol: symbol)
                 self.activeModifiers.append(key)
             }
+            // Modifier pressed again — no longer released
+            self.releasedModifiers.remove(symbol.id)
         } else {
-            self.activeModifiers.removeAll { $0.symbol.id == symbol.id }
+            // Modifier released
+            if self.lastNonModifierKey != nil {
+                // Keep modifier visible — mark as released but don't remove
+                self.releasedModifiers.insert(symbol.id)
+            } else {
+                // No key to keep combo with — remove immediately
+                self.activeModifiers.removeAll { $0.symbol.id == symbol.id }
+            }
         }
 
         // Update display to reflect current modifiers
@@ -375,6 +473,22 @@ public final class SingleKeyState: KeyStateProtocol {
         if !self.pressedKeys.isEmpty || !self.activeModifiers.isEmpty || self.lastNonModifierKey != nil {
             self.updateDisplay()
         }
+    }
+
+    private func handleCapsLockChanged(symbol: KeySymbol) {
+        // Simple toggle: each flagsChanged event toggles visibility
+        // This mirrors physical key press/release behavior
+        let isActive = self.activeModifiers.contains(where: { $0.symbol.id == symbol.id })
+
+        if isActive {
+            // Key is shown → this is key release → remove
+            self.activeModifiers.removeAll { $0.symbol.id == symbol.id }
+        } else {
+            // Key is not shown → this is key press → show
+            let key = PressedKey(symbol: symbol)
+            self.activeModifiers.append(key)
+        }
+        self.updateDisplay()
     }
 
     private func isModifierPressed(keyCode: Int64, flags: CGEventFlags) -> Bool {
@@ -427,9 +541,18 @@ public final class SingleKeyState: KeyStateProtocol {
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
-                self?.lastNonModifierKey = nil
-                self?.updateDisplay()
+                self?.clearKeyAndReleasedModifiers()
             }
         }
+    }
+
+    private func clearKeyAndReleasedModifiers() {
+        self.lastNonModifierKey = nil
+        // Remove modifiers that were released while key was visible
+        for modifierId in self.releasedModifiers {
+            self.activeModifiers.removeAll { $0.symbol.id == modifierId }
+        }
+        self.releasedModifiers.removeAll()
+        self.updateDisplay()
     }
 }
