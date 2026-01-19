@@ -44,6 +44,23 @@ struct AppearanceSettingsPane: View {
 
                 Divider()
 
+                // Keyboard Frame
+                SettingsSection("Background") {
+                    Picker("Style", selection: self.$config.keyboardFrameStyle) {
+                        ForEach(KeyboardFrameStyle.allCases, id: \.self) { style in
+                            Text(style.displayName).tag(style)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 280)
+
+                    Text(self.config.keyboardFrameStyle.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Divider()
+
                 // Preview
                 SettingsSection("Preview") {
                     KeyPreview(config: self.config)
@@ -81,6 +98,26 @@ extension KeyCapStyle {
         case .mechanical: "3D skeuomorphic keycaps with depth and shadows."
         case .flat: "Modern flat design with subtle shadows. (Coming soon)"
         case .minimal: "Text only with simple background. (Coming soon)"
+        }
+    }
+}
+
+// MARK: - KeyboardFrameStyle Extension
+
+extension KeyboardFrameStyle {
+    var displayName: String {
+        switch self {
+        case .frame: "Frame"
+        case .overlay: "Overlay"
+        case .none: "None"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .frame: "3D keyboard frame with depth and materials."
+        case .overlay: "Simple semi-transparent dark background."
+        case .none: "No background, keys float freely."
         }
     }
 }

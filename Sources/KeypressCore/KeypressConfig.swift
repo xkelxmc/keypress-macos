@@ -73,6 +73,20 @@ public enum MonitorSelection: Codable, Sendable, Equatable, Hashable {
     case fixed(index: Int)
 }
 
+// MARK: - KeyboardFrameStyle
+
+/// Style for the container around keys.
+public enum KeyboardFrameStyle: String, CaseIterable, Codable, Sendable {
+    /// 3D keyboard frame with depth and materials.
+    case frame
+
+    /// Simple semi-transparent overlay background.
+    case overlay
+
+    /// No background, keys float freely.
+    case none
+}
+
 // MARK: - KeyCapStyle
 
 /// Visual style for keycap rendering.
@@ -291,6 +305,7 @@ public final class KeypressConfig {
         static let keyCapStyle = "settings.keyCapStyle"
         static let colorScheme = "settings.colorScheme"
         static let appearanceMode = "settings.appearanceMode"
+        static let keyboardFrameStyle = "settings.keyboardFrameStyle"
         // Monitor
         static let monitorSelection = "settings.monitorSelection"
     }
@@ -317,6 +332,7 @@ public final class KeypressConfig {
         static let keyCapStyle = KeyCapStyle.mechanical
         static let colorScheme = KeyColorScheme.dark
         static let appearanceMode = AppearanceMode.auto
+        static let keyboardFrameStyle = KeyboardFrameStyle.frame
         // Monitor
         static let monitorSelection = MonitorSelection.auto
     }
@@ -412,6 +428,11 @@ public final class KeypressConfig {
         }
     }
 
+    /// Style for the container around keys (frame, overlay, or none).
+    public var keyboardFrameStyle: KeyboardFrameStyle {
+        didSet { self.userDefaults.set(self.keyboardFrameStyle.rawValue, forKey: Keys.keyboardFrameStyle) }
+    }
+
     // MARK: - Monitor Properties
 
     /// Which monitor to display the overlay on.
@@ -503,6 +524,13 @@ public final class KeypressConfig {
             self.appearanceMode = Defaults.appearanceMode
         }
 
+        if let styleRaw = userDefaults.string(forKey: Keys.keyboardFrameStyle),
+           let style = KeyboardFrameStyle(rawValue: styleRaw) {
+            self.keyboardFrameStyle = style
+        } else {
+            self.keyboardFrameStyle = Defaults.keyboardFrameStyle
+        }
+
         // Monitor settings
         if let monitorData = userDefaults.data(forKey: Keys.monitorSelection),
            let selection = try? JSONDecoder().decode(MonitorSelection.self, from: monitorData) {
@@ -576,6 +604,7 @@ public final class KeypressConfig {
         self.keyCapStyle = Defaults.keyCapStyle
         self.colorScheme = Defaults.colorScheme
         self.appearanceMode = Defaults.appearanceMode
+        self.keyboardFrameStyle = Defaults.keyboardFrameStyle
         self.monitorSelection = Defaults.monitorSelection
     }
 }
