@@ -2,8 +2,6 @@
 
 [![CI](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml/badge.svg)](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml)
 [![GitHub last commit](https://img.shields.io/github/last-commit/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/commits/main)
-
-[![GitHub stars](https://img.shields.io/github/stars/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/stargazers)
 [![License: MIT](https://img.shields.io/github/license/xkelxmc/keypress-macos)](./LICENSE)
 [![Swift](https://img.shields.io/github/languages/top/xkelxmc/keypress-macos)](https://swift.org/)
 [![macOS 14+](https://img.shields.io/badge/macOS-14+-blue)](https://www.apple.com/macos/)
