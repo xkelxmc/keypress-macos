@@ -133,6 +133,19 @@ struct KeyCapView: View {
     // MARK: - Body
 
     var body: some View {
+        switch self.style.style {
+        case .mechanical:
+            self.mechanicalBody
+        case .flat:
+            self.flatBody
+        case .minimal:
+            self.minimalBody
+        }
+    }
+
+    // MARK: - Mechanical Style (3D skeuomorphic)
+
+    private var mechanicalBody: some View {
         ZStack {
             // Shadow beneath key
             self.keyShadow
@@ -144,6 +157,108 @@ struct KeyCapView: View {
             self.keycap
         }
         .frame(width: self.size.width, height: self.size.height + self.depth)
+    }
+
+    // MARK: - Flat Style (modern flat design)
+
+    private var flatBody: some View {
+        ZStack {
+            // Subtle drop shadow
+            RoundedRectangle(cornerRadius: self.cornerRadius)
+                .fill(Color.black.opacity(0.3 * self.style.shadowIntensity))
+                .blur(radius: 4)
+                .offset(y: 2)
+
+            // Main surface
+            RoundedRectangle(cornerRadius: self.cornerRadius)
+                .fill(self.baseColor)
+
+            // Subtle top highlight
+            RoundedRectangle(cornerRadius: self.cornerRadius)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.15),
+                            Color.white.opacity(0.0),
+                        ],
+                        startPoint: .top,
+                        endPoint: .center))
+
+            // Border
+            RoundedRectangle(cornerRadius: self.cornerRadius)
+                .strokeBorder(Color.white.opacity(0.1), lineWidth: 1)
+
+            // Label
+            self.keyLabel
+        }
+        .frame(width: self.size.width, height: self.size.height)
+    }
+
+    // MARK: - Minimal Style (text with background)
+
+    private var minimalBody: some View {
+        ZStack {
+            // Simple pill background
+            RoundedRectangle(cornerRadius: self.minimalCornerRadius)
+                .fill(self.baseColor.opacity(0.85))
+
+            // Subtle border
+            RoundedRectangle(cornerRadius: self.minimalCornerRadius)
+                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+
+            // Label
+            self.minimalLabel
+        }
+        .frame(width: self.minimalWidth, height: self.minimalHeight)
+    }
+
+    private var minimalCornerRadius: CGFloat {
+        self.minimalHeight / 2 // Pill shape
+    }
+
+    private var minimalWidth: CGFloat {
+        switch self.size {
+        case .standard: 40
+        case .modifier: 64
+        case .wide: 72
+        }
+    }
+
+    private var minimalHeight: CGFloat {
+        32
+    }
+
+    /// Label for minimal style (smaller, more compact).
+    @ViewBuilder
+    private var minimalLabel: some View {
+        if self.symbol.isModifier, let info = ModifierInfo.from(symbolId: self.symbol.id) {
+            // Modifier: icon + label inline
+            HStack(spacing: 3) {
+                Text(info.icon)
+                    .font(.system(size: 13, weight: .medium))
+                if !info.label.isEmpty {
+                    Text(info.label)
+                        .font(.system(size: 10, weight: .medium))
+                }
+            }
+            .foregroundColor(self.textColor)
+        } else {
+            // Regular key
+            Text(self.symbol.display)
+                .font(.system(size: self.minimalFontSize, weight: .medium))
+                .foregroundColor(self.textColor)
+        }
+    }
+
+    private var minimalFontSize: CGFloat {
+        let display = self.symbol.display
+        if display.count == 1 {
+            return 15
+        }
+        if display.hasPrefix("F") || display.count > 2 {
+            return 10
+        }
+        return 12
     }
 
     // MARK: - Subviews

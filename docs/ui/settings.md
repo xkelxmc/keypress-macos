@@ -107,8 +107,8 @@ When enabled, only shows combinations with modifiers (⌘, ⌥, ⌃, ⇧). Regul
 
 **Styles:**
 - **Mechanical** — 3D skeuomorphic keycaps with depth, shadows, and beveled edges
-- **Flat** — Modern flat design with subtle shadows (future)
-- **Minimal** — Text only with background (future)
+- **Flat** — Modern flat design with subtle shadows and top highlight
+- **Minimal** — Compact pill-shaped keys with text
 
 ### Key Colors
 

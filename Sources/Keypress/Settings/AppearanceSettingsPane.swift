@@ -109,8 +109,8 @@ extension KeyCapStyle {
     var description: String {
         switch self {
         case .mechanical: "3D skeuomorphic keycaps with depth and shadows."
-        case .flat: "Modern flat design with subtle shadows. (Coming soon)"
-        case .minimal: "Text only with simple background. (Coming soon)"
+        case .flat: "Modern flat design with subtle shadows."
+        case .minimal: "Compact pill-shaped keys with text."
         }
     }
 }
@@ -552,12 +552,8 @@ struct WallpaperBackgroundView: View {
     let position: OverlayPosition
     let containerSize: CGSize
 
-    private var wallpaperImage: NSImage? {
-        guard let mainScreen = NSScreen.main,
-              let url = NSWorkspace.shared.desktopImageURL(for: mainScreen)
-        else { return nil }
-        return NSImage(contentsOf: url)
-    }
+    @State private var wallpaperImage: NSImage?
+    @State private var refreshID = UUID()
 
     private var screenSize: CGSize {
         NSScreen.main?.frame.size ?? CGSize(width: 1920, height: 1080)
@@ -582,11 +578,34 @@ struct WallpaperBackgroundView: View {
                     endPoint: .bottomTrailing)
             }
         }
+        .id(self.refreshID)
+        .onAppear {
+            self.loadWallpaper()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSWorkspace.activeSpaceDidChangeNotification)) { _ in
+            self.loadWallpaper()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            self.loadWallpaper()
+        }
+    }
+
+    /// Loads the current wallpaper image from disk, bypassing any cache.
+    private func loadWallpaper() {
+        guard let screen = NSScreen.main,
+              let url = NSWorkspace.shared.desktopImageURL(for: screen)
+        else { return }
+
+        // Load fresh, bypassing NSImage cache
+        guard let imageData = try? Data(contentsOf: url),
+              let image = NSImage(data: imageData)
+        else { return }
+
+        self.wallpaperImage = image
+        self.refreshID = UUID()
     }
 
     private var scaledWallpaperSize: CGSize {
-        // Scale wallpaper so container represents a portion of the screen
-        // We want the preview to show approximately the corner/edge area
         let scale = self.containerSize.height / (self.screenSize.height * 0.25)
         return CGSize(
             width: self.screenSize.width * scale,

@@ -689,12 +689,18 @@ public final class KeypressConfig {
     // MARK: - Style Access
 
     /// Returns the effective style for a category.
-    /// Uses custom override if available, otherwise returns default style based on current color scheme.
+    /// Uses custom override if available, otherwise returns default style based on current color scheme
+    /// and global keyCapStyle setting.
     public func effectiveStyle(for category: KeyCategory) -> KeyCategoryStyle {
         if let override = self.categoryStyleOverrides[category] {
             return override
         }
-        return KeyCategoryStyle.default(for: category, scheme: self.colorScheme)
+        return KeyCategoryStyle(
+            color: self.colorScheme.color(for: category),
+            depth: 1.0,
+            cornerRadius: 0.5,
+            shadowIntensity: 1.0,
+            style: self.keyCapStyle)
     }
 
     /// Returns true if a category has a custom style override.
