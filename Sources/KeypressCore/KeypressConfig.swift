@@ -33,16 +33,16 @@ public enum OverlaySize: String, CaseIterable, Codable, Sendable {
     }
 }
 
-// MARK: - Settings
+// MARK: - KeypressConfig
 
 /// Application settings with UserDefaults persistence.
 @MainActor
 @Observable
-public final class Settings {
+public final class KeypressConfig {
     // MARK: - Singleton
 
     /// Shared settings instance.
-    public static let shared = Settings()
+    public static let shared = KeypressConfig()
 
     // MARK: - UserDefaults Keys
 
@@ -142,9 +142,9 @@ public final class Settings {
 
     // MARK: - Testing Support
 
-    /// Creates a Settings instance with custom UserDefaults (for testing).
-    internal static func makeForTesting(userDefaults: UserDefaults) -> Settings {
-        let settings = Settings(userDefaults: userDefaults)
+    /// Creates a KeypressConfig instance with custom UserDefaults (for testing).
+    internal static func makeForTesting(userDefaults: UserDefaults) -> KeypressConfig {
+        let settings = KeypressConfig(userDefaults: userDefaults)
         return settings
     }
 

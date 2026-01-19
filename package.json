@@ -2,8 +2,10 @@
   "name": "keypress-macos",
   "private": true,
   "scripts": {
-    "start": "./Scripts/compile_and_run.sh",
+    "start": "pkill -x Keypress 2>/dev/null; ./Scripts/package_app.sh && ./Keypress.app/Contents/MacOS/Keypress &",
+    "start:open": "./Scripts/compile_and_run.sh",
     "start:test": "./Scripts/compile_and_run.sh --test",
+    "stop": "pkill -x Keypress 2>/dev/null || true",
     "build": "swift build",
     "build:release": "swift build -c release",
     "test": "swift test",
@@ -11,7 +13,6 @@
     "format": "swiftformat Sources Tests",
     "check": "swiftformat Sources Tests --lint && swiftlint --strict",
     "package": "./Scripts/package_app.sh",
-    "package:release": "./Scripts/package_app.sh release",
-    "stop": "pkill -x Keypress || pkill -f Keypress.app || true"
+    "package:release": "./Scripts/package_app.sh release"
   }
 }

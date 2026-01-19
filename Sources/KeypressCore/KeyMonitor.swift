@@ -99,10 +99,6 @@ public final class KeyMonitor: @unchecked Sendable {
 
         guard !self._isRunning else { return true }
 
-        guard Self.hasAccessibilityPermissions() else {
-            return false
-        }
-
         let eventMask: CGEventMask =
             (1 << CGEventType.keyDown.rawValue) |
             (1 << CGEventType.keyUp.rawValue) |

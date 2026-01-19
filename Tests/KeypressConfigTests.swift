@@ -2,15 +2,15 @@ import Foundation
 import Testing
 @testable import KeypressCore
 
-@Suite("Settings Tests")
-struct SettingsTests {
+@Suite("KeypressConfig Tests")
+struct KeypressConfigTests {
     @Test("Default values are correct")
     @MainActor
     func test_defaultValues() {
         let defaults = UserDefaults(suiteName: "test.settings.defaults")!
         defaults.removePersistentDomain(forName: "test.settings.defaults")
 
-        let settings = Settings.makeForTesting(userDefaults: defaults)
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
 
         #expect(settings.enabled == true)
         #expect(settings.launchAtLogin == false)
@@ -20,13 +20,13 @@ struct SettingsTests {
         #expect(settings.keyTimeout == 1.5)
     }
 
-    @Test("Settings persist to UserDefaults")
+    @Test("KeypressConfig persist to UserDefaults")
     @MainActor
     func test_persistence() {
         let defaults = UserDefaults(suiteName: "test.settings.persistence")!
         defaults.removePersistentDomain(forName: "test.settings.persistence")
 
-        let settings = Settings.makeForTesting(userDefaults: defaults)
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
 
         settings.enabled = false
         settings.launchAtLogin = true
@@ -49,7 +49,7 @@ struct SettingsTests {
         let defaults = UserDefaults(suiteName: "test.settings.reset")!
         defaults.removePersistentDomain(forName: "test.settings.reset")
 
-        let settings = Settings.makeForTesting(userDefaults: defaults)
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
 
         settings.enabled = false
         settings.position = .topCenter
