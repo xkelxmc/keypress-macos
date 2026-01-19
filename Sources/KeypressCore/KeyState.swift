@@ -179,13 +179,6 @@ public final class KeyState: KeyStateProtocol {
     }
 
     private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
-        // Special handling for CapsLock — check actual system state after delay
-        if keyCode == 0x39 {
-            self.handleCapsLockChanged(symbol: symbol)
-            return
-        }
-
-        // Determine if this modifier is now pressed or released
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
 
         if isPressed {
@@ -195,21 +188,6 @@ public final class KeyState: KeyStateProtocol {
             }
         } else {
             self.removeModifier(symbolId: symbol.id)
-        }
-    }
-
-    private func handleCapsLockChanged(symbol: KeySymbol) {
-        // Simple toggle: each flagsChanged event toggles visibility
-        // This mirrors physical key press/release behavior
-        let isShown = self.pressedKeys.contains(where: { $0.symbol.id == symbol.id })
-
-        if isShown {
-            // Key is shown → this is key release → remove
-            self.removeModifier(symbolId: symbol.id)
-        } else {
-            // Key is not shown → this is key press → show
-            let key = PressedKey(symbol: symbol)
-            self.addKey(key)
         }
     }
 
@@ -223,8 +201,6 @@ public final class KeyState: KeyStateProtocol {
             return flags.contains(.maskAlternate)
         case 0x3B, 0x3E: // Control
             return flags.contains(.maskControl)
-        case 0x39: // Caps Lock
-            return flags.contains(.maskAlphaShift)
         case 0x3F: // Fn
             return flags.contains(.maskSecondaryFn)
         default:
@@ -442,12 +418,6 @@ public final class SingleKeyState: KeyStateProtocol {
     }
 
     private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
-        // Special handling for CapsLock — check actual system state after delay
-        if keyCode == 0x39 {
-            self.handleCapsLockChanged(symbol: symbol)
-            return
-        }
-
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
 
         if isPressed {
@@ -475,29 +445,12 @@ public final class SingleKeyState: KeyStateProtocol {
         }
     }
 
-    private func handleCapsLockChanged(symbol: KeySymbol) {
-        // Simple toggle: each flagsChanged event toggles visibility
-        // This mirrors physical key press/release behavior
-        let isActive = self.activeModifiers.contains(where: { $0.symbol.id == symbol.id })
-
-        if isActive {
-            // Key is shown → this is key release → remove
-            self.activeModifiers.removeAll { $0.symbol.id == symbol.id }
-        } else {
-            // Key is not shown → this is key press → show
-            let key = PressedKey(symbol: symbol)
-            self.activeModifiers.append(key)
-        }
-        self.updateDisplay()
-    }
-
     private func isModifierPressed(keyCode: Int64, flags: CGEventFlags) -> Bool {
         switch keyCode {
         case 0x37, 0x36: return flags.contains(.maskCommand)
         case 0x38, 0x3C: return flags.contains(.maskShift)
         case 0x3A, 0x3D: return flags.contains(.maskAlternate)
         case 0x3B, 0x3E: return flags.contains(.maskControl)
-        case 0x39: return flags.contains(.maskAlphaShift)
         case 0x3F: return flags.contains(.maskSecondaryFn)
         default: return false
         }

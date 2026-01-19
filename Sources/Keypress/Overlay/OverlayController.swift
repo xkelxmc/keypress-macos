@@ -1,4 +1,5 @@
 import AppKit
+import KeyboardShortcuts
 import KeypressCore
 import Observation
 
@@ -16,6 +17,9 @@ final class OverlayController {
     // Key state (one of these will be used based on display mode)
     private var historyKeyState: KeyState?
     private var singleKeyState: SingleKeyState?
+
+    // Hint state (independent of key state)
+    private let hintState = HintState()
 
     /// Current key state protocol reference for common operations.
     private var currentKeyState: (any KeyStateProtocol)? {
@@ -51,9 +55,17 @@ final class OverlayController {
         // Create overlay window based on display mode
         switch self.config.displayMode {
         case .single:
-            self.overlayWindow = OverlayWindow(singleKeyState: self.singleKeyState!, config: self.config)
+            self.overlayWindow = OverlayWindow(
+                singleKeyState: self.singleKeyState!,
+                hintState: self.hintState,
+                config: self.config
+            )
         case .history:
-            self.overlayWindow = OverlayWindow(keyState: self.historyKeyState!, config: self.config)
+            self.overlayWindow = OverlayWindow(
+                keyState: self.historyKeyState!,
+                hintState: self.hintState,
+                config: self.config
+            )
         }
 
         // Create key monitor with callback
@@ -66,6 +78,8 @@ final class OverlayController {
         // Try to start monitoring directly - KeyMonitor.start() returns false if no permissions
         if self.keyMonitor?.start() == true {
             print("[Keypress] KeyMonitor started successfully")
+            // Sync with currently held modifiers
+            self.keyMonitor?.emitCurrentModifiers()
             self.startObservingKeyState()
         } else {
             print("[Keypress] KeyMonitor.start() failed, requesting permissions...")
@@ -100,6 +114,16 @@ final class OverlayController {
         self.currentKeyState?.clear()
         self.historyKeyState = nil
         self.singleKeyState = nil
+
+        self.hintState.hide()
+    }
+
+    /// Stops key monitoring and clears keys, but keeps overlay window for hint.
+    /// Call stop() later to fully clean up.
+    func stopMonitoring() {
+        self.keyMonitor?.stop()
+        self.keyMonitor = nil
+        self.currentKeyState?.clear()
     }
 
     /// Updates overlay position based on current settings.
@@ -127,6 +151,12 @@ final class OverlayController {
     /// Updates single mode settings.
     func updateSingleSettings() {
         self.singleKeyState?.showModifiersOnly = self.config.showModifiersOnly
+    }
+
+    /// Shows toggle hint with the current state and shortcut text.
+    func showToggleHint(isEnabled: Bool) {
+        let shortcutText = KeyboardShortcuts.getShortcut(for: .toggleOverlay)?.displayString ?? ""
+        self.hintState.show(isEnabled: isEnabled, shortcutText: shortcutText)
     }
 
     // MARK: - Private Methods
@@ -163,18 +193,101 @@ final class OverlayController {
 
             while !Task.isCancelled {
                 let hasKeys = self.currentKeyState?.hasKeys ?? false
+                let hasHint = self.hintState.currentHint != nil
+                let shouldBeVisible = hasKeys || hasHint
 
-                if hasKeys != wasVisible {
-                    if hasKeys {
+                if shouldBeVisible != wasVisible {
+                    if shouldBeVisible {
                         self.overlayWindow?.showOverlay()
                     } else {
                         self.overlayWindow?.hideOverlay()
                     }
-                    wasVisible = hasKeys
+                    wasVisible = shouldBeVisible
                 }
 
                 try? await Task.sleep(for: .milliseconds(16)) // ~60fps check
             }
+        }
+
+        // Observe config changes
+        self.startObservingConfig()
+    }
+
+    private func startObservingConfig() {
+        // Track last known values to detect changes
+        var lastPosition = self.config.position
+        var lastOpacity = self.config.opacity
+        var lastSize = self.config.size
+        var lastKeyTimeout = self.config.keyTimeout
+        var lastMaxKeys = self.config.maxKeys
+        var lastDuplicateLetters = self.config.duplicateLetters
+        var lastShowModifiersOnly = self.config.showModifiersOnly
+        var lastDisplayMode = self.config.displayMode
+
+        Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self = self else { return }
+
+                // Check for position change
+                if self.config.position != lastPosition {
+                    lastPosition = self.config.position
+                    self.overlayWindow?.updatePosition()
+                }
+
+                // Check for opacity change
+                if self.config.opacity != lastOpacity {
+                    lastOpacity = self.config.opacity
+                    self.overlayWindow?.alphaValue = self.config.opacity
+                }
+
+                // Check for size change
+                if self.config.size != lastSize {
+                    lastSize = self.config.size
+                    // Size requires overlay recreation (handled by SwiftUI binding)
+                }
+
+                // Check for timeout change
+                if self.config.keyTimeout != lastKeyTimeout {
+                    lastKeyTimeout = self.config.keyTimeout
+                    self.updateKeyTimeout()
+                }
+
+                // Check for history mode settings
+                if self.config.maxKeys != lastMaxKeys {
+                    lastMaxKeys = self.config.maxKeys
+                    self.updateHistorySettings()
+                }
+                if self.config.duplicateLetters != lastDuplicateLetters {
+                    lastDuplicateLetters = self.config.duplicateLetters
+                    self.updateHistorySettings()
+                }
+
+                // Check for single mode settings
+                if self.config.showModifiersOnly != lastShowModifiersOnly {
+                    lastShowModifiersOnly = self.config.showModifiersOnly
+                    self.updateSingleSettings()
+                }
+
+                // Check for display mode change (requires restart)
+                if self.config.displayMode != lastDisplayMode {
+                    lastDisplayMode = self.config.displayMode
+                    self.recreateForDisplayMode()
+                }
+
+                try? await Task.sleep(for: .milliseconds(100)) // Check 10x per second
+            }
+        }
+    }
+
+    private func recreateForDisplayMode() {
+        // Save running state
+        let wasRunning = self.isRunning
+
+        // Stop and restart with new mode
+        self.stop()
+
+        if wasRunning {
+            self.start()
         }
     }
 }

@@ -1,8 +1,7 @@
 import KeypressCore
 import SwiftUI
 
-/// Simple view displaying pressed keys as styled text.
-/// MVP version — will be replaced with skeuomorphic design in Phase 3.
+/// Simple view displaying pressed keys as styled keycaps.
 struct KeyVisualizationView: View {
     @Bindable var keyState: KeyState
     let config: KeypressConfig
@@ -55,41 +54,11 @@ private struct KeyVisualizationContent: View {
     }
 }
 
-/// Simple badge view for a single key.
-struct KeyBadgeView: View {
-    let symbol: KeySymbol
-
-    var body: some View {
-        Text(self.symbol.display)
-            .font(.system(size: self.fontSize, weight: .medium, design: .rounded))
-            .foregroundStyle(.primary)
-            .frame(minWidth: self.minWidth, minHeight: 36)
-            .padding(.horizontal, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(self.symbol.isModifier ? Color.accentColor.opacity(0.15) : Color.primary.opacity(0.08))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
-            )
-    }
-
-    private var fontSize: CGFloat {
-        // Smaller font for text keys, larger for symbols
-        self.symbol.display.count == 1 ? 20 : 16
-    }
-
-    private var minWidth: CGFloat {
-        self.symbol.isModifier ? 36 : 28
-    }
-}
-
 #Preview("Key Visualization") {
     @Previewable @State var keyState = KeyState()
 
     KeyVisualizationView(keyState: keyState, config: KeypressConfig.shared)
-        .frame(width: 500, height: 120)
+        .frame(width: 400, height: 120)
         .background(Color.gray.opacity(0.3))
         .onAppear {
             Task { @MainActor in
@@ -103,7 +72,7 @@ struct KeyBadgeView: View {
                 )
                 keyState.processEvent(
                     KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
-                    symbol: KeySymbol(id: "a", display: "A")
+                    symbol: KeySymbol(id: "k", display: "K")
                 )
             }
         }

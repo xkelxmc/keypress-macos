@@ -122,7 +122,18 @@ Different key types have distinct colors for better visual distinction.
 | Setting | Control Type | Default |
 |---------|-------------|---------|
 | Key timeout | Slider (0.5s → 5s) | 1.5s |
-| Global hotkey | Hotkey recorder | ⌘⇧K |
+
+### Shortcuts
+
+| Setting | Control Type | Default |
+|---------|-------------|---------|
+| Toggle overlay | Hotkey recorder | None |
+
+Global keyboard shortcut to toggle overlay on/off. Uses [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) library.
+
+- Recorder allows user to set any key combination
+- Shortcut hint shown in menu bar next to "Enabled" item
+- Works globally, even when app is in background
 
 ## Persistence
 

@@ -93,6 +93,30 @@ public final class KeyMonitor: @unchecked Sendable {
         return AXIsProcessTrustedWithOptions(options)
     }
 
+    /// Returns current modifier flags from the system.
+    public static func currentModifierFlags() -> CGEventFlags {
+        CGEventSource.flagsState(.combinedSessionState)
+    }
+
+    /// Emits flagsChanged events for currently pressed modifiers.
+    /// Call this after start() to sync state with physically held keys.
+    public func emitCurrentModifiers() {
+        let flags = Self.currentModifierFlags()
+        let modifierKeyCodes: [(Int64, CGEventFlags)] = [
+            (0x37, .maskCommand), // Left Command
+            (0x38, .maskShift), // Left Shift
+            (0x3A, .maskAlternate), // Left Option
+            (0x3B, .maskControl), // Left Control
+        ]
+
+        for (keyCode, mask) in modifierKeyCodes where flags.contains(mask) {
+            let event = KeyEvent(type: .flagsChanged, keyCode: keyCode, modifiers: flags)
+            if let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: flags) {
+                self.eventHandler(event, symbol)
+            }
+        }
+    }
+
     /// Starts monitoring keyboard events.
     /// Returns false if permissions are not granted or tap creation fails.
     @discardableResult
@@ -244,8 +268,7 @@ public enum KeyCodeMapper {
         0x36: KeySymbol(id: "command-right", display: "⌘", isModifier: true),
         // Function key
         0x3F: KeySymbol(id: "fn", display: "fn", isModifier: true),
-        // Caps Lock
-        0x39: KeySymbol(id: "capslock", display: "⇪", isModifier: true),
+        // CapsLock excluded — macOS doesn't provide reliable press/release events
     ]
 
     // MARK: - Special Keys (shown with modifiers, no duplicates, timeout-based removal)
@@ -255,7 +278,7 @@ public enum KeyCodeMapper {
         0x30: KeySymbol(id: "tab", display: "⇥", isSpecial: true),
         0x31: KeySymbol(id: "space", display: "␣", isSpecial: true),
         0x33: KeySymbol(id: "delete", display: "⌫", isSpecial: true),
-        0x35: KeySymbol(id: "escape", display: "⎋", isSpecial: true),
+        0x35: KeySymbol(id: "escape", display: "ESC", isSpecial: true),
         0x4C: KeySymbol(id: "enter", display: "⌤", isSpecial: true),
         0x75: KeySymbol(id: "forward-delete", display: "⌦", isSpecial: true),
 
@@ -311,6 +334,27 @@ public enum KeyCodeMapper {
         0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5B, 0x5C,
     ]
 
+    /// Fallback US QWERTY mapping for when CGEvent returns control characters (Ctrl pressed).
+    private static let fallbackCharacters: [Int64: String] = [
+        // Letters (US QWERTY)
+        0x00: "A", 0x0B: "B", 0x08: "C", 0x02: "D", 0x0E: "E", 0x03: "F",
+        0x05: "G", 0x04: "H", 0x22: "I", 0x26: "J", 0x28: "K", 0x25: "L",
+        0x2E: "M", 0x2D: "N", 0x1F: "O", 0x23: "P", 0x0C: "Q", 0x0F: "R",
+        0x01: "S", 0x11: "T", 0x20: "U", 0x09: "V", 0x0D: "W", 0x07: "X",
+        0x10: "Y", 0x06: "Z",
+        // Numbers
+        0x12: "1", 0x13: "2", 0x14: "3", 0x15: "4", 0x16: "5",
+        0x17: "6", 0x18: "7", 0x19: "8", 0x1A: "9", 0x1B: "0",
+        0x1C: "-", 0x1D: "=",
+        // Punctuation
+        0x1E: "]", 0x21: "[", 0x27: "'", 0x29: ";", 0x2A: "\\",
+        0x2B: ",", 0x2C: "/", 0x2F: ".", 0x32: "`",
+        // Numpad
+        0x41: ".", 0x43: "*", 0x45: "+", 0x47: "⌧", 0x4B: "/", 0x4E: "-",
+        0x52: "0", 0x53: "1", 0x54: "2", 0x55: "3", 0x56: "4",
+        0x57: "5", 0x58: "6", 0x59: "7", 0x5B: "8", 0x5C: "9",
+    ]
+
     // MARK: - Public Methods
 
     /// Returns the symbol for a given keycode, using CGEvent for accurate character representation.
@@ -331,7 +375,10 @@ public enum KeyCodeMapper {
             if let event = event, let character = Self.extractCharacter(from: event) {
                 return KeySymbol(id: "key-\(keyCode)", display: character.uppercased())
             }
-            // Fallback to keycode-based lookup if no event provided
+            // Fallback to US QWERTY when CGEvent returns control chars (Ctrl pressed)
+            if let fallback = fallbackCharacters[keyCode] {
+                return KeySymbol(id: "key-\(keyCode)", display: fallback)
+            }
             return KeySymbol(id: "key-\(keyCode)", display: "?")
         }
 
@@ -340,6 +387,7 @@ public enum KeyCodeMapper {
 
 
     /// Extracts the character from a CGEvent using the current keyboard layout.
+    /// Returns nil for control characters (when Ctrl is pressed).
     private static func extractCharacter(from event: CGEvent) -> String? {
         var length = 0
         event.keyboardGetUnicodeString(maxStringLength: 0, actualStringLength: &length, unicodeString: nil)
@@ -350,10 +398,15 @@ public enum KeyCodeMapper {
         event.keyboardGetUnicodeString(maxStringLength: length, actualStringLength: &length, unicodeString: &buffer)
 
         let string = String(utf16CodeUnits: buffer, count: length)
+        guard !string.isEmpty else { return nil }
 
-        // Filter out control characters
-        guard let firstChar = string.first, !firstChar.isNewline, firstChar.isLetter || firstChar.isNumber || firstChar.isPunctuation || firstChar.isSymbol else {
-            return string.isEmpty ? nil : string
+        // Filter out control characters (ASCII 0-31) - these occur when Ctrl is pressed
+        guard let firstChar = string.unicodeScalars.first,
+              firstChar.value >= 32,
+              let char = string.first,
+              char.isLetter || char.isNumber || char.isPunctuation || char.isSymbol || char.isWhitespace
+        else {
+            return nil
         }
 
         return string

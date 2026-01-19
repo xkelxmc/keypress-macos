@@ -1,11 +1,13 @@
 import AppKit
+import KeyboardShortcuts
 import KeypressCore
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var overlayController: OverlayController?
     private var enabledMenuItem: NSMenuItem?
+    private var delayedStopTask: Task<Void, Never>?
 
     private var config: KeypressConfig { KeypressConfig.shared }
 
@@ -17,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         self.setupStatusItem()
         self.setupOverlay()
+        self.setupGlobalShortcut()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -71,7 +74,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(self.quit),
             keyEquivalent: "q"))
 
+        menu.delegate = self
         self.statusItem?.menu = menu
+    }
+
+    // MARK: - NSMenuDelegate
+
+    func menuWillOpen(_ menu: NSMenu) {
+        self.updateEnabledMenuItemTitle()
+    }
+
+    /// Updates the Enabled menu item title to include shortcut hint if set.
+    private func updateEnabledMenuItemTitle() {
+        guard let item = self.enabledMenuItem else { return }
+
+        if let shortcut = KeyboardShortcuts.getShortcut(for: .toggleOverlay) {
+            item.title = "Enabled (\(shortcut.displayString))"
+        } else {
+            item.title = "Enabled"
+        }
     }
 
     private func setupOverlay() {
@@ -86,22 +107,57 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func setupGlobalShortcut() {
+        KeyboardShortcuts.onKeyUp(for: .toggleOverlay) { [weak self] in
+            Task { @MainActor in
+                self?.performToggle(triggeredByShortcut: true)
+            }
+        }
+    }
+
     // MARK: - Actions
 
-    @objc private func toggleEnabled(_ sender: NSMenuItem) {
+    /// Common toggle logic used by both menu item and global shortcut.
+    /// - Parameter triggeredByShortcut: If true, shows toggle hint in overlay.
+    private func performToggle(triggeredByShortcut: Bool = false) {
+        // Cancel any pending delayed stop
+        self.delayedStopTask?.cancel()
+        self.delayedStopTask = nil
+
         self.config.enabled.toggle()
-        sender.state = self.config.enabled ? .on : .off
+        self.enabledMenuItem?.state = self.config.enabled ? .on : .off
         self.updateStatusIcon()
 
         if self.config.enabled {
             self.overlayController?.start()
+            // Show toggle hint when enabled via hotkey
+            if triggeredByShortcut {
+                self.overlayController?.showToggleHint(isEnabled: true)
+            }
         } else {
-            self.overlayController?.stop()
+            if triggeredByShortcut {
+                // Stop monitoring immediately, show "Off" hint, then fully stop after delay
+                self.overlayController?.stopMonitoring()
+                self.overlayController?.showToggleHint(isEnabled: false)
+                self.delayedStopTask = Task {
+                    try? await Task.sleep(for: .seconds(2.0))
+                    guard !Task.isCancelled else { return }
+                    await MainActor.run {
+                        self.overlayController?.stop()
+                    }
+                }
+            } else {
+                self.overlayController?.stop()
+            }
         }
     }
 
+    @objc private func toggleEnabled(_ sender: NSMenuItem) {
+        self.performToggle()
+    }
+
     @objc private func openSettings() {
-        // TODO: Open settings window
+        SettingsWindowController.shared.showSettings()
     }
 
     @objc private func quit() {

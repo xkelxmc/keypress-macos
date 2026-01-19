@@ -12,35 +12,47 @@ final class OverlayWindow: NSPanel {
 
     // MARK: - Initialization (History mode)
 
-    init(keyState: KeyState, config: KeypressConfig) {
+    init(keyState: KeyState, hintState: HintState, config: KeypressConfig) {
         self.config = config
 
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 80),
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 120),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
 
         self.configureWindow()
-        self.setupContentView(KeyVisualizationView(keyState: keyState, config: config))
+        self.setupContentView(
+            OverlayContainerView(
+                keysView: AnyView(KeyVisualizationView(keyState: keyState, config: config)),
+                hintState: hintState,
+                config: config
+            )
+        )
         self.updatePosition()
     }
 
     // MARK: - Initialization (Single mode)
 
-    init(singleKeyState: SingleKeyState, config: KeypressConfig) {
+    init(singleKeyState: SingleKeyState, hintState: HintState, config: KeypressConfig) {
         self.config = config
 
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 80),
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 120),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
 
         self.configureWindow()
-        self.setupContentView(SingleKeyVisualizationView(keyState: singleKeyState, config: config))
+        self.setupContentView(
+            OverlayContainerView(
+                keysView: AnyView(SingleKeyVisualizationView(keyState: singleKeyState, config: config)),
+                hintState: hintState,
+                config: config
+            )
+        )
         self.updatePosition()
     }
 
@@ -153,5 +165,56 @@ final class OverlayWindow: NSPanel {
     override var canBecomeMain: Bool {
         get { false }
         set {} // swiftlint:disable:this unused_setter_value
+    }
+}
+
+// MARK: - Container View
+
+/// Container that holds both keys overlay and hint overlay.
+private struct OverlayContainerView: View {
+    let keysView: AnyView
+    @Bindable var hintState: HintState
+    let config: KeypressConfig
+
+    private var hintPosition: HintPosition {
+        HintPosition.from(overlayPosition: self.config.position)
+    }
+
+    private var isHorizontalLayout: Bool {
+        self.hintPosition == .leading || self.hintPosition == .trailing
+    }
+
+    var body: some View {
+        Group {
+            if self.isHorizontalLayout {
+                HStack(spacing: 12) {
+                    if self.hintPosition == .leading {
+                        self.hintView
+                    }
+                    self.keysView
+                    if self.hintPosition == .trailing {
+                        self.hintView
+                    }
+                }
+            } else {
+                VStack(spacing: 12) {
+                    if self.hintPosition == .top {
+                        self.hintView
+                    }
+                    self.keysView
+                    if self.hintPosition == .bottom {
+                        self.hintView
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var hintView: some View {
+        if let hint = self.hintState.currentHint {
+            ToggleHintView(hint: hint, config: self.config)
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        }
     }
 }
