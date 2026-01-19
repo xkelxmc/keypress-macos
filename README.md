@@ -5,10 +5,13 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 ## Features
 
 - 🎹 Realistic 3D mechanical keycap visualization
-- ✨ Smooth press animations with physics
-- 🖥️ Click-through overlay — doesn't interfere with your work
-- 📍 Flexible positioning (8 preset locations)
+- 🖥️ Multi-monitor support with auto-follow or fixed display
+- 🌗 Auto light/dark mode (follows system)
+- 🎨 Per-category color customization (10 key categories)
+- 📍 8 preset positions with visual monitor preview
 - ⌨️ Global hotkey to toggle visibility
+- 📺 Two display modes: Single (shortcuts) or History (typing)
+- 🖱️ Click-through overlay — doesn't interfere with your work
 - 🔄 Auto-updates via Sparkle
 - 🎯 Perfect for content creators, demos, and screen sharing
 

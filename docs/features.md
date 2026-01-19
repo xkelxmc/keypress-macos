@@ -41,16 +41,20 @@
 
 ## Settings
 
-Settings are organized into tabs:
+Settings are organized into 5 tabs:
 
 ### General Tab
-- Position (8 preset positions with visual picker)
-- Monitor selection (Auto or fixed)
 - Size (Small/Medium/Large)
 - Opacity
 - Key timeout
 - Launch at login
 - Global hotkey
+
+### Position Tab
+- Multi-monitor visualization with real wallpapers
+- Auto mode (follows focused window) or fixed monitor
+- 8 preset positions with visual indicators
+- Per-monitor position and size controls
 
 ### Display Tab
 - Display mode (Single/History)

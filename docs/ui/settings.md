@@ -4,50 +4,58 @@
 
 Native macOS Settings window accessible from menu bar icon.
 
-## Position Picker
+## Tabs Overview
 
-Visual selector showing a mini monitor with 8 clickable regions:
+Settings window (820×720) with 5 tabs: General, Position, Display, Colors, Style.
+
+All tabs use consistent SettingsRow layout (label left, control right).
+
+## Position Tab
+
+Visual multi-monitor layout showing connected displays with real desktop wallpapers:
 
 ```
-┌─────────────────────────┐
-│  ●       ●       ●     │
-│                         │
-│  ●               ●     │
-│                         │
-│  ●       ●       ●     │
-└─────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│   ┌──────────────┐  ┌──────────────────────────┐   │
+│   │ ▪   ▪   ▪    │  │ ▪      ▪      ▪          │   │
+│   │              │  │                          │   │
+│   │ ▪       ▪    │  │ ▪    Display   ▪        │   │
+│   │              │  │                          │   │
+│   │ ▪   ▪   ▪    │  │ ▪      ▪      ▪          │   │
+│   └──────────────┘  └──────────────────────────┘   │
+│                                                     │
+├─────────────────────────────────────────────────────┤
+│ ○ Auto — Show on monitor with focused window        │
+│ ● Built-in Display    [Position ▼]  [Size ▼]       │
+│ ○ External Display    [Position ▼]  [Size ▼]       │
+└─────────────────────────────────────────────────────┘
 ```
 
-- 4 corners
-- 4 edge centers (top, bottom, left, right)
-- Active position highlighted
-- Click to select
-- Optional: drag indicator for custom position (v2)
+- Monitors shown with real proportions and positions
+- Desktop wallpaper displayed inside each monitor preview
+- 8 position indicators (dynamic size based on monitor)
+- Click indicator to set position, click monitor to select it
+- Monitor list below with Auto mode and per-monitor controls
 
-## Settings Controls
+**Auto mode:**
+- Follows focused window's screen using Accessibility API
+- Updates on each keypress to handle window switches
+- Single abstract monitor shown in preview when Auto selected
 
-### General
+**Fixed mode:**
+- Select specific monitor from list
+- All monitors shown in preview with selected one highlighted
+
+## General Tab
 
 | Setting | Control Type | Default |
 |---------|-------------|---------|
-| Enabled | Toggle | On |
+| Size | Segmented (Small/Medium/Large) | Medium |
+| Opacity | Slider (30-100%) | 100% |
+| Key timeout | Slider (0.5-5s) | 1.5s |
 | Launch at login | Toggle | Off |
-| Position | Visual picker | Bottom-right |
-| Monitor | Picker | Auto |
-
-#### Monitor Selection (v2)
-
-Only shown when multiple monitors connected. Hidden for single monitor setups.
-
-| Option | Behavior |
-|--------|----------|
-| **Auto** (default) | Follow focused window — overlay appears on the monitor where user is typing |
-| **Monitor 1, 2, ...** | Fixed to specific monitor |
-
-**Auto mode details:**
-- Detects focused window's screen using Accessibility API (`kAXFocusedWindowAttribute`)
-- Updates position on each keypress to catch window switches within the same app
-- Example: 2 Chrome windows on different monitors — overlay follows the active Chrome window
+| Toggle overlay | Hotkey recorder | None |
 
 ### Display Mode
 
