@@ -9,6 +9,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var config: KeypressConfig { KeypressConfig.shared }
 
+    /// App version from bundle (e.g., "0.1.0").
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         self.setupStatusItem()
         self.setupOverlay()
@@ -22,20 +27,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupStatusItem() {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
-        if let button = self.statusItem?.button {
-            button.image = NSImage(
-                systemSymbolName: "keyboard",
-                accessibilityDescription: "Keypress")
-        }
-
+        self.updateStatusIcon()
         self.setupMenu()
+    }
+
+    /// Updates the menu bar icon based on enabled state.
+    private func updateStatusIcon() {
+        guard let button = self.statusItem?.button else { return }
+
+        // Use filled icon when enabled, outline when disabled
+        let symbolName = self.config.enabled ? "keyboard.fill" : "keyboard"
+        button.image = NSImage(
+            systemSymbolName: symbolName,
+            accessibilityDescription: "Keypress"
+        )
     }
 
     private func setupMenu() {
         let menu = NSMenu()
 
-        menu.addItem(NSMenuItem(title: "Keypress v0.1.0", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Keypress v\(self.appVersion)", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
 
         let enabledItem = NSMenuItem(
@@ -80,6 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func toggleEnabled(_ sender: NSMenuItem) {
         self.config.enabled.toggle()
         sender.state = self.config.enabled ? .on : .off
+        self.updateStatusIcon()
 
         if self.config.enabled {
             self.overlayController?.start()
