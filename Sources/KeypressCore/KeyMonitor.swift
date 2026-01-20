@@ -62,6 +62,12 @@ public final class KeyMonitor: @unchecked Sendable {
     private let eventHandler: EventHandler
     private let lock = NSLock()
 
+    // Rate limiting for tap re-enable (prevents CPU spin if tap keeps getting disabled)
+    private var lastReenableTime: Date?
+    private var reenableCount: Int = 0
+    private static let maxReenableAttempts = 5
+    private static let reenableWindowSeconds: TimeInterval = 1.0
+
     private var _isRunning = false
     public var isRunning: Bool {
         self.lock.withLock { self._isRunning }
@@ -189,20 +195,25 @@ public final class KeyMonitor: @unchecked Sendable {
 
         self._isRunning = false
 
-        if let tap = self.eventTap {
-            CGEvent.tapEnable(tap: tap, enable: false)
-        }
+        // Capture references before clearing (to use after unlock)
+        let tap = self.eventTap
+        let runLoop = self.runLoop
 
-        if let runLoop = self.runLoop {
-            CFRunLoopStop(runLoop)
-        }
-
-        self.lock.unlock()
-
+        // Clear all state inside lock to prevent race conditions
         self.monitorThread = nil
         self.eventTap = nil
         self.runLoopSource = nil
         self.runLoop = nil
+
+        self.lock.unlock()
+
+        // Safe to use local copies outside lock
+        if let tap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+        }
+        if let runLoop {
+            CFRunLoopStop(runLoop)
+        }
     }
 
     // MARK: - Event Callback
@@ -212,9 +223,27 @@ public final class KeyMonitor: @unchecked Sendable {
 
         let monitor = Unmanaged<KeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
 
-        // Handle tap disabled event
+        // Handle tap disabled event with rate limiting
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             let reason = type == .tapDisabledByTimeout ? "timeout" : "user input"
+            let now = Date()
+
+            // Check if we're re-enabling too frequently (possible system issue)
+            if let lastTime = monitor.lastReenableTime,
+               now.timeIntervalSince(lastTime) < KeyMonitor.reenableWindowSeconds
+            {
+                monitor.reenableCount += 1
+                if monitor.reenableCount > KeyMonitor.maxReenableAttempts {
+                    print(
+                        "[Keypress] ERROR: Event tap repeatedly disabled " +
+                            "(\(monitor.reenableCount)x in \(KeyMonitor.reenableWindowSeconds)s), stopping")
+                    return Unmanaged.passUnretained(event)
+                }
+            } else {
+                monitor.reenableCount = 1
+            }
+            monitor.lastReenableTime = now
+
             print("[Keypress] WARNING: Event tap was disabled by system (\(reason)), re-enabling...")
             if let tap = monitor.eventTap {
                 CGEvent.tapEnable(tap: tap, enable: true)

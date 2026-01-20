@@ -287,26 +287,6 @@ struct KeyboardFrameView<Content: View>: View {
     }
 }
 
-// MARK: - Color Extensions
-
-extension Color {
-    fileprivate func lighter(by amount: Double) -> Color {
-        let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
-        return Color(
-            red: min(1.0, Double(nsColor.redComponent) + amount),
-            green: min(1.0, Double(nsColor.greenComponent) + amount),
-            blue: min(1.0, Double(nsColor.blueComponent) + amount))
-    }
-
-    fileprivate func darker(by amount: Double) -> Color {
-        let nsColor = NSColor(self).usingColorSpace(.deviceRGB) ?? NSColor.gray
-        return Color(
-            red: max(0.0, Double(nsColor.redComponent) - amount),
-            green: max(0.0, Double(nsColor.greenComponent) - amount),
-            blue: max(0.0, Double(nsColor.blueComponent) - amount))
-    }
-}
-
 // MARK: - Previews
 
 #Preview("Key Visualization") {

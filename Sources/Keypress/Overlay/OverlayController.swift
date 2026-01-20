@@ -13,6 +13,7 @@ final class OverlayController {
     private var keyMonitor: KeyMonitor?
     private var overlayWindow: OverlayWindow?
     private var observationTask: Task<Void, Never>?
+    private var configObservationTask: Task<Void, Never>?
 
     // Key state (one of these will be used based on display mode)
     private var historyKeyState: KeyState?
@@ -48,6 +49,7 @@ final class OverlayController {
 
     deinit {
         self.observationTask?.cancel()
+        self.configObservationTask?.cancel()
         // Note: stopObservingScreens() would require @MainActor, but deinit can't be async
         // The observers will be cleaned up automatically when the object is deallocated
     }
@@ -69,13 +71,21 @@ final class OverlayController {
         // Create overlay window based on display mode
         switch self.config.displayMode {
         case .single:
+            guard let singleState = self.singleKeyState else {
+                print("[Keypress] ERROR: SingleKeyState not created - cannot start overlay")
+                return
+            }
             self.overlayWindow = OverlayWindow(
-                singleKeyState: self.singleKeyState!,
+                singleKeyState: singleState,
                 hintState: self.hintState,
                 config: self.config)
         case .history:
+            guard let historyState = self.historyKeyState else {
+                print("[Keypress] ERROR: KeyState not created - cannot start overlay")
+                return
+            }
             self.overlayWindow = OverlayWindow(
-                keyState: self.historyKeyState!,
+                keyState: historyState,
                 hintState: self.hintState,
                 config: self.config)
         }
@@ -130,6 +140,8 @@ final class OverlayController {
     func stop() {
         self.observationTask?.cancel()
         self.observationTask = nil
+        self.configObservationTask?.cancel()
+        self.configObservationTask = nil
 
         self.stopObservingScreens()
 
@@ -204,7 +216,11 @@ final class OverlayController {
         }
 
         // Get window position
-        // Note: CFTypeRef -> AXUIElement cast always succeeds for valid window refs
+        // CFTypeRef from AXUIElementCopyAttributeValue for window should be AXUIElement
+        guard CFGetTypeID(window) == AXUIElementGetTypeID() else {
+            print("[Keypress] WARNING: Unexpected type for window reference")
+            return nil
+        }
         // swiftlint:disable:next force_cast
         let windowElement = window as! AXUIElement
 
@@ -216,7 +232,11 @@ final class OverlayController {
         }
 
         // Extract position
-        // Note: CFTypeRef -> AXValue cast always succeeds for valid position refs
+        // CFTypeRef from position attribute should be AXValue
+        guard CFGetTypeID(positionValue) == AXValueGetTypeID() else {
+            print("[Keypress] WARNING: Unexpected type for position reference")
+            return nil
+        }
         // swiftlint:disable:next force_cast
         let axValue = positionValue as! AXValue
 
@@ -332,7 +352,7 @@ final class OverlayController {
         var lastDisplayMode = self.config.displayMode
         var lastMonitorSelection = self.config.monitorSelection
 
-        Task { [weak self] in
+        self.configObservationTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
 

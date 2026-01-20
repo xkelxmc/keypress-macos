@@ -590,19 +590,23 @@ struct WallpaperBackgroundView: View {
         }
     }
 
-    /// Loads the current wallpaper image from disk, bypassing any cache.
+    /// Loads the current wallpaper image from disk asynchronously, bypassing any cache.
     private func loadWallpaper() {
         guard let screen = NSScreen.main,
               let url = NSWorkspace.shared.desktopImageURL(for: screen)
         else { return }
 
-        // Load fresh, bypassing NSImage cache
-        guard let imageData = try? Data(contentsOf: url),
-              let image = NSImage(data: imageData)
-        else { return }
+        // Load asynchronously to avoid blocking main thread
+        Task.detached(priority: .userInitiated) {
+            guard let imageData = try? Data(contentsOf: url),
+                  let image = NSImage(data: imageData)
+            else { return }
 
-        self.wallpaperImage = image
-        self.refreshID = UUID()
+            await MainActor.run {
+                self.wallpaperImage = image
+                self.refreshID = UUID()
+            }
+        }
     }
 
     private var scaledWallpaperSize: CGSize {
