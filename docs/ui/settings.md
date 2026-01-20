@@ -56,7 +56,7 @@ Visual multi-monitor layout showing connected displays with real desktop wallpap
 | Opacity | Slider (30-100%) | 100% |
 | Key timeout | Slider (0.5-5s) | 1.5s |
 | Launch at login | Toggle | Off |
-| Toggle overlay | Hotkey recorder | None |
+| Toggle overlay | Hotkey recorder | ⇧⌘K |
 
 ### Display Mode
 
@@ -139,11 +139,12 @@ Different key types have distinct colors for better visual distinction.
 | Shift ⇧ | Left/Right Shift | Red `#E64D40` |
 | Option ⌥ | Left/Right Option | Blue `#4073F2` |
 | Control ⌃ | Left/Right Control | Orange `#F28C33` |
-| Caps Lock ⇪ | Caps Lock | Dark Gray `#595961` |
-| Escape ⎋ | Escape | Teal `#33BFB3` |
+| Escape | ESC | Teal `#33BFB3` |
 | Function keys | F1-F20 | Purple `#9966CC` |
 | Navigation | ← → ↑ ↓ Home End PgUp PgDn | Charcoal `#262628` |
 | Editing | ⏎ ⇥ ␣ ⌫ ⌦ | Charcoal `#262628` |
+
+> **Note:** Caps Lock is not supported — macOS doesn't provide reliable press/release events.
 
 #### Color Schemes
 
@@ -201,7 +202,7 @@ Only customized categories are stored; others use defaults from the active color
 
 | Setting | Control Type | Default |
 |---------|-------------|---------|
-| Toggle overlay | Hotkey recorder | None |
+| Toggle overlay | Hotkey recorder | ⇧⌘K |
 
 Global keyboard shortcut to toggle overlay on/off. Uses [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) library.
 

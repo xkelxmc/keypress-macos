@@ -428,19 +428,19 @@ public final class KeypressConfig {
     }
 
     /// Horizontal offset from screen edge in pixels (for preset positions).
-    /// Range: 0-100 pixels.
+    /// Range: 0-500 pixels.
     public var horizontalOffset: CGFloat {
         didSet {
-            self.horizontalOffset = max(0, min(100, self.horizontalOffset))
+            self.horizontalOffset = max(0, min(500, self.horizontalOffset))
             self.userDefaults.set(Double(self.horizontalOffset), forKey: Keys.horizontalOffset)
         }
     }
 
     /// Vertical offset from screen edge in pixels (for preset positions).
-    /// Range: 0-100 pixels.
+    /// Range: 0-300 pixels.
     public var verticalOffset: CGFloat {
         didSet {
-            self.verticalOffset = max(0, min(100, self.verticalOffset))
+            self.verticalOffset = max(0, min(300, self.verticalOffset))
             self.userDefaults.set(Double(self.verticalOffset), forKey: Keys.verticalOffset)
         }
     }

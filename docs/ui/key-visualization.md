@@ -118,11 +118,12 @@ Modifiers show **icon + label** stacked vertically:
 | Shift | ⇧ | shift |
 | Option | ⌥ | option |
 | Control | ⌃ | control |
-| Caps Lock | ⇪ | caps lock |
 | Fn | fn | (no label) |
 
+> **Note:** Caps Lock is not supported — macOS doesn't provide reliable press/release events for it.
+
 ### Special Keys
-- Escape: ⎋
+- Escape: ESC
 - Return: ⏎
 - Tab: ⇥
 - Delete/Backspace: ⌫

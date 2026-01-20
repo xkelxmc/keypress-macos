@@ -13,7 +13,7 @@
 
 The main visualization that appears when typing. See [Key Visualization](./key-visualization.md).
 
-- Floating pseudo-keyboard fragment (1-3 keys)
+- Floating pseudo-keyboard fragment (up to 12 keys in History mode)
 - Appears at configured screen position
 - Fades out after inactivity
 

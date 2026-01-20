@@ -15,13 +15,14 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 
 ## Features
 
-- 🎹 Realistic 3D mechanical keycap visualization
+- 🎹 3 keycap styles: Mechanical (3D), Flat (modern), Minimal (compact)
 - ✨ Press animation — keys visually respond to press/release
+- 🌍 Keyboard layout support — works with Russian, German, and other layouts
 - 🖥️ Multi-monitor support with auto-follow or fixed display
 - 🌗 Auto light/dark mode (follows system)
 - 🎨 Per-category color customization (10 key categories)
-- 📍 8 preset positions with visual monitor preview + edge offset
-- ⌨️ Global hotkey to toggle visibility
+- 📍 8 preset positions with edge offset (up to 500×300px)
+- ⌨️ Global hotkey to toggle visibility (default ⇧⌘K)
 - 📺 Two display modes: Single (shortcuts) or History (typing)
 - 🖱️ Click-through overlay — doesn't interfere with your work
 - 🔄 Auto-updates via Sparkle
