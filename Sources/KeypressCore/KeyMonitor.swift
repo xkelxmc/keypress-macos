@@ -214,6 +214,8 @@ public final class KeyMonitor: @unchecked Sendable {
 
         // Handle tap disabled event
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            let reason = type == .tapDisabledByTimeout ? "timeout" : "user input"
+            print("[Keypress] WARNING: Event tap was disabled by system (\(reason)), re-enabling...")
             if let tap = monitor.eventTap {
                 CGEvent.tapEnable(tap: tap, enable: true)
             }

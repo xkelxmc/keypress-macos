@@ -430,12 +430,19 @@ public final class KeypressConfig {
     /// Horizontal offset from screen edge in pixels (for preset positions).
     /// Range: 0-100 pixels.
     public var horizontalOffset: CGFloat {
-        didSet { self.userDefaults.set(Double(self.horizontalOffset), forKey: Keys.horizontalOffset) }
+        didSet {
+            self.horizontalOffset = max(0, min(100, self.horizontalOffset))
+            self.userDefaults.set(Double(self.horizontalOffset), forKey: Keys.horizontalOffset)
+        }
     }
 
     /// Vertical offset from screen edge in pixels (for preset positions).
+    /// Range: 0-100 pixels.
     public var verticalOffset: CGFloat {
-        didSet { self.userDefaults.set(Double(self.verticalOffset), forKey: Keys.verticalOffset) }
+        didSet {
+            self.verticalOffset = max(0, min(100, self.verticalOffset))
+            self.userDefaults.set(Double(self.verticalOffset), forKey: Keys.verticalOffset)
+        }
     }
 
     /// Size of the key visualization.
@@ -445,13 +452,19 @@ public final class KeypressConfig {
 
     /// Opacity of the overlay (0.0 to 1.0).
     public var opacity: Double {
-        didSet { self.userDefaults.set(self.opacity, forKey: Keys.opacity) }
+        didSet {
+            self.opacity = self.opacity.clamped(to: 0.0...1.0)
+            self.userDefaults.set(self.opacity, forKey: Keys.opacity)
+        }
     }
 
     /// Duration in seconds before a regular key disappears.
     /// Range: 0.5 to 5.0 seconds.
     public var keyTimeout: Double {
-        didSet { self.userDefaults.set(self.keyTimeout, forKey: Keys.keyTimeout) }
+        didSet {
+            self.keyTimeout = self.keyTimeout.clamped(to: 0.5...5.0)
+            self.userDefaults.set(self.keyTimeout, forKey: Keys.keyTimeout)
+        }
     }
 
     // MARK: - Display Mode Properties
@@ -470,7 +483,10 @@ public final class KeypressConfig {
     /// (History mode) Maximum number of keys to display at once.
     /// Range: 3 to 12.
     public var maxKeys: Int {
-        didSet { self.userDefaults.set(self.maxKeys, forKey: Keys.maxKeys) }
+        didSet {
+            self.maxKeys = max(3, min(12, self.maxKeys))
+            self.userDefaults.set(self.maxKeys, forKey: Keys.maxKeys)
+        }
     }
 
     /// (History mode) Whether to allow duplicate letters when typing.
@@ -495,8 +511,11 @@ public final class KeypressConfig {
     /// Color scheme for key categories (active scheme, may be preset or custom).
     public var colorScheme: KeyColorScheme {
         didSet {
-            if let encoded = try? JSONEncoder().encode(self.colorScheme) {
+            do {
+                let encoded = try JSONEncoder().encode(self.colorScheme)
                 self.userDefaults.set(encoded, forKey: Keys.colorScheme)
+            } catch {
+                print("[Keypress] ERROR: Failed to save colorScheme: \(error)")
             }
         }
     }
@@ -505,8 +524,11 @@ public final class KeypressConfig {
     /// Only used when appearanceMode is .custom.
     public var customColorScheme: KeyColorScheme {
         didSet {
-            if let encoded = try? JSONEncoder().encode(self.customColorScheme) {
+            do {
+                let encoded = try JSONEncoder().encode(self.customColorScheme)
                 self.userDefaults.set(encoded, forKey: Keys.customColorScheme)
+            } catch {
+                print("[Keypress] ERROR: Failed to save customColorScheme: \(error)")
             }
             // If in custom mode, sync to active colorScheme
             if self.appearanceMode == .custom {
@@ -531,8 +553,11 @@ public final class KeypressConfig {
     /// Custom style overrides for key categories (only stores customized categories).
     public var categoryStyleOverrides: [KeyCategory: KeyCategoryStyle] {
         didSet {
-            if let encoded = try? JSONEncoder().encode(self.categoryStyleOverrides) {
+            do {
+                let encoded = try JSONEncoder().encode(self.categoryStyleOverrides)
                 self.userDefaults.set(encoded, forKey: Keys.categoryStyleOverrides)
+            } catch {
+                print("[Keypress] ERROR: Failed to save categoryStyleOverrides: \(error)")
             }
         }
     }
@@ -554,8 +579,11 @@ public final class KeypressConfig {
     /// Which monitor to display the overlay on.
     public var monitorSelection: MonitorSelection {
         didSet {
-            if let encoded = try? JSONEncoder().encode(self.monitorSelection) {
+            do {
+                let encoded = try JSONEncoder().encode(self.monitorSelection)
                 self.userDefaults.set(encoded, forKey: Keys.monitorSelection)
+            } catch {
+                print("[Keypress] ERROR: Failed to save monitorSelection: \(error)")
             }
         }
     }
@@ -643,18 +671,24 @@ public final class KeypressConfig {
             self.keyCapStyle = Defaults.keyCapStyle
         }
 
-        if let colorSchemeData = userDefaults.data(forKey: Keys.colorScheme),
-           let scheme = try? JSONDecoder().decode(KeyColorScheme.self, from: colorSchemeData)
-        {
-            self.colorScheme = scheme
+        if let colorSchemeData = userDefaults.data(forKey: Keys.colorScheme) {
+            do {
+                self.colorScheme = try JSONDecoder().decode(KeyColorScheme.self, from: colorSchemeData)
+            } catch {
+                print("[Keypress] WARNING: Failed to decode colorScheme, using defaults: \(error)")
+                self.colorScheme = Defaults.colorScheme
+            }
         } else {
             self.colorScheme = Defaults.colorScheme
         }
 
-        if let customSchemeData = userDefaults.data(forKey: Keys.customColorScheme),
-           let scheme = try? JSONDecoder().decode(KeyColorScheme.self, from: customSchemeData)
-        {
-            self.customColorScheme = scheme
+        if let customSchemeData = userDefaults.data(forKey: Keys.customColorScheme) {
+            do {
+                self.customColorScheme = try JSONDecoder().decode(KeyColorScheme.self, from: customSchemeData)
+            } catch {
+                print("[Keypress] WARNING: Failed to decode customColorScheme, using defaults: \(error)")
+                self.customColorScheme = Defaults.customColorScheme
+            }
         } else {
             self.customColorScheme = Defaults.customColorScheme
         }
@@ -675,10 +709,14 @@ public final class KeypressConfig {
             self.keyboardFrameStyle = Defaults.keyboardFrameStyle
         }
 
-        if let overridesData = userDefaults.data(forKey: Keys.categoryStyleOverrides),
-           let overrides = try? JSONDecoder().decode([KeyCategory: KeyCategoryStyle].self, from: overridesData)
-        {
-            self.categoryStyleOverrides = overrides
+        if let overridesData = userDefaults.data(forKey: Keys.categoryStyleOverrides) {
+            do {
+                self.categoryStyleOverrides = try JSONDecoder().decode(
+                    [KeyCategory: KeyCategoryStyle].self, from: overridesData)
+            } catch {
+                print("[Keypress] WARNING: Failed to decode categoryStyleOverrides, using defaults: \(error)")
+                self.categoryStyleOverrides = Defaults.categoryStyleOverrides
+            }
         } else {
             self.categoryStyleOverrides = Defaults.categoryStyleOverrides
         }
@@ -690,10 +728,13 @@ public final class KeypressConfig {
             ?? Defaults.pressAnimationRegularKeys
 
         // Monitor settings
-        if let monitorData = userDefaults.data(forKey: Keys.monitorSelection),
-           let selection = try? JSONDecoder().decode(MonitorSelection.self, from: monitorData)
-        {
-            self.monitorSelection = selection
+        if let monitorData = userDefaults.data(forKey: Keys.monitorSelection) {
+            do {
+                self.monitorSelection = try JSONDecoder().decode(MonitorSelection.self, from: monitorData)
+            } catch {
+                print("[Keypress] WARNING: Failed to decode monitorSelection, using defaults: \(error)")
+                self.monitorSelection = Defaults.monitorSelection
+            }
         } else {
             self.monitorSelection = Defaults.monitorSelection
         }

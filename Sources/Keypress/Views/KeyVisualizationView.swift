@@ -39,6 +39,8 @@ private struct KeyVisualizationContent: View {
     /// Tracks if overlay just appeared (was hidden, now visible).
     /// Used to delay press animation until fade-in completes.
     @State private var overlayJustAppeared: Bool = true
+    /// Task for delayed clearing of overlayJustAppeared flag.
+    @State private var appearDelayTask: Task<Void, Never>?
 
     var body: some View {
         let keysView = HStack(spacing: 6) {
@@ -78,14 +80,22 @@ private struct KeyVisualizationContent: View {
             if !wasVisible, isVisible {
                 // Overlay just appeared — delay press animation
                 self.overlayJustAppeared = true
+                // Cancel any pending task
+                self.appearDelayTask?.cancel()
                 // After fade-in completes, clear the flag
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                self.appearDelayTask = Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(250))
+                    guard !Task.isCancelled else { return }
                     self.overlayJustAppeared = false
                 }
             } else if !isVisible {
                 // Overlay hidden — reset for next appearance
+                self.appearDelayTask?.cancel()
                 self.overlayJustAppeared = true
             }
+        }
+        .onDisappear {
+            self.appearDelayTask?.cancel()
         }
     }
 

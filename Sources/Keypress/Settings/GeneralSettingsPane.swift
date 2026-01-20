@@ -90,6 +90,7 @@ struct GeneralSettingsPane: View {
                 try SMAppService.mainApp.unregister()
             }
         } catch {
+            print("[Keypress] ERROR: Failed to \(enabled ? "enable" : "disable") launch at login: \(error)")
             // Revert on failure
             self.config.launchAtLogin = !enabled
         }

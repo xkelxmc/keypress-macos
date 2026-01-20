@@ -82,6 +82,8 @@ struct KeyCapView: View {
     /// Local state to delay press animation on appear.
     /// This creates a visible "press down" effect when key first appears.
     @State private var showPressedState: Bool = false
+    /// Task for delayed press animation.
+    @State private var pressDelayTask: Task<Void, Never>?
 
     init(
         symbol: KeySymbol,
@@ -197,10 +199,12 @@ struct KeyCapView: View {
         .frame(width: self.size.width, height: self.size.height + self.depth)
         .animation(.spring(response: 0.15, dampingFraction: 0.7), value: self.effectivelyPressed)
         .onAppear { self.scheduleShowPressed() }
+        .onDisappear { self.pressDelayTask?.cancel() }
         .onChange(of: self.isPressed) { _, newValue in
             if newValue {
                 self.scheduleShowPressed()
             } else {
+                self.pressDelayTask?.cancel()
                 self.showPressedState = false
             }
         }
@@ -211,8 +215,11 @@ struct KeyCapView: View {
     /// When overlay was already visible, shows press immediately.
     private func scheduleShowPressed() {
         guard self.isPressed else { return }
-        let delay: Double = self.delayPressAnimation ? 0.2 : 0.02
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+        let delay: UInt64 = self.delayPressAnimation ? 200 : 20
+        self.pressDelayTask?.cancel()
+        self.pressDelayTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(delay))
+            guard !Task.isCancelled else { return }
             self.showPressedState = true
         }
     }
@@ -256,10 +263,12 @@ struct KeyCapView: View {
         .offset(y: flatPressOffset)
         .animation(.spring(response: 0.15, dampingFraction: 0.7), value: self.effectivelyPressed)
         .onAppear { self.scheduleShowPressed() }
+        .onDisappear { self.pressDelayTask?.cancel() }
         .onChange(of: self.isPressed) { _, newValue in
             if newValue {
                 self.scheduleShowPressed()
             } else {
+                self.pressDelayTask?.cancel()
                 self.showPressedState = false
             }
         }
@@ -287,10 +296,12 @@ struct KeyCapView: View {
         .scaleEffect(minimalScale)
         .animation(.spring(response: 0.15, dampingFraction: 0.7), value: self.effectivelyPressed)
         .onAppear { self.scheduleShowPressed() }
+        .onDisappear { self.pressDelayTask?.cancel() }
         .onChange(of: self.isPressed) { _, newValue in
             if newValue {
                 self.scheduleShowPressed()
             } else {
+                self.pressDelayTask?.cancel()
                 self.showPressedState = false
             }
         }

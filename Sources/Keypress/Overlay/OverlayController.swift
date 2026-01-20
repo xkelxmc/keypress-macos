@@ -102,7 +102,13 @@ final class OverlayController {
             self.keyMonitor?.emitCurrentModifiers()
             self.startObservingKeyState()
         } else {
-            print("[Keypress] KeyMonitor.start() failed, requesting permissions...")
+            // Check if it's actually a permission issue vs. system resource issue
+            if KeyMonitor.hasAccessibilityPermissions() {
+                print(
+                    "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
+            } else {
+                print("[Keypress] KeyMonitor.start() failed, requesting permissions...")
+            }
 
             // Request permission (shows system dialog if app not in list)
             AccessibilityPermission.request()
@@ -198,8 +204,10 @@ final class OverlayController {
         }
 
         // Get window position
+        // Note: CFTypeRef -> AXUIElement cast always succeeds for valid window refs
         // swiftlint:disable:next force_cast
         let windowElement = window as! AXUIElement
+
         var positionRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(windowElement, kAXPositionAttribute as CFString, &positionRef) == .success,
               let positionValue = positionRef
@@ -207,9 +215,13 @@ final class OverlayController {
             return nil
         }
 
-        var position = CGPoint.zero
+        // Extract position
+        // Note: CFTypeRef -> AXValue cast always succeeds for valid position refs
         // swiftlint:disable:next force_cast
-        guard AXValueGetValue(positionValue as! AXValue, .cgPoint, &position) else {
+        let axValue = positionValue as! AXValue
+
+        var position = CGPoint.zero
+        guard AXValueGetValue(axValue, .cgPoint, &position) else {
             return nil
         }
 
