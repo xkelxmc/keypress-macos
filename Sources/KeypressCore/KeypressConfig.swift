@@ -349,6 +349,9 @@ public final class KeypressConfig {
         static let size = "settings.size"
         static let opacity = "settings.opacity"
         static let keyTimeout = "settings.keyTimeout"
+        // Position offset
+        static let horizontalOffset = "settings.horizontalOffset"
+        static let verticalOffset = "settings.verticalOffset"
         // Display mode
         static let displayMode = "settings.displayMode"
         static let showModifiersOnly = "settings.showModifiersOnly"
@@ -381,6 +384,9 @@ public final class KeypressConfig {
         static let size = OverlaySize.medium
         static let opacity: Double = 1.0
         static let keyTimeout: Double = 1.5
+        // Position offset (distance from screen edge in pixels)
+        static let horizontalOffset: CGFloat = 20
+        static let verticalOffset: CGFloat = 20
         // Display mode
         static let displayMode = DisplayMode.single
         static let showModifiersOnly = false
@@ -416,9 +422,20 @@ public final class KeypressConfig {
         didSet { self.userDefaults.set(self.launchAtLogin, forKey: Keys.launchAtLogin) }
     }
 
-    /// Position of the overlay on screen.
+    /// Position of the overlay on screen (anchor point).
     public var position: OverlayPosition {
         didSet { self.userDefaults.set(self.position.rawValue, forKey: Keys.position) }
+    }
+
+    /// Horizontal offset from screen edge in pixels (for preset positions).
+    /// Range: 0-100 pixels.
+    public var horizontalOffset: CGFloat {
+        didSet { self.userDefaults.set(Double(self.horizontalOffset), forKey: Keys.horizontalOffset) }
+    }
+
+    /// Vertical offset from screen edge in pixels (for preset positions).
+    public var verticalOffset: CGFloat {
+        didSet { self.userDefaults.set(Double(self.verticalOffset), forKey: Keys.verticalOffset) }
     }
 
     /// Size of the key visualization.
@@ -558,6 +575,19 @@ public final class KeypressConfig {
             self.position = position
         } else {
             self.position = Defaults.position
+        }
+
+        // Position offset settings
+        if userDefaults.object(forKey: Keys.horizontalOffset) != nil {
+            self.horizontalOffset = CGFloat(userDefaults.double(forKey: Keys.horizontalOffset))
+        } else {
+            self.horizontalOffset = Defaults.horizontalOffset
+        }
+
+        if userDefaults.object(forKey: Keys.verticalOffset) != nil {
+            self.verticalOffset = CGFloat(userDefaults.double(forKey: Keys.verticalOffset))
+        } else {
+            self.verticalOffset = Defaults.verticalOffset
         }
 
         if let sizeRaw = userDefaults.string(forKey: Keys.size),
@@ -754,6 +784,8 @@ public final class KeypressConfig {
         self.enabled = Defaults.enabled
         self.launchAtLogin = Defaults.launchAtLogin
         self.position = Defaults.position
+        self.horizontalOffset = Defaults.horizontalOffset
+        self.verticalOffset = Defaults.verticalOffset
         self.size = Defaults.size
         self.opacity = Defaults.opacity
         self.keyTimeout = Defaults.keyTimeout

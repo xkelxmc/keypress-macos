@@ -37,6 +37,7 @@ Visual multi-monitor layout showing connected displays with real desktop wallpap
 - 8 position indicators (dynamic size based on monitor)
 - Click indicator to set position, click monitor to select it
 - Monitor list below with Auto mode and per-monitor controls
+- Edge offset sliders for fine-tuning position (horizontal 0-500px, vertical 0-300px)
 
 **Auto mode:**
 - Follows focused window's screen using Accessibility API

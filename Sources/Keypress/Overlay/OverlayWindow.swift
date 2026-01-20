@@ -73,7 +73,7 @@ final class OverlayWindow: NSPanel {
     private func setupContentView(_ rootView: some View) {
         let hostingView = NSHostingView(rootView: AnyView(rootView))
         hostingView.frame = self.contentView?.bounds ?? .zero
-        hostingView.autoresizingMask = [.width, .height] as NSView.AutoresizingMask
+        hostingView.autoresizingMask = [.width, .height]
 
         self.contentView?.addSubview(hostingView)
         self.contentHostingView = hostingView
@@ -88,44 +88,58 @@ final class OverlayWindow: NSPanel {
 
         let screenFrame = targetScreen.visibleFrame
         let windowSize = self.frame.size
-        let margin: CGFloat = 20
+        let hOffset = self.config.horizontalOffset
+        let vOffset = self.config.verticalOffset
 
         let origin = switch self.config.position {
         case .topLeft:
             NSPoint(
-                x: screenFrame.minX + margin,
-                y: screenFrame.maxY - windowSize.height - margin)
+                x: screenFrame.minX + hOffset,
+                y: screenFrame.maxY - windowSize.height - vOffset)
         case .topCenter:
             NSPoint(
                 x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.maxY - windowSize.height - margin)
+                y: screenFrame.maxY - windowSize.height - vOffset)
         case .topRight:
             NSPoint(
-                x: screenFrame.maxX - windowSize.width - margin,
-                y: screenFrame.maxY - windowSize.height - margin)
+                x: screenFrame.maxX - windowSize.width - hOffset,
+                y: screenFrame.maxY - windowSize.height - vOffset)
         case .centerLeft:
             NSPoint(
-                x: screenFrame.minX + margin,
+                x: screenFrame.minX + hOffset,
                 y: screenFrame.midY - windowSize.height / 2)
         case .centerRight:
             NSPoint(
-                x: screenFrame.maxX - windowSize.width - margin,
+                x: screenFrame.maxX - windowSize.width - hOffset,
                 y: screenFrame.midY - windowSize.height / 2)
         case .bottomLeft:
             NSPoint(
-                x: screenFrame.minX + margin,
-                y: screenFrame.minY + margin)
+                x: screenFrame.minX + hOffset,
+                y: screenFrame.minY + vOffset)
         case .bottomCenter:
             NSPoint(
                 x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.minY + margin)
+                y: screenFrame.minY + vOffset)
         case .bottomRight:
             NSPoint(
-                x: screenFrame.maxX - windowSize.width - margin,
-                y: screenFrame.minY + margin)
+                x: screenFrame.maxX - windowSize.width - hOffset,
+                y: screenFrame.minY + vOffset)
         }
 
-        self.setFrameOrigin(origin)
+        let finalOrigin = self.clampedOrigin(origin, windowSize: windowSize, screenFrame: screenFrame)
+        self.setFrameOrigin(finalOrigin)
+    }
+
+    /// Clamps origin so window stays fully within screen bounds.
+    private func clampedOrigin(_ origin: NSPoint, windowSize: NSSize, screenFrame: NSRect) -> NSPoint {
+        let minX = screenFrame.minX
+        let maxX = screenFrame.maxX - windowSize.width
+        let minY = screenFrame.minY
+        let maxY = screenFrame.maxY - windowSize.height
+
+        return NSPoint(
+            x: min(max(origin.x, minX), maxX),
+            y: min(max(origin.y, minY), maxY))
     }
 
     // MARK: - Visibility
@@ -160,7 +174,7 @@ final class OverlayWindow: NSPanel {
 private struct OverlayContainerView: View {
     let keysView: AnyView
     @Bindable var hintState: HintState
-    let config: KeypressConfig
+    @Bindable var config: KeypressConfig
 
     private var hintPosition: HintPosition {
         HintPosition.from(overlayPosition: self.config.position)
@@ -168,6 +182,20 @@ private struct OverlayContainerView: View {
 
     private var isHorizontalLayout: Bool {
         self.hintPosition == .leading || self.hintPosition == .trailing
+    }
+
+    /// Alignment based on overlay position (so content sticks to the correct edge).
+    private var contentAlignment: Alignment {
+        switch self.config.position {
+        case .topLeft: .topLeading
+        case .topCenter: .top
+        case .topRight: .topTrailing
+        case .centerLeft: .leading
+        case .centerRight: .trailing
+        case .bottomLeft: .bottomLeading
+        case .bottomCenter: .bottom
+        case .bottomRight: .bottomTrailing
+        }
     }
 
     var body: some View {
@@ -194,6 +222,7 @@ private struct OverlayContainerView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: self.contentAlignment)
     }
 
     @ViewBuilder

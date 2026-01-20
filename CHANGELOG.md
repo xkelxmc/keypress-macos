@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Edge offset** — configurable horizontal (0-500px) and vertical (0-300px) offset from screen edges for all preset positions
 - **Key visualization** — 3D mechanical keycaps with press animations, category-based colors
 - **Three keycap styles** — Mechanical (3D), Flat (modern), Minimal (pill-shaped)
 - **Press animation** — visual feedback when keys are pressed/released (toggleable for modifiers and regular keys)

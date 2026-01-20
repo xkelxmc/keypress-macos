@@ -29,7 +29,12 @@ struct PositionSettingsPane: View {
             // Monitor list
             MonitorListView(config: self.config)
                 .padding(.horizontal, 12)
-                .padding(.vertical, 16)
+                .padding(.vertical, 12)
+
+            // Offset controls
+            PositionOffsetControls(config: self.config)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 16)
         }
     }
 }
@@ -564,6 +569,56 @@ private struct MonitorRowView: View {
         withAnimation(.easeInOut(duration: 0.15)) {
             self.config.monitorSelection = .fixed(index: self.index)
         }
+    }
+}
+
+// MARK: - PositionOffsetControls
+
+@MainActor
+private struct PositionOffsetControls: View {
+    @Bindable var config: KeypressConfig
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Edge Offset")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 16) {
+                // Horizontal offset
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.left.and.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 16)
+                    Slider(value: self.$config.horizontalOffset, in: 0...500, step: 10)
+                    Text("\(Int(self.config.horizontalOffset))")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, alignment: .trailing)
+                }
+                .frame(maxWidth: .infinity)
+
+                // Vertical offset
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.up.and.down")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 16)
+                    Slider(value: self.$config.verticalOffset, in: 0...300, step: 10)
+                    Text("\(Int(self.config.verticalOffset))")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, alignment: .trailing)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(nsColor: .controlBackgroundColor)))
     }
 }
 

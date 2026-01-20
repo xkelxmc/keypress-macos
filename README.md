@@ -20,7 +20,7 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 - 🖥️ Multi-monitor support with auto-follow or fixed display
 - 🌗 Auto light/dark mode (follows system)
 - 🎨 Per-category color customization (10 key categories)
-- 📍 8 preset positions with visual monitor preview
+- 📍 8 preset positions with visual monitor preview + edge offset
 - ⌨️ Global hotkey to toggle visibility
 - 📺 Two display modes: Single (shortcuts) or History (typing)
 - 🖱️ Click-through overlay — doesn't interfere with your work

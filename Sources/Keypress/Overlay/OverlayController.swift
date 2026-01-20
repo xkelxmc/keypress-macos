@@ -308,6 +308,8 @@ final class OverlayController {
     private func startObservingConfig() {
         // Track last known values to detect changes
         var lastPosition = self.config.position
+        var lastHorizontalOffset = self.config.horizontalOffset
+        var lastVerticalOffset = self.config.verticalOffset
         var lastOpacity = self.config.opacity
         var lastSize = self.config.size
         var lastKeyTimeout = self.config.keyTimeout
@@ -325,6 +327,15 @@ final class OverlayController {
                 // Check for position change
                 if self.config.position != lastPosition {
                     lastPosition = self.config.position
+                    self.updatePosition()
+                }
+
+                // Check for offset changes
+                if self.config.horizontalOffset != lastHorizontalOffset
+                    || self.config.verticalOffset != lastVerticalOffset
+                {
+                    lastHorizontalOffset = self.config.horizontalOffset
+                    lastVerticalOffset = self.config.verticalOffset
                     self.updatePosition()
                 }
 

@@ -20,8 +20,9 @@
 ### Positioning
 
 - 8 preset positions: 4 corners + 4 edge centers
+- Configurable edge offset (horizontal 0-500px, vertical 0-300px)
 - Visual position picker in settings (mini monitor preview)
-- Possible drag-and-drop for custom positioning (v2)
+- Content aligns to the nearest edge based on selected position
 
 ## Menu Bar
 
