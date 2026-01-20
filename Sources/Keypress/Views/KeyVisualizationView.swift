@@ -3,12 +3,13 @@ import SwiftUI
 
 /// Simple view displaying pressed keys as styled keycaps.
 struct KeyVisualizationView: View {
-    @Bindable var keyState: KeyState
+    var keyState: KeyState
     let config: KeypressConfig
 
     var body: some View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
+            physicallyPressedKeys: self.keyState.physicallyPressedKeys,
             hasKeys: self.keyState.hasKeys,
             config: self.config)
     }
@@ -16,12 +17,13 @@ struct KeyVisualizationView: View {
 
 /// View for Single mode (SingleKeyState).
 struct SingleKeyVisualizationView: View {
-    @Bindable var keyState: SingleKeyState
+    var keyState: SingleKeyState
     let config: KeypressConfig
 
     var body: some View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
+            physicallyPressedKeys: self.keyState.physicallyPressedKeys,
             hasKeys: self.keyState.hasKeys,
             config: self.config)
     }
@@ -30,13 +32,22 @@ struct SingleKeyVisualizationView: View {
 /// Shared visualization content (used by both modes).
 private struct KeyVisualizationContent: View {
     let pressedKeys: [PressedKey]
+    let physicallyPressedKeys: Set<String>
     let hasKeys: Bool
     let config: KeypressConfig
+
+    /// Tracks if overlay just appeared (was hidden, now visible).
+    /// Used to delay press animation until fade-in completes.
+    @State private var overlayJustAppeared: Bool = true
 
     var body: some View {
         let keysView = HStack(spacing: 6) {
             ForEach(self.pressedKeys) { key in
-                KeyCapView(symbol: key.symbol, config: self.config)
+                KeyCapView(
+                    symbol: key.symbol,
+                    config: self.config,
+                    isPressed: self.isKeyPressed(key),
+                    delayPressAnimation: self.overlayJustAppeared)
             }
         }
 
@@ -63,6 +74,30 @@ private struct KeyVisualizationContent: View {
         .scaleEffect(self.config.size.scaleFactor)
         .opacity(self.hasKeys ? 1 : 0)
         .animation(.easeOut(duration: 0.2), value: self.hasKeys)
+        .onChange(of: self.hasKeys) { wasVisible, isVisible in
+            if !wasVisible, isVisible {
+                // Overlay just appeared — delay press animation
+                self.overlayJustAppeared = true
+                // After fade-in completes, clear the flag
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    self.overlayJustAppeared = false
+                }
+            } else if !isVisible {
+                // Overlay hidden — reset for next appearance
+                self.overlayJustAppeared = true
+            }
+        }
+    }
+
+    /// Determines if a key should show pressed animation based on settings.
+    private func isKeyPressed(_ key: PressedKey) -> Bool {
+        let isPhysicallyPressed = self.physicallyPressedKeys.contains(key.symbol.id)
+
+        if key.symbol.isModifier {
+            return isPhysicallyPressed && self.config.pressAnimationModifiers
+        } else {
+            return isPhysicallyPressed && self.config.pressAnimationRegularKeys
+        }
     }
 }
 
@@ -267,7 +302,7 @@ extension Color {
 #Preview("Key Visualization") {
     @Previewable @State var keyState = KeyState()
 
-    KeyVisualizationView(keyState: keyState, config: KeypressConfig.shared)
+    KeyVisualizationView(keyState: keyState, config: .shared)
         .frame(width: 400, height: 120)
         .background(Color.gray.opacity(0.3))
         .onAppear {

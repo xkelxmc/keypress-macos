@@ -362,6 +362,9 @@ public final class KeypressConfig {
         static let customColorScheme = "settings.customColorScheme"
         static let keyboardFrameStyle = "settings.keyboardFrameStyle"
         static let categoryStyleOverrides = "settings.categoryStyleOverrides"
+        // Animation
+        static let pressAnimationModifiers = "settings.pressAnimationModifiers"
+        static let pressAnimationRegularKeys = "settings.pressAnimationRegularKeys"
         // Monitor
         static let monitorSelection = "settings.monitorSelection"
     }
@@ -391,6 +394,9 @@ public final class KeypressConfig {
         static let customColorScheme = KeyColorScheme.dark
         static let keyboardFrameStyle = KeyboardFrameStyle.frame
         static let categoryStyleOverrides: [KeyCategory: KeyCategoryStyle] = [:]
+        // Animation
+        static let pressAnimationModifiers = true
+        static let pressAnimationRegularKeys = true
         // Monitor
         static let monitorSelection = MonitorSelection.auto
     }
@@ -514,6 +520,18 @@ public final class KeypressConfig {
         }
     }
 
+    // MARK: - Animation Properties
+
+    /// Whether to animate modifier keys (⌘ ⌥ ⌃ ⇧) when pressed/released.
+    public var pressAnimationModifiers: Bool {
+        didSet { self.userDefaults.set(self.pressAnimationModifiers, forKey: Keys.pressAnimationModifiers) }
+    }
+
+    /// Whether to animate regular keys when pressed/released.
+    public var pressAnimationRegularKeys: Bool {
+        didSet { self.userDefaults.set(self.pressAnimationRegularKeys, forKey: Keys.pressAnimationRegularKeys) }
+    }
+
     // MARK: - Monitor Properties
 
     /// Which monitor to display the overlay on.
@@ -635,6 +653,12 @@ public final class KeypressConfig {
             self.categoryStyleOverrides = Defaults.categoryStyleOverrides
         }
 
+        // Animation settings
+        self.pressAnimationModifiers = userDefaults.object(forKey: Keys.pressAnimationModifiers) as? Bool
+            ?? Defaults.pressAnimationModifiers
+        self.pressAnimationRegularKeys = userDefaults.object(forKey: Keys.pressAnimationRegularKeys) as? Bool
+            ?? Defaults.pressAnimationRegularKeys
+
         // Monitor settings
         if let monitorData = userDefaults.data(forKey: Keys.monitorSelection),
            let selection = try? JSONDecoder().decode(MonitorSelection.self, from: monitorData)
@@ -744,6 +768,8 @@ public final class KeypressConfig {
         self.appearanceMode = Defaults.appearanceMode
         self.keyboardFrameStyle = Defaults.keyboardFrameStyle
         self.categoryStyleOverrides = Defaults.categoryStyleOverrides
+        self.pressAnimationModifiers = Defaults.pressAnimationModifiers
+        self.pressAnimationRegularKeys = Defaults.pressAnimationRegularKeys
         self.monitorSelection = Defaults.monitorSelection
     }
 }

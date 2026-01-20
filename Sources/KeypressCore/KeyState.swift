@@ -20,6 +20,18 @@ public protocol KeyStateProtocol: AnyObject {
 
     /// Removes all displayed keys.
     func clear()
+
+    /// Returns true if the modifier with given symbol ID is physically pressed.
+    /// Used for press animation — modifiers can be visible but released.
+    func isModifierPressed(_ symbolId: String) -> Bool
+
+    /// Set of symbol IDs for modifiers that are physically pressed.
+    /// Used for efficient batch checking in views.
+    var pressedModifierIds: Set<String> { get }
+
+    /// Set of symbol IDs for all keys that are physically pressed.
+    /// Includes both modifiers and regular keys.
+    var physicallyPressedKeys: Set<String> { get }
 }
 
 // MARK: - PressedKey
@@ -87,6 +99,10 @@ public final class KeyState: KeyStateProtocol {
     /// Maps key IDs to their associated modifier symbol IDs (for keeping combos together)
     private var keyModifierAssociations: [String: Set<String>] = [:]
 
+    /// All keys that are physically pressed right now (by symbol.id).
+    /// Used for press animation — tracks both modifiers and regular keys.
+    public private(set) var physicallyPressedKeys: Set<String> = []
+
     // MARK: - Initialization
 
     public init() {}
@@ -116,11 +132,31 @@ public final class KeyState: KeyStateProtocol {
         self.releasedModifiers.removeAll()
         self.keyModifierAssociations.removeAll()
         self.pressedKeys.removeAll()
+        self.physicallyPressedKeys.removeAll()
+    }
+
+    /// Returns true if the modifier is physically pressed (not just visible).
+    public func isModifierPressed(_ symbolId: String) -> Bool {
+        // Modifier is pressed if it's visible AND not in releasedModifiers
+        let isVisible = self.pressedKeys.contains { $0.symbol.id == symbolId && $0.symbol.isModifier }
+        return isVisible && !self.releasedModifiers.contains(symbolId)
+    }
+
+    /// Set of symbol IDs for modifiers that are physically pressed.
+    public var pressedModifierIds: Set<String> {
+        let visibleModifierIds = Set(
+            self.pressedKeys
+                .filter(\.symbol.isModifier)
+                .map(\.symbol.id))
+        return visibleModifierIds.subtracting(self.releasedModifiers)
     }
 
     // MARK: - Private Methods
 
     private func handleKeyDown(symbol: KeySymbol) {
+        // Track physical press state
+        self.physicallyPressedKeys.insert(symbol.id)
+
         if symbol.isModifier {
             // Modifiers: only add if not already present, no timeout
             if !self.pressedKeys.contains(where: { $0.symbol.id == symbol.id }) {
@@ -174,6 +210,9 @@ public final class KeyState: KeyStateProtocol {
     }
 
     private func handleKeyUp(symbol: KeySymbol) {
+        // Track physical release state
+        self.physicallyPressedKeys.remove(symbol.id)
+
         // For regular keys, the timeout handles removal
         // For modifiers, remove immediately on release
         if symbol.isModifier {
@@ -183,6 +222,13 @@ public final class KeyState: KeyStateProtocol {
 
     private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
+
+        // Track physical press state
+        if isPressed {
+            self.physicallyPressedKeys.insert(symbol.id)
+        } else {
+            self.physicallyPressedKeys.remove(symbol.id)
+        }
 
         if isPressed {
             if !self.pressedKeys.contains(where: { $0.symbol.id == symbol.id }) {
@@ -381,6 +427,10 @@ public final class SingleKeyState: KeyStateProtocol {
 
     private var timeoutTask: Task<Void, Never>?
 
+    /// All keys that are physically pressed right now (by symbol.id).
+    /// Used for press animation — tracks both modifiers and regular keys.
+    public private(set) var physicallyPressedKeys: Set<String> = []
+
     // MARK: - Initialization
 
     public init() {}
@@ -409,11 +459,28 @@ public final class SingleKeyState: KeyStateProtocol {
         self.activeModifiers.removeAll()
         self.releasedModifiers.removeAll()
         self.lastNonModifierKey = nil
+        self.physicallyPressedKeys.removeAll()
+    }
+
+    /// Returns true if the modifier is physically pressed (not just visible).
+    public func isModifierPressed(_ symbolId: String) -> Bool {
+        // Modifier is pressed if it's in activeModifiers AND not in releasedModifiers
+        let isActive = self.activeModifiers.contains { $0.symbol.id == symbolId }
+        return isActive && !self.releasedModifiers.contains(symbolId)
+    }
+
+    /// Set of symbol IDs for modifiers that are physically pressed.
+    public var pressedModifierIds: Set<String> {
+        let activeIds = Set(self.activeModifiers.map(\.symbol.id))
+        return activeIds.subtracting(self.releasedModifiers)
     }
 
     // MARK: - Private Methods
 
     private func handleKeyDown(symbol: KeySymbol) {
+        // Track physical press state
+        self.physicallyPressedKeys.insert(symbol.id)
+
         if symbol.isModifier {
             // Track modifier but don't display alone yet
             if !self.activeModifiers.contains(where: { $0.symbol.id == symbol.id }) {
@@ -442,6 +509,9 @@ public final class SingleKeyState: KeyStateProtocol {
     }
 
     private func handleKeyUp(symbol: KeySymbol) {
+        // Track physical release state
+        self.physicallyPressedKeys.remove(symbol.id)
+
         if symbol.isModifier {
             self.activeModifiers.removeAll { $0.symbol.id == symbol.id }
             // If no more modifiers and showModifiersOnly, clear display
@@ -453,6 +523,13 @@ public final class SingleKeyState: KeyStateProtocol {
 
     private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
+
+        // Track physical press state
+        if isPressed {
+            self.physicallyPressedKeys.insert(symbol.id)
+        } else {
+            self.physicallyPressedKeys.remove(symbol.id)
+        }
 
         if isPressed {
             if !self.activeModifiers.contains(where: { $0.symbol.id == symbol.id }) {

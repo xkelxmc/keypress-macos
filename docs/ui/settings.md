@@ -110,6 +110,23 @@ When enabled, only shows combinations with modifiers (⌘, ⌥, ⌃, ⇧). Regul
 - **Flat** — Modern flat design with subtle shadows and top highlight
 - **Minimal** — Compact pill-shaped keys with text
 
+### Press Animation
+
+| Setting | Control Type | Default |
+|---------|-------------|---------|
+| Modifier press animation | Toggle | On |
+| Key press animation | Toggle | On |
+
+Visual feedback when keys are physically pressed vs released-but-visible:
+
+- **Modifier press animation** — Animate ⌘ ⌥ ⌃ ⇧ when pressed/released
+- **Key press animation** — Animate regular keys when pressed/released
+
+Animation effects by keycap style:
+- **Mechanical** — Top surface shifts down 2.5pt, depth compresses, shadow reduces
+- **Flat** — Key shifts down 1.5pt, shadow reduces
+- **Minimal** — Key scales to 95%, opacity increases
+
 ### Key Colors
 
 Different key types have distinct colors for better visual distinction.

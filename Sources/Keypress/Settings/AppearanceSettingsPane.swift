@@ -265,7 +265,7 @@ private struct CategoryDetailView: View {
 
             Spacer()
         }
-        .frame(maxWidth: KeyStyleSettingsMetrics.detailMaxWidth, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Header

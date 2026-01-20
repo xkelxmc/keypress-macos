@@ -67,6 +67,7 @@ Settings are organized into 5 tabs:
 ### Style Tab
 - Keycap style (Mechanical/Flat/Minimal)
 - Background style (Frame/Overlay/None)
+- Press animation toggles (modifiers and regular keys)
 
 ## Window Behavior
 

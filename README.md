@@ -16,6 +16,7 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 ## Features
 
 - 🎹 Realistic 3D mechanical keycap visualization
+- ✨ Press animation — keys visually respond to press/release
 - 🖥️ Multi-monitor support with auto-follow or fixed display
 - 🌗 Auto light/dark mode (follows system)
 - 🎨 Per-category color customization (10 key categories)

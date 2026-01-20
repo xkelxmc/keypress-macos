@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Key visualization** — 3D mechanical keycaps with press animations, category-based colors
 - **Three keycap styles** — Mechanical (3D), Flat (modern), Minimal (pill-shaped)
+- **Press animation** — visual feedback when keys are pressed/released (toggleable for modifiers and regular keys)
 - **Display modes** — Single (latest combo) and History (key stream)
 - **Keyboard layout support** — works with Russian, German, and other layouts
-- **Settings window** — 5 tabs: General, Display, Colors, Style, Position
+- **Settings window** — 5 tabs: General, Position, Display, Colors, Style
 - **Key style editor** — per-category color/style customization
 - **Multi-monitor support** — auto-follow active window or fixed monitor
 - **Auto light/dark mode** — follows system appearance

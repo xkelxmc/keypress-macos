@@ -70,6 +70,7 @@ Sources/
   - **Modifiers** — stable ID, no duplicates while held
   - **Regular keys** — unique ID per press (allows "hello" → h e l l o)
 - Triggers fade-out timers for regular keys
+- Tracks `physicallyPressedKeys` for press animation (keys that are physically held vs visible-but-released)
 
 ### OverlayWindow
 

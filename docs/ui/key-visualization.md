@@ -38,17 +38,35 @@ The key is NOT a flat rectangle with text — it's a 3D object with volume.
 
 ## Press Animation
 
-When a key is pressed:
+Keys can be in two visual states: **pressed** (physically held down) and **released** (visible but not held).
 
-1. **Top surface shifts down** — The main visual cue of pressing
-2. **Sides compress** — Less visible side surface
-3. **Shadow reduces** — Key is closer to the surface
-4. **Optional: subtle glow** — Highlight on press
+### Pressed State
 
-When released:
+When a key is physically pressed:
 
-1. **Spring back** — Quick return to resting state
-2. **Subtle bounce** — Natural mechanical feel
+1. **Top surface shifts down** — 2.5pt for Mechanical, 1.5pt for Flat
+2. **Sides compress** — Depth reduced by 2pt (Mechanical only)
+3. **Shadow reduces** — Opacity × 0.5, blur radius decreases
+4. **Minimal style** — Scales to 95%, opacity increases
+
+### Released State
+
+When key is released but still visible:
+
+1. **Spring back** — Quick return to resting state (0.15s spring animation)
+2. **Natural feel** — Spring with 0.7 damping fraction
+
+### Animation Timing
+
+- **Overlay appears** — Press animation delayed 0.2s (waits for fade-in)
+- **Overlay already visible** — Press animation immediate (~20ms)
+- **Transition** — Spring animation (response: 0.15s, damping: 0.7)
+
+### Settings
+
+Both modifier and regular key animations can be toggled independently in Style settings:
+- **Modifier press animation** — For ⌘ ⌥ ⌃ ⇧
+- **Key press animation** — For regular keys (letters, digits, etc.)
 
 ## Layout
 
@@ -123,11 +141,12 @@ Modifiers show **icon + label** stacked vertically:
 
 | State | Duration |
 |-------|----------|
-| Press animation | ~50ms |
-| Release animation | ~100ms (with slight bounce) |
-| Modifier visible | While held |
-| Regular key visible | Configurable timeout (default ~1.5s) |
-| Fade out | ~200ms ease-out |
+| Press animation | Spring 0.15s (response) |
+| Release animation | Spring 0.15s with 0.7 damping |
+| Modifier visible | While held, or with associated key |
+| Regular key visible | Configurable timeout (default 1.5s) |
+| Overlay fade in/out | 0.2s ease-out |
+| Press animation delay on appear | 0.2s (matches fade-in) |
 
 ## Edge Cases
 

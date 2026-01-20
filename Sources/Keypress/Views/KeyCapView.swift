@@ -73,10 +73,31 @@ private struct ModifierInfo {
 struct KeyCapView: View {
     let symbol: KeySymbol
     let config: KeypressConfig
+    /// Whether the key is physically pressed (for modifiers only).
+    /// Affects visual appearance: pressed keys appear pushed down.
+    let isPressed: Bool
+    /// Whether to delay press animation (when overlay just appeared).
+    let delayPressAnimation: Bool
 
-    init(symbol: KeySymbol, config: KeypressConfig = .shared) {
+    /// Local state to delay press animation on appear.
+    /// This creates a visible "press down" effect when key first appears.
+    @State private var showPressedState: Bool = false
+
+    init(
+        symbol: KeySymbol,
+        config: KeypressConfig = .shared,
+        isPressed: Bool = false,
+        delayPressAnimation: Bool = false)
+    {
         self.symbol = symbol
         self.config = config
+        self.isPressed = isPressed
+        self.delayPressAnimation = delayPressAnimation
+    }
+
+    /// Effective pressed state — combines external isPressed with appear delay.
+    private var effectivelyPressed: Bool {
+        self.isPressed && self.showPressedState
     }
 
     // MARK: - Layout Constants
@@ -143,6 +164,23 @@ struct KeyCapView: View {
         }
     }
 
+    // MARK: - Press Animation Constants
+
+    /// Vertical offset when key is pressed (top surface moves down).
+    private var pressOffset: CGFloat {
+        self.effectivelyPressed ? 2.5 : 0
+    }
+
+    /// Depth reduction when pressed (sides compress).
+    private var pressedDepthReduction: CGFloat {
+        self.effectivelyPressed ? 2 : 0
+    }
+
+    /// Shadow opacity reduction when pressed.
+    private var pressedShadowMultiplier: CGFloat {
+        self.effectivelyPressed ? 0.5 : 1.0
+    }
+
     // MARK: - Mechanical Style (3D skeuomorphic)
 
     private var mechanicalBody: some View {
@@ -157,17 +195,40 @@ struct KeyCapView: View {
             self.keycap
         }
         .frame(width: self.size.width, height: self.size.height + self.depth)
+        .animation(.spring(response: 0.15, dampingFraction: 0.7), value: self.effectivelyPressed)
+        .onAppear { self.scheduleShowPressed() }
+        .onChange(of: self.isPressed) { _, newValue in
+            if newValue {
+                self.scheduleShowPressed()
+            } else {
+                self.showPressedState = false
+            }
+        }
+    }
+
+    /// Schedules showing pressed state.
+    /// When overlay just appeared (delayPressAnimation=true), waits for fade-in to complete.
+    /// When overlay was already visible, shows press immediately.
+    private func scheduleShowPressed() {
+        guard self.isPressed else { return }
+        let delay: Double = self.delayPressAnimation ? 0.2 : 0.02
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            self.showPressedState = true
+        }
     }
 
     // MARK: - Flat Style (modern flat design)
 
     private var flatBody: some View {
-        ZStack {
+        let flatPressOffset: CGFloat = self.effectivelyPressed ? 1.5 : 0
+        let flatShadowOffset: CGFloat = self.effectivelyPressed ? 1 : 2
+
+        return ZStack {
             // Subtle drop shadow
             RoundedRectangle(cornerRadius: self.cornerRadius)
-                .fill(Color.black.opacity(0.3 * self.style.shadowIntensity))
-                .blur(radius: 4)
-                .offset(y: 2)
+                .fill(Color.black.opacity(0.3 * self.style.shadowIntensity * self.pressedShadowMultiplier))
+                .blur(radius: self.effectivelyPressed ? 3 : 4)
+                .offset(y: flatShadowOffset)
 
             // Main surface
             RoundedRectangle(cornerRadius: self.cornerRadius)
@@ -192,15 +253,27 @@ struct KeyCapView: View {
             self.keyLabel
         }
         .frame(width: self.size.width, height: self.size.height)
+        .offset(y: flatPressOffset)
+        .animation(.spring(response: 0.15, dampingFraction: 0.7), value: self.effectivelyPressed)
+        .onAppear { self.scheduleShowPressed() }
+        .onChange(of: self.isPressed) { _, newValue in
+            if newValue {
+                self.scheduleShowPressed()
+            } else {
+                self.showPressedState = false
+            }
+        }
     }
 
     // MARK: - Minimal Style (text with background)
 
     private var minimalBody: some View {
-        ZStack {
+        let minimalScale: CGFloat = self.effectivelyPressed ? 0.95 : 1.0
+
+        return ZStack {
             // Simple pill background
             RoundedRectangle(cornerRadius: self.minimalCornerRadius)
-                .fill(self.baseColor.opacity(0.85))
+                .fill(self.baseColor.opacity(self.effectivelyPressed ? 0.95 : 0.85))
 
             // Subtle border
             RoundedRectangle(cornerRadius: self.minimalCornerRadius)
@@ -208,8 +281,19 @@ struct KeyCapView: View {
 
             // Label
             self.minimalLabel
+                .padding(.horizontal, 6)
         }
         .frame(width: self.minimalWidth, height: self.minimalHeight)
+        .scaleEffect(minimalScale)
+        .animation(.spring(response: 0.15, dampingFraction: 0.7), value: self.effectivelyPressed)
+        .onAppear { self.scheduleShowPressed() }
+        .onChange(of: self.isPressed) { _, newValue in
+            if newValue {
+                self.scheduleShowPressed()
+            } else {
+                self.showPressedState = false
+            }
+        }
     }
 
     private var minimalCornerRadius: CGFloat {
@@ -219,7 +303,7 @@ struct KeyCapView: View {
     private var minimalWidth: CGFloat {
         switch self.size {
         case .standard: 40
-        case .modifier: 64
+        case .modifier: 80 // Increased from 64 for better text fit
         case .wide: 72
         }
     }
@@ -266,10 +350,10 @@ struct KeyCapView: View {
     /// Soft shadow beneath the entire key.
     private var keyShadow: some View {
         RoundedRectangle(cornerRadius: self.cornerRadius + 2)
-            .fill(Color.black.opacity(0.4 * self.style.shadowIntensity))
+            .fill(Color.black.opacity(0.4 * self.style.shadowIntensity * self.pressedShadowMultiplier))
             .frame(width: self.size.width - 2, height: self.size.height)
-            .blur(radius: 8)
-            .offset(y: self.depth + 4)
+            .blur(radius: self.effectivelyPressed ? 6 : 8)
+            .offset(y: self.depth + 4 - self.pressedDepthReduction)
     }
 
     /// The dark well/recess the key sits in.
@@ -288,12 +372,13 @@ struct KeyCapView: View {
             // Top surface
             self.keycapTop
         }
-        .offset(y: -self.depth / 2)
+        .offset(y: -self.depth / 2 + self.pressOffset)
     }
 
     /// The visible sides of the keycap (creates 3D depth effect).
     private var keycapSides: some View {
-        ZStack {
+        let effectiveDepth = max(0, self.depth - self.pressedDepthReduction)
+        return ZStack {
             // Bottom edge (darkest)
             RoundedRectangle(cornerRadius: self.cornerRadius)
                 .fill(
@@ -305,7 +390,7 @@ struct KeyCapView: View {
                         startPoint: .top,
                         endPoint: .bottom))
                 .frame(width: self.size.width - 2, height: self.size.height)
-                .offset(y: self.depth / 2)
+                .offset(y: effectiveDepth / 2)
         }
     }
 

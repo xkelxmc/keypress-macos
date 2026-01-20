@@ -39,6 +39,29 @@ struct StyleSettingsPane: View {
                     .pickerStyle(.segmented)
                     .fixedSize()
                 }
+
+                Divider()
+
+                // Press Animation
+                SettingsRow(
+                    "Modifier press animation",
+                    subtitle: "Animate ⌘ ⌥ ⌃ ⇧ when pressed/released")
+                {
+                    Toggle("", isOn: self.$config.pressAnimationModifiers)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                }
+
+                Divider()
+
+                SettingsRow(
+                    "Key press animation",
+                    subtitle: "Animate regular keys when pressed/released")
+                {
+                    Toggle("", isOn: self.$config.pressAnimationRegularKeys)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                }
             }
 
             Spacer()
