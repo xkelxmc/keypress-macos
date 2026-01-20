@@ -668,8 +668,8 @@ struct KeypressConfigExtendedPropertiesTests {
         settings.horizontalOffset = -10 // below min
         #expect(settings.horizontalOffset == 0)
 
-        settings.horizontalOffset = 200 // above max
-        #expect(settings.horizontalOffset == 100)
+        settings.horizontalOffset = 600 // above max (500)
+        #expect(settings.horizontalOffset == 500)
     }
 
     @Test("verticalOffset persists to UserDefaults")

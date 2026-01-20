@@ -431,7 +431,11 @@ public final class KeypressConfig {
     /// Range: 0-500 pixels.
     public var horizontalOffset: CGFloat {
         didSet {
-            self.horizontalOffset = max(0, min(500, self.horizontalOffset))
+            let clamped = max(0, min(500, self.horizontalOffset))
+            if self.horizontalOffset != clamped {
+                self.horizontalOffset = clamped
+                return
+            }
             self.userDefaults.set(Double(self.horizontalOffset), forKey: Keys.horizontalOffset)
         }
     }
@@ -440,7 +444,11 @@ public final class KeypressConfig {
     /// Range: 0-300 pixels.
     public var verticalOffset: CGFloat {
         didSet {
-            self.verticalOffset = max(0, min(300, self.verticalOffset))
+            let clamped = max(0, min(300, self.verticalOffset))
+            if self.verticalOffset != clamped {
+                self.verticalOffset = clamped
+                return
+            }
             self.userDefaults.set(Double(self.verticalOffset), forKey: Keys.verticalOffset)
         }
     }
@@ -453,7 +461,11 @@ public final class KeypressConfig {
     /// Opacity of the overlay (0.0 to 1.0).
     public var opacity: Double {
         didSet {
-            self.opacity = self.opacity.clamped(to: 0.0...1.0)
+            let clamped = self.opacity.clamped(to: 0.0...1.0)
+            if self.opacity != clamped {
+                self.opacity = clamped
+                return
+            }
             self.userDefaults.set(self.opacity, forKey: Keys.opacity)
         }
     }
@@ -462,7 +474,11 @@ public final class KeypressConfig {
     /// Range: 0.5 to 5.0 seconds.
     public var keyTimeout: Double {
         didSet {
-            self.keyTimeout = self.keyTimeout.clamped(to: 0.5...5.0)
+            let clamped = self.keyTimeout.clamped(to: 0.5...5.0)
+            if self.keyTimeout != clamped {
+                self.keyTimeout = clamped
+                return
+            }
             self.userDefaults.set(self.keyTimeout, forKey: Keys.keyTimeout)
         }
     }
@@ -484,7 +500,11 @@ public final class KeypressConfig {
     /// Range: 3 to 12.
     public var maxKeys: Int {
         didSet {
-            self.maxKeys = max(3, min(12, self.maxKeys))
+            let clamped = max(3, min(12, self.maxKeys))
+            if self.maxKeys != clamped {
+                self.maxKeys = clamped
+                return
+            }
             self.userDefaults.set(self.maxKeys, forKey: Keys.maxKeys)
         }
     }
