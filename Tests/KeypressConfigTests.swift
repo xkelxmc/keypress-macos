@@ -341,6 +341,441 @@ struct CategoryStyleOverridesTests {
     }
 }
 
+@Suite("DisplayMode Tests")
+struct DisplayModeTests {
+    @Test("All display modes exist")
+    func allModes() {
+        let modes = DisplayMode.allCases
+        #expect(modes.count == 2)
+        #expect(modes.contains(.single))
+        #expect(modes.contains(.history))
+    }
+
+    @Test("DisplayMode is Codable")
+    func test_codable() throws {
+        for mode in DisplayMode.allCases {
+            let encoded = try JSONEncoder().encode(mode)
+            let decoded = try JSONDecoder().decode(DisplayMode.self, from: encoded)
+            #expect(decoded == mode)
+        }
+    }
+
+    @Test("DisplayMode persists to UserDefaults")
+    @MainActor
+    func test_persistence() {
+        let defaults = UserDefaults(suiteName: "test.displaymode.persist")!
+        defaults.removePersistentDomain(forName: "test.displaymode.persist")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.displayMode = .history
+        #expect(defaults.string(forKey: "settings.displayMode") == "history")
+
+        settings.displayMode = .single
+        #expect(defaults.string(forKey: "settings.displayMode") == "single")
+    }
+
+    @Test("Default displayMode is single")
+    @MainActor
+    func defaultDisplayMode() {
+        let defaults = UserDefaults(suiteName: "test.displaymode.default")!
+        defaults.removePersistentDomain(forName: "test.displaymode.default")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.displayMode == .single)
+    }
+}
+
+@Suite("MonitorSelection Tests")
+struct MonitorSelectionTests {
+    @Test("MonitorSelection auto is Codable")
+    func autoCodeable() throws {
+        let selection = MonitorSelection.auto
+        let encoded = try JSONEncoder().encode(selection)
+        let decoded = try JSONDecoder().decode(MonitorSelection.self, from: encoded)
+        #expect(decoded == selection)
+    }
+
+    @Test("MonitorSelection fixed is Codable")
+    func fixedCodable() throws {
+        let selection = MonitorSelection.fixed(index: 2)
+        let encoded = try JSONEncoder().encode(selection)
+        let decoded = try JSONDecoder().decode(MonitorSelection.self, from: encoded)
+        #expect(decoded == selection)
+    }
+
+    @Test("MonitorSelection is Equatable")
+    func equatable() {
+        #expect(MonitorSelection.auto == MonitorSelection.auto)
+        #expect(MonitorSelection.fixed(index: 1) == MonitorSelection.fixed(index: 1))
+        #expect(MonitorSelection.fixed(index: 1) != MonitorSelection.fixed(index: 2))
+        #expect(MonitorSelection.auto != MonitorSelection.fixed(index: 0))
+    }
+
+    @Test("MonitorSelection is Hashable")
+    func hashable() {
+        var set: Set<MonitorSelection> = []
+        set.insert(.auto)
+        set.insert(.fixed(index: 0))
+        set.insert(.fixed(index: 1))
+        set.insert(.auto) // duplicate
+        #expect(set.count == 3)
+    }
+
+    @Test("Default monitorSelection is auto")
+    @MainActor
+    func defaultMonitorSelection() {
+        let defaults = UserDefaults(suiteName: "test.monitor.default")!
+        defaults.removePersistentDomain(forName: "test.monitor.default")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.monitorSelection == .auto)
+    }
+
+    @Test("MonitorSelection persists to UserDefaults")
+    @MainActor
+    func test_persistence() throws {
+        let defaults = UserDefaults(suiteName: "test.monitor.persist")!
+        defaults.removePersistentDomain(forName: "test.monitor.persist")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.monitorSelection = .fixed(index: 1)
+        #expect(defaults.data(forKey: "settings.monitorSelection") != nil)
+
+        // Verify decoded value
+        let data = defaults.data(forKey: "settings.monitorSelection")!
+        let decoded = try JSONDecoder().decode(MonitorSelection.self, from: data)
+        #expect(decoded == .fixed(index: 1))
+    }
+}
+
+@Suite("KeyboardFrameStyle Tests")
+struct KeyboardFrameStyleTests {
+    @Test("All frame styles exist")
+    func allStyles() {
+        let styles = KeyboardFrameStyle.allCases
+        #expect(styles.count == 3)
+        #expect(styles.contains(.frame))
+        #expect(styles.contains(.overlay))
+        #expect(styles.contains(.none))
+    }
+
+    @Test("KeyboardFrameStyle is Codable")
+    func test_codable() throws {
+        for style in KeyboardFrameStyle.allCases {
+            let encoded = try JSONEncoder().encode(style)
+            let decoded = try JSONDecoder().decode(KeyboardFrameStyle.self, from: encoded)
+            #expect(decoded == style)
+        }
+    }
+
+    @Test("Default keyboardFrameStyle is frame")
+    @MainActor
+    func defaultStyle() {
+        let defaults = UserDefaults(suiteName: "test.framestyle.default")!
+        defaults.removePersistentDomain(forName: "test.framestyle.default")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.keyboardFrameStyle == .frame)
+    }
+
+    @Test("KeyboardFrameStyle persists to UserDefaults")
+    @MainActor
+    func test_persistence() {
+        let defaults = UserDefaults(suiteName: "test.framestyle.persist")!
+        defaults.removePersistentDomain(forName: "test.framestyle.persist")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.keyboardFrameStyle = .overlay
+        #expect(defaults.string(forKey: "settings.keyboardFrameStyle") == "overlay")
+
+        settings.keyboardFrameStyle = .none
+        #expect(defaults.string(forKey: "settings.keyboardFrameStyle") == "none")
+    }
+}
+
+@Suite("KeyCapStyle Tests")
+struct KeyCapStyleTests {
+    @Test("All keycap styles exist")
+    func allStyles() {
+        let styles = KeyCapStyle.allCases
+        #expect(styles.count == 3)
+        #expect(styles.contains(.mechanical))
+        #expect(styles.contains(.flat))
+        #expect(styles.contains(.minimal))
+    }
+
+    @Test("KeyCapStyle is Codable")
+    func test_codable() throws {
+        for style in KeyCapStyle.allCases {
+            let encoded = try JSONEncoder().encode(style)
+            let decoded = try JSONDecoder().decode(KeyCapStyle.self, from: encoded)
+            #expect(decoded == style)
+        }
+    }
+
+    @Test("Default keyCapStyle is mechanical")
+    @MainActor
+    func defaultStyle() {
+        let defaults = UserDefaults(suiteName: "test.keycapstyle.default")!
+        defaults.removePersistentDomain(forName: "test.keycapstyle.default")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.keyCapStyle == .mechanical)
+    }
+
+    @Test("KeyCapStyle persists to UserDefaults")
+    @MainActor
+    func test_persistence() {
+        let defaults = UserDefaults(suiteName: "test.keycapstyle.persist")!
+        defaults.removePersistentDomain(forName: "test.keycapstyle.persist")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.keyCapStyle = .flat
+        #expect(defaults.string(forKey: "settings.keyCapStyle") == "flat")
+
+        settings.keyCapStyle = .minimal
+        #expect(defaults.string(forKey: "settings.keyCapStyle") == "minimal")
+    }
+}
+
+@Suite("KeyColor Tests")
+struct KeyColorTests {
+    @Test("KeyColor init stores values correctly")
+    func initValues() {
+        let color = KeyColor(red: 0.5, green: 0.6, blue: 0.7, alpha: 0.8)
+        #expect(color.red == 0.5)
+        #expect(color.green == 0.6)
+        #expect(color.blue == 0.7)
+        #expect(color.alpha == 0.8)
+    }
+
+    @Test("KeyColor default alpha is 1.0")
+    func defaultAlpha() {
+        let color = KeyColor(red: 0.5, green: 0.5, blue: 0.5)
+        #expect(color.alpha == 1.0)
+    }
+
+    @Test("KeyColor is Equatable")
+    func equatable() {
+        let color1 = KeyColor(red: 0.5, green: 0.5, blue: 0.5)
+        let color2 = KeyColor(red: 0.5, green: 0.5, blue: 0.5)
+        let color3 = KeyColor(red: 0.6, green: 0.5, blue: 0.5)
+        #expect(color1 == color2)
+        #expect(color1 != color3)
+    }
+
+    @Test("KeyColor is Codable")
+    func test_codable() throws {
+        let color = KeyColor(red: 0.25, green: 0.5, blue: 0.75, alpha: 0.9)
+        let encoded = try JSONEncoder().encode(color)
+        let decoded = try JSONDecoder().decode(KeyColor.self, from: encoded)
+        #expect(decoded == color)
+    }
+
+    @Test("KeyColor presets are correct")
+    func presets() {
+        // Verify preset colors have expected values (approximate)
+        #expect(KeyColor.charcoal.red < 0.2)
+        #expect(KeyColor.aluminum.red > 0.8)
+        #expect(KeyColor.commandGreen.green > KeyColor.commandGreen.red)
+        #expect(KeyColor.shiftRed.red > KeyColor.shiftRed.green)
+        #expect(KeyColor.optionBlue.blue > KeyColor.optionBlue.red)
+        #expect(KeyColor.controlOrange.red > KeyColor.controlOrange.blue)
+    }
+}
+
+@Suite("KeypressConfig Extended Properties Tests")
+struct KeypressConfigExtendedPropertiesTests {
+    @Test("showModifiersOnly persists to UserDefaults")
+    @MainActor
+    func showModifiersOnlyPersistence() {
+        let defaults = UserDefaults(suiteName: "test.extended.showmodifiers")!
+        defaults.removePersistentDomain(forName: "test.extended.showmodifiers")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.showModifiersOnly == false) // default
+
+        settings.showModifiersOnly = true
+        #expect(defaults.bool(forKey: "settings.showModifiersOnly") == true)
+    }
+
+    @Test("maxKeys persists to UserDefaults")
+    @MainActor
+    func maxKeysPersistence() {
+        let defaults = UserDefaults(suiteName: "test.extended.maxkeys")!
+        defaults.removePersistentDomain(forName: "test.extended.maxkeys")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.maxKeys == 6) // default
+
+        settings.maxKeys = 10
+        #expect(defaults.integer(forKey: "settings.maxKeys") == 10)
+    }
+
+    @Test("maxKeys is clamped to valid range")
+    @MainActor
+    func maxKeysClamping() {
+        let defaults = UserDefaults(suiteName: "test.extended.maxkeys.clamp")!
+        defaults.removePersistentDomain(forName: "test.extended.maxkeys.clamp")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.maxKeys = 1 // below min
+        #expect(settings.maxKeys == 3)
+
+        settings.maxKeys = 20 // above max
+        #expect(settings.maxKeys == 12)
+    }
+
+    @Test("duplicateLetters persists to UserDefaults")
+    @MainActor
+    func duplicateLettersPersistence() {
+        let defaults = UserDefaults(suiteName: "test.extended.duplicate")!
+        defaults.removePersistentDomain(forName: "test.extended.duplicate")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.duplicateLetters == true) // default
+
+        settings.duplicateLetters = false
+        #expect(defaults.bool(forKey: "settings.duplicateLetters") == false)
+    }
+
+    @Test("horizontalOffset persists to UserDefaults")
+    @MainActor
+    func horizontalOffsetPersistence() {
+        let defaults = UserDefaults(suiteName: "test.extended.hoffset")!
+        defaults.removePersistentDomain(forName: "test.extended.hoffset")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.horizontalOffset == 20) // default
+
+        settings.horizontalOffset = 50
+        #expect(defaults.double(forKey: "settings.horizontalOffset") == 50)
+    }
+
+    @Test("horizontalOffset is clamped to valid range")
+    @MainActor
+    func horizontalOffsetClamping() {
+        let defaults = UserDefaults(suiteName: "test.extended.hoffset.clamp")!
+        defaults.removePersistentDomain(forName: "test.extended.hoffset.clamp")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.horizontalOffset = -10 // below min
+        #expect(settings.horizontalOffset == 0)
+
+        settings.horizontalOffset = 200 // above max
+        #expect(settings.horizontalOffset == 100)
+    }
+
+    @Test("verticalOffset persists to UserDefaults")
+    @MainActor
+    func verticalOffsetPersistence() {
+        let defaults = UserDefaults(suiteName: "test.extended.voffset")!
+        defaults.removePersistentDomain(forName: "test.extended.voffset")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.verticalOffset == 20) // default
+
+        settings.verticalOffset = 75
+        #expect(defaults.double(forKey: "settings.verticalOffset") == 75)
+    }
+
+    @Test("pressAnimationModifiers persists to UserDefaults")
+    @MainActor
+    func pressAnimationModifiersPersistence() {
+        let defaults = UserDefaults(suiteName: "test.extended.pressmod")!
+        defaults.removePersistentDomain(forName: "test.extended.pressmod")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.pressAnimationModifiers == true) // default
+
+        settings.pressAnimationModifiers = false
+        #expect(defaults.bool(forKey: "settings.pressAnimationModifiers") == false)
+    }
+
+    @Test("pressAnimationRegularKeys persists to UserDefaults")
+    @MainActor
+    func pressAnimationRegularKeysPersistence() {
+        let defaults = UserDefaults(suiteName: "test.extended.pressreg")!
+        defaults.removePersistentDomain(forName: "test.extended.pressreg")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+        #expect(settings.pressAnimationRegularKeys == true) // default
+
+        settings.pressAnimationRegularKeys = false
+        #expect(defaults.bool(forKey: "settings.pressAnimationRegularKeys") == false)
+    }
+
+    @Test("keyTimeout is clamped to valid range")
+    @MainActor
+    func keyTimeoutClamping() {
+        let defaults = UserDefaults(suiteName: "test.extended.timeout.clamp")!
+        defaults.removePersistentDomain(forName: "test.extended.timeout.clamp")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.keyTimeout = 0.1 // below min
+        #expect(settings.keyTimeout == 0.5)
+
+        settings.keyTimeout = 10.0 // above max
+        #expect(settings.keyTimeout == 5.0)
+    }
+
+    @Test("opacity is clamped to valid range")
+    @MainActor
+    func opacityClamping() {
+        let defaults = UserDefaults(suiteName: "test.extended.opacity.clamp")!
+        defaults.removePersistentDomain(forName: "test.extended.opacity.clamp")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        settings.opacity = -0.5 // below min
+        #expect(settings.opacity == 0.0)
+
+        settings.opacity = 1.5 // above max
+        #expect(settings.opacity == 1.0)
+    }
+
+    @Test("Reset to defaults resets all extended properties")
+    @MainActor
+    func resetExtendedProperties() {
+        let defaults = UserDefaults(suiteName: "test.extended.reset")!
+        defaults.removePersistentDomain(forName: "test.extended.reset")
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        // Change various properties
+        settings.displayMode = .history
+        settings.showModifiersOnly = true
+        settings.maxKeys = 10
+        settings.duplicateLetters = false
+        settings.horizontalOffset = 50
+        settings.verticalOffset = 50
+        settings.keyboardFrameStyle = .overlay
+        settings.keyCapStyle = .flat
+        settings.pressAnimationModifiers = false
+        settings.pressAnimationRegularKeys = false
+
+        settings.resetToDefaults()
+
+        #expect(settings.displayMode == .single)
+        #expect(settings.showModifiersOnly == false)
+        #expect(settings.maxKeys == 6)
+        #expect(settings.duplicateLetters == true)
+        #expect(settings.horizontalOffset == 20)
+        #expect(settings.verticalOffset == 20)
+        #expect(settings.keyboardFrameStyle == .frame)
+        #expect(settings.keyCapStyle == .mechanical)
+        #expect(settings.pressAnimationModifiers == true)
+        #expect(settings.pressAnimationRegularKeys == true)
+    }
+}
+
 @Suite("KeyColorScheme Tests")
 struct KeyColorSchemeTests {
     @Test("Dark scheme has correct colors")
