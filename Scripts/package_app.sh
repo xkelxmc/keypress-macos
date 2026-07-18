@@ -14,22 +14,19 @@ APP_NAME="Keypress"
 BUNDLE_ID="dev.keypress.app"
 VERSION="${MARKETING_VERSION}"
 
-# Build (set ARCHES="arm64 x86_64" for a universal binary)
+# Build (set ARCHES="arm64 x86_64" for a universal binary).
+# Each arch is built separately and merged with lipo: the combined
+# multi-arch swift build is flaky across Xcode versions.
 ARCHES=${ARCHES:-$(uname -m)}
-ARCH_FLAGS=()
+BINARIES=()
+BUILD_DIR=""
 for ARCH in $ARCHES; do
-  ARCH_FLAGS+=(--arch "$ARCH")
+  swift build -c "$CONF" --arch "$ARCH"
+  ARCH_DIR=".build/${ARCH}-apple-macosx/$CONF"
+  [[ -f "$ARCH_DIR/$APP_NAME" ]] || ARCH_DIR=".build/$CONF"
+  BINARIES+=("$ARCH_DIR/$APP_NAME")
+  [[ -n "$BUILD_DIR" ]] || BUILD_DIR="$ARCH_DIR"
 done
-swift build -c "$CONF" "${ARCH_FLAGS[@]}"
-
-# SwiftPM output: single-arch in .build/<arch>-apple-macosx/<conf>, multi-arch in .build/apple/Products/<Conf>
-if [[ $(echo "$ARCHES" | wc -w) -gt 1 ]]; then
-  CONF_TITLE=$(echo "${CONF:0:1}" | tr '[:lower:]' '[:upper:]')${CONF:1}
-  BUILD_DIR=".build/apple/Products/${CONF_TITLE}"
-else
-  BUILD_DIR=".build/${ARCHES// /}-apple-macosx/$CONF"
-  [[ -f "$BUILD_DIR/$APP_NAME" ]] || BUILD_DIR=".build/$CONF"
-fi
 
 # Create app bundle structure
 APP="$ROOT/${APP_NAME}.app"
@@ -64,8 +61,12 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-# Copy binary
-cp "$BUILD_DIR/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
+# Copy binary (lipo merges when multiple arches were built)
+if [[ ${#BINARIES[@]} -gt 1 ]]; then
+  lipo -create "${BINARIES[@]}" -output "$APP/Contents/MacOS/$APP_NAME"
+else
+  cp "${BINARIES[0]}" "$APP/Contents/MacOS/$APP_NAME"
+fi
 chmod +x "$APP/Contents/MacOS/$APP_NAME"
 
 # Copy icon if exists
