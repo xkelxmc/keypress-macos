@@ -17,6 +17,7 @@ Project documentation for keypress-macos.
 
 - [Technical Overview](./technical/README.md) — Tech stack and setup
 - [Architecture](./technical/architecture.md) — App architecture and modules
+- [Release Process](./technical/release.md) — Signing, notarization, CI releases, Sparkle feed
 
 ### Assets
 
@@ -25,4 +26,4 @@ Project documentation for keypress-macos.
 
 ## Open Questions
 
-- Distribution method (GitHub releases / Mac App Store)
+- None currently. Distribution: GitHub releases + Sparkle auto-updates (see [Release Process](./technical/release.md))

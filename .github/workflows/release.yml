@@ -1,0 +1,148 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-15
+    env:
+      # Keep in sync with the Sparkle version in Package.resolved
+      SPARKLE_VERSION: "2.8.1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select latest Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Verify tag matches version.env
+        run: |
+          source version.env
+          if [[ "$GITHUB_REF_NAME" != "v${MARKETING_VERSION}" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match MARKETING_VERSION=$MARKETING_VERSION" >&2
+            exit 1
+          fi
+
+      - name: Verify tag is on main
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Tag $GITHUB_REF_NAME points to a commit that is not on origin/main" >&2
+            exit 1
+          fi
+
+      - name: Validate changelog
+        run: |
+          source version.env
+          ./Scripts/validate_changelog.sh "$MARKETING_VERSION"
+
+      - name: Test
+        run: swift test
+
+      - name: Import signing certificate
+        env:
+          APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/release.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+
+          echo "$APPLE_CERTIFICATE_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/certificate.p12" -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -k "$KEYCHAIN_PATH" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          rm "$RUNNER_TEMP/certificate.p12"
+
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" \
+            | awk -F'"' '/Developer ID Application/ {print $2; exit}')
+          if [[ -z "$IDENTITY" ]]; then
+            echo "No 'Developer ID Application' identity found in the imported certificate" >&2
+            exit 1
+          fi
+          echo "Using identity: $IDENTITY"
+          echo "APP_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+
+      - name: Build, sign, notarize
+        env:
+          APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: ./Scripts/sign-and-notarize.sh
+
+      - name: Install Sparkle tools
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/sparkle.tar.xz" \
+            "https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_VERSION}/Sparkle-${SPARKLE_VERSION}.tar.xz"
+          mkdir -p "$RUNNER_TEMP/sparkle"
+          tar -xJf "$RUNNER_TEMP/sparkle.tar.xz" -C "$RUNNER_TEMP/sparkle"
+          echo "$RUNNER_TEMP/sparkle/bin" >> "$GITHUB_PATH"
+
+      - name: Generate appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          source version.env
+          # Seed from the feed on main, which may be newer than the tagged commit
+          # if a previous release committed its appcast entry after this tag was cut
+          git fetch origin main
+          git show origin/main:appcast.xml > appcast.xml
+          KEY_FILE="$RUNNER_TEMP/sparkle_private_key"
+          printf '%s\n' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
+          SPARKLE_PRIVATE_KEY_FILE="$KEY_FILE" ./Scripts/make_appcast.sh "Keypress-${MARKETING_VERSION}.zip"
+          rm "$KEY_FILE"
+
+          # Sanity check: the new entry must be in the feed
+          grep -q "Keypress-${MARKETING_VERSION}.zip" appcast.xml || {
+            echo "appcast.xml has no entry for ${MARKETING_VERSION}" >&2
+            exit 1
+          }
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source version.env
+          NOTES=$(awk "/^## \[?${MARKETING_VERSION}\]?/{found=1;next} /^## /{found=0} found" CHANGELOG.md)
+          gh release create "v${MARKETING_VERSION}" "Keypress-${MARKETING_VERSION}.zip" \
+            --title "Keypress ${MARKETING_VERSION}" \
+            --notes "$NOTES" \
+            --verify-tag
+
+      # After the release exists, publish the appcast so updaters never see
+      # a feed entry whose download URL is not live yet.
+      - name: Commit appcast to main
+        run: |
+          source version.env
+          cp appcast.xml "$RUNNER_TEMP/appcast-new.xml"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -f -B main origin/main
+          cp "$RUNNER_TEMP/appcast-new.xml" appcast.xml
+          if git diff --quiet -- appcast.xml; then
+            echo "appcast.xml unchanged, nothing to commit"
+          else
+            git add appcast.xml
+            git commit -m "chore: update appcast for ${MARKETING_VERSION}"
+            git push origin main
+          fi
+
+      - name: Clean up keychain
+        if: always()
+        run: security delete-keychain "$RUNNER_TEMP/release.keychain-db" || true

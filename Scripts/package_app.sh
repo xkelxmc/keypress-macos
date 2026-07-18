@@ -14,9 +14,22 @@ APP_NAME="Keypress"
 BUNDLE_ID="dev.keypress.app"
 VERSION="${MARKETING_VERSION}"
 
-# Build
-HOST_ARCH=$(uname -m)
-swift build -c "$CONF" --arch "$HOST_ARCH"
+# Build (set ARCHES="arm64 x86_64" for a universal binary)
+ARCHES=${ARCHES:-$(uname -m)}
+ARCH_FLAGS=()
+for ARCH in $ARCHES; do
+  ARCH_FLAGS+=(--arch "$ARCH")
+done
+swift build -c "$CONF" "${ARCH_FLAGS[@]}"
+
+# SwiftPM output: single-arch in .build/<arch>-apple-macosx/<conf>, multi-arch in .build/apple/Products/<Conf>
+if [[ $(echo "$ARCHES" | wc -w) -gt 1 ]]; then
+  CONF_TITLE=$(echo "${CONF:0:1}" | tr '[:lower:]' '[:upper:]')${CONF:1}
+  BUILD_DIR=".build/apple/Products/${CONF_TITLE}"
+else
+  BUILD_DIR=".build/${ARCHES// /}-apple-macosx/$CONF"
+  [[ -f "$BUILD_DIR/$APP_NAME" ]] || BUILD_DIR=".build/$CONF"
+fi
 
 # Create app bundle structure
 APP="$ROOT/${APP_NAME}.app"
@@ -53,10 +66,6 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 # Copy binary
-BUILD_DIR=".build/${HOST_ARCH}-apple-macosx/$CONF"
-if [[ ! -f "$BUILD_DIR/$APP_NAME" ]]; then
-  BUILD_DIR=".build/$CONF"
-fi
 cp "$BUILD_DIR/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
 chmod +x "$APP/Contents/MacOS/$APP_NAME"
 
@@ -73,9 +82,9 @@ done
 shopt -u nullglob
 
 # Embed Sparkle.framework
-if [[ -d ".build/$CONF/Sparkle.framework" ]]; then
+if [[ -d "$BUILD_DIR/Sparkle.framework" ]]; then
   mkdir -p "$APP/Contents/Frameworks"
-  cp -R ".build/$CONF/Sparkle.framework" "$APP/Contents/Frameworks/"
+  cp -R "$BUILD_DIR/Sparkle.framework" "$APP/Contents/Frameworks/"
   chmod -R a+rX "$APP/Contents/Frameworks/Sparkle.framework"
   install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/$APP_NAME"
 

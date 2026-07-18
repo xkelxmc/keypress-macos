@@ -102,8 +102,8 @@ plan/                # Implementation plan & notes (gitignored)
 | `Scripts/package_app.sh` | Build .app bundle with Sparkle |
 | `Scripts/launch.sh` | Launch existing app (kill previous first) |
 | `Scripts/build_icon.sh` | Generate Icon.icns from PNG |
-| `Scripts/release.sh` | Full release workflow |
-| `Scripts/sign-and-notarize.sh` | Sign and notarize for distribution |
+| `Scripts/release.sh` | Cut a release: finalize changelog, bump version, tag, push (CI does the rest) |
+| `Scripts/sign-and-notarize.sh` | Universal build, Developer ID signing, notarization (used by release CI) |
 | `Scripts/make_appcast.sh` | Generate Sparkle update feed |
 | `Scripts/validate_changelog.sh` | Validate CHANGELOG before release |
 

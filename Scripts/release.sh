@@ -1,66 +1,77 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# Cut a release. Finalizes CHANGELOG.md, bumps version.env, commits, tags,
+# and pushes. The tag push triggers .github/workflows/release.yml, which
+# builds, signs, notarizes, publishes the GitHub release, and updates the
+# Sparkle appcast.
+#
+# Usage: ./Scripts/release.sh <version>   (e.g. 0.2.0)
 
-# Full release workflow for Keypress
-# Prerequisites:
-#   - Clean git worktree
-#   - CHANGELOG.md finalized for the version
-#   - SPARKLE_PRIVATE_KEY_FILE set
-#   - APP_IDENTITY, APP_STORE_CONNECT_* env vars for notarization
+set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 
-source "$ROOT/version.env"
-
-APP_NAME="Keypress"
-TAG="v${MARKETING_VERSION}"
-ZIP_NAME="${APP_NAME}-${MARKETING_VERSION}.zip"
-
 err() { echo "ERROR: $*" >&2; exit 1; }
 
-echo "==> Releasing ${APP_NAME} ${MARKETING_VERSION}"
+VERSION=${1:?"usage: $0 <version> (e.g. 0.2.0)"}
+[[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || err "Version must be X.Y.Z, got '$VERSION'"
 
-# 1. Check for clean worktree
-if [[ -n "$(git status --porcelain)" ]]; then
-  err "Working directory not clean. Commit or stash changes first."
-fi
+TAG="v${VERSION}"
 
-# 2. Validate changelog
-"$ROOT/Scripts/validate_changelog.sh" "$MARKETING_VERSION"
+# Preflight
+[[ "$(git branch --show-current)" == "main" ]] || err "Releases are cut from main"
+[[ -z "$(git status --porcelain)" ]] || err "Working directory not clean. Commit your changes first."
 
-# 3. Lint and test
-echo "==> Running lint and tests"
+git fetch origin main --tags
+[[ "$(git rev-parse HEAD)" == "$(git rev-parse origin/main)" ]] \
+  || err "Local main is not in sync with origin/main. Push or pull first."
+git rev-parse -q --verify "refs/tags/$TAG" >/dev/null && err "Tag $TAG already exists"
+
+source "$ROOT/version.env"
+NEW_BUILD=$((BUILD_NUMBER + 1))
+
+echo "==> Running checks and tests"
 swiftformat Sources Tests --lint || err "SwiftFormat failed"
 swiftlint --strict || err "SwiftLint failed"
 swift test || err "Tests failed"
 
-# 4. Sign and notarize
-echo "==> Building, signing, and notarizing"
-"$ROOT/Scripts/sign-and-notarize.sh"
+# Prepare changes in a staging dir; the real files are only touched after confirmation
+STAGE=$(mktemp -d)
+trap 'rm -rf "$STAGE"' EXIT
 
-# 5. Create git tag
-echo "==> Creating tag $TAG"
-git tag -f "$TAG"
-git push -f origin "$TAG"
-
-# 6. Create GitHub release
-echo "==> Creating GitHub release"
-NOTES=$(awk "/^## \[?${MARKETING_VERSION}\]?/{found=1;next} /^## /{found=0} found" CHANGELOG.md)
-gh release create "$TAG" "$ZIP_NAME" \
-  --title "${APP_NAME} ${MARKETING_VERSION}" \
-  --notes "$NOTES"
-
-# 7. Update appcast (if Sparkle key is available)
-if [[ -n "${SPARKLE_PRIVATE_KEY_FILE:-}" ]]; then
-  echo "==> Updating appcast"
-  "$ROOT/Scripts/make_appcast.sh" "$ZIP_NAME"
-
-  git add appcast.xml
-  git commit -m "docs: update appcast for ${MARKETING_VERSION}"
-  git push origin main
-fi
+sed "s/^## \[Unreleased\]/## [${VERSION}] - $(date +%Y-%m-%d)/" CHANGELOG.md > "$STAGE/CHANGELOG.md"
+printf 'MARKETING_VERSION=%s\nBUILD_NUMBER=%s\n' "$VERSION" "$NEW_BUILD" > "$STAGE/version.env"
+./Scripts/validate_changelog.sh "$VERSION" "$STAGE/CHANGELOG.md"
 
 echo ""
-echo "==> Release ${MARKETING_VERSION} complete!"
-echo "    GitHub: https://github.com/xkelxmc/keypress-macos/releases/tag/${TAG}"
+echo "==> Release ${VERSION} (build ${NEW_BUILD})"
+diff -u version.env "$STAGE/version.env" || true
+diff -u CHANGELOG.md "$STAGE/CHANGELOG.md" || true
+echo ""
+read -r -p "Commit, tag ${TAG}, and push? [y/N] " answer
+[[ "$answer" == [yY] ]] || err "Aborted, nothing changed"
+
+cp "$STAGE/version.env" version.env
+cp "$STAGE/CHANGELOG.md" CHANGELOG.md
+git add version.env CHANGELOG.md
+git commit -m "chore: release ${VERSION}"
+git tag "$TAG"
+git push origin main "$TAG"
+
+echo ""
+echo "==> Tag ${TAG} pushed. Waiting for the release workflow run..."
+RUN_ID=""
+for _ in $(seq 1 24); do
+  RUN_ID=$(gh run list --workflow=release.yml --branch "$TAG" --limit 1 \
+    --json databaseId -q '.[0].databaseId' 2>/dev/null || true)
+  [[ -n "$RUN_ID" ]] && break
+  sleep 5
+done
+if [[ -z "$RUN_ID" ]]; then
+  err "Could not find the workflow run for ${TAG}. Check https://github.com/xkelxmc/keypress-macos/actions"
+fi
+# Fails (and so does this script) if the release workflow fails
+gh run watch --exit-status "$RUN_ID"
+
+echo ""
+echo "==> Release ${VERSION} complete: https://github.com/xkelxmc/keypress-macos/releases/tag/${TAG}"
