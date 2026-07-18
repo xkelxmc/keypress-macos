@@ -368,7 +368,7 @@ public final class KeypressConfig {
         // Animation
         static let pressAnimationModifiers = "settings.pressAnimationModifiers"
         static let pressAnimationRegularKeys = "settings.pressAnimationRegularKeys"
-        // Monitor
+        /// Monitor
         static let monitorSelection = "settings.monitorSelection"
     }
 
@@ -403,7 +403,7 @@ public final class KeypressConfig {
         // Animation
         static let pressAnimationModifiers = true
         static let pressAnimationRegularKeys = true
-        // Monitor
+        /// Monitor
         static let monitorSelection = MonitorSelection.auto
     }
 
@@ -836,8 +836,7 @@ public final class KeypressConfig {
 
     /// Creates a KeypressConfig instance with custom UserDefaults (for testing).
     static func makeForTesting(userDefaults: UserDefaults) -> KeypressConfig {
-        let settings = KeypressConfig(userDefaults: userDefaults)
-        return settings
+        KeypressConfig(userDefaults: userDefaults)
     }
 
     /// Resets all settings to defaults.

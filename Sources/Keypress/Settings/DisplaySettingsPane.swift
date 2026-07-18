@@ -41,7 +41,6 @@ struct DisplaySettingsPane: View {
 
     // MARK: - Single Mode Settings
 
-    @ViewBuilder
     private var singleModeSettings: some View {
         SettingsRow(
             "Show modifiers only",
@@ -55,7 +54,6 @@ struct DisplaySettingsPane: View {
 
     // MARK: - History Mode Settings
 
-    @ViewBuilder
     private var historyModeSettings: some View {
         VStack(alignment: .leading, spacing: 16) {
             SettingsRow("Max keys", subtitle: "Maximum keys displayed at once") {

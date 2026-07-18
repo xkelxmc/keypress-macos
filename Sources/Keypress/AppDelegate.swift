@@ -9,7 +9,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var enabledMenuItem: NSMenuItem?
     private var delayedStopTask: Task<Void, Never>?
 
-    private var config: KeypressConfig { KeypressConfig.shared }
+    private var config: KeypressConfig {
+        KeypressConfig.shared
+    }
 
     /// App version from bundle (e.g., "0.1.0").
     private var appVersion: String {

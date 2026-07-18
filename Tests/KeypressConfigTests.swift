@@ -6,8 +6,8 @@ import Testing
 struct KeypressConfigTests {
     @Test("Default values are correct")
     @MainActor
-    func defaultValues() {
-        let defaults = UserDefaults(suiteName: "test.settings.defaults")!
+    func defaultValues() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.settings.defaults"))
         defaults.removePersistentDomain(forName: "test.settings.defaults")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -22,8 +22,8 @@ struct KeypressConfigTests {
 
     @Test("KeypressConfig persist to UserDefaults")
     @MainActor
-    func persistence() {
-        let defaults = UserDefaults(suiteName: "test.settings.persistence")!
+    func persistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.settings.persistence"))
         defaults.removePersistentDomain(forName: "test.settings.persistence")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -45,8 +45,8 @@ struct KeypressConfigTests {
 
     @Test("Reset to defaults works")
     @MainActor
-    func test_resetToDefaults() {
-        let defaults = UserDefaults(suiteName: "test.settings.reset")!
+    func test_resetToDefaults() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.settings.reset"))
         defaults.removePersistentDomain(forName: "test.settings.reset")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -139,8 +139,8 @@ struct AppearanceModeTests {
 
     @Test("Default appearanceMode is auto")
     @MainActor
-    func defaultAppearanceMode() {
-        let defaults = UserDefaults(suiteName: "test.appearancemode.default")!
+    func defaultAppearanceMode() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.appearancemode.default"))
         defaults.removePersistentDomain(forName: "test.appearancemode.default")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -149,8 +149,8 @@ struct AppearanceModeTests {
 
     @Test("AppearanceMode persists to UserDefaults")
     @MainActor
-    func test_persistence() {
-        let defaults = UserDefaults(suiteName: "test.appearancemode.persist")!
+    func test_persistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.appearancemode.persist"))
         defaults.removePersistentDomain(forName: "test.appearancemode.persist")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -170,8 +170,8 @@ struct AppearanceModeTests {
 
     @Test("AppearanceMode updates colorScheme for fixed modes")
     @MainActor
-    func fixedModeUpdatesColorScheme() {
-        let defaults = UserDefaults(suiteName: "test.appearancemode.colorscheme")!
+    func fixedModeUpdatesColorScheme() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.appearancemode.colorscheme"))
         defaults.removePersistentDomain(forName: "test.appearancemode.colorscheme")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -188,8 +188,8 @@ struct AppearanceModeTests {
 
     @Test("Reset to defaults resets appearanceMode")
     @MainActor
-    func test_resetToDefaults() {
-        let defaults = UserDefaults(suiteName: "test.appearancemode.reset")!
+    func test_resetToDefaults() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.appearancemode.reset"))
         defaults.removePersistentDomain(forName: "test.appearancemode.reset")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -259,8 +259,8 @@ struct KeyCategoryStyleTests {
 struct CategoryStyleOverridesTests {
     @Test("Default has no overrides")
     @MainActor
-    func defaultNoOverrides() {
-        let defaults = UserDefaults(suiteName: "test.styleoverrides.default")!
+    func defaultNoOverrides() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.styleoverrides.default"))
         defaults.removePersistentDomain(forName: "test.styleoverrides.default")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -269,8 +269,8 @@ struct CategoryStyleOverridesTests {
 
     @Test("effectiveStyle returns default when no override")
     @MainActor
-    func effectiveStyleDefault() {
-        let defaults = UserDefaults(suiteName: "test.styleoverrides.effective")!
+    func effectiveStyleDefault() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.styleoverrides.effective"))
         defaults.removePersistentDomain(forName: "test.styleoverrides.effective")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -280,8 +280,8 @@ struct CategoryStyleOverridesTests {
 
     @Test("effectiveStyle returns override when set")
     @MainActor
-    func effectiveStyleOverride() {
-        let defaults = UserDefaults(suiteName: "test.styleoverrides.override")!
+    func effectiveStyleOverride() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.styleoverrides.override"))
         defaults.removePersistentDomain(forName: "test.styleoverrides.override")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -296,8 +296,8 @@ struct CategoryStyleOverridesTests {
 
     @Test("hasStyleOverride returns correct value")
     @MainActor
-    func test_hasStyleOverride() {
-        let defaults = UserDefaults(suiteName: "test.styleoverrides.has")!
+    func test_hasStyleOverride() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.styleoverrides.has"))
         defaults.removePersistentDomain(forName: "test.styleoverrides.has")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -312,8 +312,8 @@ struct CategoryStyleOverridesTests {
 
     @Test("Overrides persist to UserDefaults")
     @MainActor
-    func test_persistence() {
-        let defaults = UserDefaults(suiteName: "test.styleoverrides.persist")!
+    func test_persistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.styleoverrides.persist"))
         defaults.removePersistentDomain(forName: "test.styleoverrides.persist")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -326,8 +326,8 @@ struct CategoryStyleOverridesTests {
 
     @Test("Reset to defaults clears overrides")
     @MainActor
-    func resetClearsOverrides() {
-        let defaults = UserDefaults(suiteName: "test.styleoverrides.reset")!
+    func resetClearsOverrides() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.styleoverrides.reset"))
         defaults.removePersistentDomain(forName: "test.styleoverrides.reset")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -362,8 +362,8 @@ struct DisplayModeTests {
 
     @Test("DisplayMode persists to UserDefaults")
     @MainActor
-    func test_persistence() {
-        let defaults = UserDefaults(suiteName: "test.displaymode.persist")!
+    func test_persistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.displaymode.persist"))
         defaults.removePersistentDomain(forName: "test.displaymode.persist")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -377,8 +377,8 @@ struct DisplayModeTests {
 
     @Test("Default displayMode is single")
     @MainActor
-    func defaultDisplayMode() {
-        let defaults = UserDefaults(suiteName: "test.displaymode.default")!
+    func defaultDisplayMode() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.displaymode.default"))
         defaults.removePersistentDomain(forName: "test.displaymode.default")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -424,8 +424,8 @@ struct MonitorSelectionTests {
 
     @Test("Default monitorSelection is auto")
     @MainActor
-    func defaultMonitorSelection() {
-        let defaults = UserDefaults(suiteName: "test.monitor.default")!
+    func defaultMonitorSelection() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.monitor.default"))
         defaults.removePersistentDomain(forName: "test.monitor.default")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -435,7 +435,7 @@ struct MonitorSelectionTests {
     @Test("MonitorSelection persists to UserDefaults")
     @MainActor
     func test_persistence() throws {
-        let defaults = UserDefaults(suiteName: "test.monitor.persist")!
+        let defaults = try #require(UserDefaults(suiteName: "test.monitor.persist"))
         defaults.removePersistentDomain(forName: "test.monitor.persist")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -444,7 +444,7 @@ struct MonitorSelectionTests {
         #expect(defaults.data(forKey: "settings.monitorSelection") != nil)
 
         // Verify decoded value
-        let data = defaults.data(forKey: "settings.monitorSelection")!
+        let data = try #require(defaults.data(forKey: "settings.monitorSelection"))
         let decoded = try JSONDecoder().decode(MonitorSelection.self, from: data)
         #expect(decoded == .fixed(index: 1))
     }
@@ -472,8 +472,8 @@ struct KeyboardFrameStyleTests {
 
     @Test("Default keyboardFrameStyle is frame")
     @MainActor
-    func defaultStyle() {
-        let defaults = UserDefaults(suiteName: "test.framestyle.default")!
+    func defaultStyle() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.framestyle.default"))
         defaults.removePersistentDomain(forName: "test.framestyle.default")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -482,8 +482,8 @@ struct KeyboardFrameStyleTests {
 
     @Test("KeyboardFrameStyle persists to UserDefaults")
     @MainActor
-    func test_persistence() {
-        let defaults = UserDefaults(suiteName: "test.framestyle.persist")!
+    func test_persistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.framestyle.persist"))
         defaults.removePersistentDomain(forName: "test.framestyle.persist")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -518,8 +518,8 @@ struct KeyCapStyleTests {
 
     @Test("Default keyCapStyle is mechanical")
     @MainActor
-    func defaultStyle() {
-        let defaults = UserDefaults(suiteName: "test.keycapstyle.default")!
+    func defaultStyle() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.keycapstyle.default"))
         defaults.removePersistentDomain(forName: "test.keycapstyle.default")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -528,8 +528,8 @@ struct KeyCapStyleTests {
 
     @Test("KeyCapStyle persists to UserDefaults")
     @MainActor
-    func test_persistence() {
-        let defaults = UserDefaults(suiteName: "test.keycapstyle.persist")!
+    func test_persistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.keycapstyle.persist"))
         defaults.removePersistentDomain(forName: "test.keycapstyle.persist")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -592,8 +592,8 @@ struct KeyColorTests {
 struct KeypressConfigExtendedPropertiesTests {
     @Test("showModifiersOnly persists to UserDefaults")
     @MainActor
-    func showModifiersOnlyPersistence() {
-        let defaults = UserDefaults(suiteName: "test.extended.showmodifiers")!
+    func showModifiersOnlyPersistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.showmodifiers"))
         defaults.removePersistentDomain(forName: "test.extended.showmodifiers")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -605,8 +605,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("maxKeys persists to UserDefaults")
     @MainActor
-    func maxKeysPersistence() {
-        let defaults = UserDefaults(suiteName: "test.extended.maxkeys")!
+    func maxKeysPersistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.maxkeys"))
         defaults.removePersistentDomain(forName: "test.extended.maxkeys")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -618,8 +618,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("maxKeys is clamped to valid range")
     @MainActor
-    func maxKeysClamping() {
-        let defaults = UserDefaults(suiteName: "test.extended.maxkeys.clamp")!
+    func maxKeysClamping() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.maxkeys.clamp"))
         defaults.removePersistentDomain(forName: "test.extended.maxkeys.clamp")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -633,8 +633,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("duplicateLetters persists to UserDefaults")
     @MainActor
-    func duplicateLettersPersistence() {
-        let defaults = UserDefaults(suiteName: "test.extended.duplicate")!
+    func duplicateLettersPersistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.duplicate"))
         defaults.removePersistentDomain(forName: "test.extended.duplicate")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -646,8 +646,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("horizontalOffset persists to UserDefaults")
     @MainActor
-    func horizontalOffsetPersistence() {
-        let defaults = UserDefaults(suiteName: "test.extended.hoffset")!
+    func horizontalOffsetPersistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.hoffset"))
         defaults.removePersistentDomain(forName: "test.extended.hoffset")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -659,8 +659,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("horizontalOffset is clamped to valid range")
     @MainActor
-    func horizontalOffsetClamping() {
-        let defaults = UserDefaults(suiteName: "test.extended.hoffset.clamp")!
+    func horizontalOffsetClamping() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.hoffset.clamp"))
         defaults.removePersistentDomain(forName: "test.extended.hoffset.clamp")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -674,8 +674,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("verticalOffset persists to UserDefaults")
     @MainActor
-    func verticalOffsetPersistence() {
-        let defaults = UserDefaults(suiteName: "test.extended.voffset")!
+    func verticalOffsetPersistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.voffset"))
         defaults.removePersistentDomain(forName: "test.extended.voffset")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -687,8 +687,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("pressAnimationModifiers persists to UserDefaults")
     @MainActor
-    func pressAnimationModifiersPersistence() {
-        let defaults = UserDefaults(suiteName: "test.extended.pressmod")!
+    func pressAnimationModifiersPersistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.pressmod"))
         defaults.removePersistentDomain(forName: "test.extended.pressmod")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -700,8 +700,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("pressAnimationRegularKeys persists to UserDefaults")
     @MainActor
-    func pressAnimationRegularKeysPersistence() {
-        let defaults = UserDefaults(suiteName: "test.extended.pressreg")!
+    func pressAnimationRegularKeysPersistence() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.pressreg"))
         defaults.removePersistentDomain(forName: "test.extended.pressreg")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -713,8 +713,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("keyTimeout is clamped to valid range")
     @MainActor
-    func keyTimeoutClamping() {
-        let defaults = UserDefaults(suiteName: "test.extended.timeout.clamp")!
+    func keyTimeoutClamping() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.timeout.clamp"))
         defaults.removePersistentDomain(forName: "test.extended.timeout.clamp")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -728,8 +728,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("opacity is clamped to valid range")
     @MainActor
-    func opacityClamping() {
-        let defaults = UserDefaults(suiteName: "test.extended.opacity.clamp")!
+    func opacityClamping() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.opacity.clamp"))
         defaults.removePersistentDomain(forName: "test.extended.opacity.clamp")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
@@ -743,8 +743,8 @@ struct KeypressConfigExtendedPropertiesTests {
 
     @Test("Reset to defaults resets all extended properties")
     @MainActor
-    func resetExtendedProperties() {
-        let defaults = UserDefaults(suiteName: "test.extended.reset")!
+    func resetExtendedProperties() throws {
+        let defaults = try #require(UserDefaults(suiteName: "test.extended.reset"))
         defaults.removePersistentDomain(forName: "test.extended.reset")
 
         let settings = KeypressConfig.makeForTesting(userDefaults: defaults)

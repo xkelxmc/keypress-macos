@@ -276,7 +276,7 @@ private struct PositionIndicatorsView: View {
     let isSelected: Bool
     var isAutoMode: Bool = false
 
-    // Dynamic size based on container - roughly 16% width, 10% height
+    /// Dynamic size based on container - roughly 16% width, 10% height
     private func indicatorSize(for containerSize: CGSize) -> CGSize {
         let width = max(30, min(80, containerSize.width * 0.16))
         let height = max(14, min(32, containerSize.height * 0.10))

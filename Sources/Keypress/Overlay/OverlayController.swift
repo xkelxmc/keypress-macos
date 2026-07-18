@@ -19,14 +19,14 @@ final class OverlayController {
     private var historyKeyState: KeyState?
     private var singleKeyState: SingleKeyState?
 
-    // Hint state (independent of key state)
+    /// Hint state (independent of key state)
     private let hintState = HintState()
 
     // Screen observers
     private var screenParametersObserver: Any?
     private var workspaceObserver: Any?
 
-    // Cache for screen detection (to avoid unnecessary position updates)
+    /// Cache for screen detection (to avoid unnecessary position updates)
     private var lastDetectedScreen: NSScreen?
 
     /// Current key state protocol reference for common operations.
