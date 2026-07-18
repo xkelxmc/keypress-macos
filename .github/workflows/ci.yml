@@ -16,8 +16,23 @@ jobs:
           sudo xcode-select -s /Applications/Xcode.app
           xcodebuild -version
 
+      # Pinned: unpinned brew installs pick up new lint rules and break CI on untouched code
       - name: Install lint tools
-        run: brew install swiftlint swiftformat
+        env:
+          SWIFTFORMAT_VERSION: "0.59.1"
+          SWIFTLINT_VERSION: "0.63.2"
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/swiftformat.zip" \
+            "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
+          unzip -o "$RUNNER_TEMP/swiftformat.zip" -d "$RUNNER_TEMP/swiftformat-bin"
+          curl -fsSL -o "$RUNNER_TEMP/swiftlint.zip" \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          unzip -o "$RUNNER_TEMP/swiftlint.zip" -d "$RUNNER_TEMP/swiftlint-bin"
+          FMT=$(find "$RUNNER_TEMP/swiftformat-bin" -name swiftformat -type f | head -1)
+          LINT=$(find "$RUNNER_TEMP/swiftlint-bin" -name swiftlint -type f | head -1)
+          chmod +x "$FMT" "$LINT"
+          echo "$(dirname "$FMT")" >> "$GITHUB_PATH"
+          echo "$(dirname "$LINT")" >> "$GITHUB_PATH"
 
       - name: SwiftFormat (lint)
         run: swiftformat Sources Tests --lint
