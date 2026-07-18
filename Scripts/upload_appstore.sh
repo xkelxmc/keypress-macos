@@ -27,7 +27,8 @@ fi
 KEY_DIR="$HOME/.appstoreconnect/private_keys"
 KEY_FILE="$KEY_DIR/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
 mkdir -p "$KEY_DIR"
-printf '%s\n' "$APP_STORE_CONNECT_API_KEY_P8" > "$KEY_FILE"
+chmod 700 "$KEY_DIR"
+(umask 077 && printf '%s\n' "$APP_STORE_CONNECT_API_KEY_P8" > "$KEY_FILE")
 trap 'rm -f "$KEY_FILE"' EXIT
 
 echo "==> Validating $PKG"
