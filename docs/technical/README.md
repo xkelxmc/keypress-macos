@@ -10,14 +10,13 @@
 ## Key Dependencies
 
 - **KeyboardShortcuts** — Global hotkey registration
-- **Sparkle** — Auto-updates
 
 ## macOS APIs
 
 ### Input Monitoring
 
-- `CGEvent` tap for global keyboard events
-- Requires Accessibility permission (Input Monitoring)
+- `CGEvent` tap (listen-only) for global keyboard events
+- Requires the Input Monitoring permission (sandbox-compatible, via `IOHIDRequestAccess`)
 
 ### Overlay Window
 
@@ -37,7 +36,7 @@
 
 | Permission | Why Needed |
 |------------|------------|
-| Input Monitoring (Accessibility) | Capture global keyboard events |
+| Input Monitoring | Capture global keyboard events |
 
 ## Project Structure
 

@@ -40,7 +40,7 @@ Visual multi-monitor layout showing connected displays with real desktop wallpap
 - Edge offset sliders for fine-tuning position (horizontal 0-500px, vertical 0-300px)
 
 **Auto mode:**
-- Follows focused window's screen using Accessibility API
+- Follows focused window's screen using Accessibility API (unavailable in the sandboxed App Store build; falls back to the main screen)
 - Updates on each keypress to handle window switches
 - Single abstract monitor shown in preview when Auto selected
 

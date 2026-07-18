@@ -2,6 +2,7 @@
 import Carbon.HIToolbox
 @preconcurrency import CoreFoundation
 import Foundation
+import IOKit.hid
 
 // MARK: - KeyEvent
 
@@ -46,8 +47,8 @@ public struct KeySymbol: Sendable, Equatable, Hashable, Identifiable {
 
 // MARK: - KeyMonitor
 
-/// Monitors global keyboard events using CGEvent tap.
-/// Requires Accessibility permissions.
+/// Monitors global keyboard events using a listen-only CGEvent tap.
+/// Requires the Input Monitoring permission.
 public final class KeyMonitor: @unchecked Sendable {
     // MARK: - Types
 
@@ -85,18 +86,16 @@ public final class KeyMonitor: @unchecked Sendable {
 
     // MARK: - Public Methods
 
-    /// Checks if the app has Accessibility permissions.
-    public static func hasAccessibilityPermissions() -> Bool {
-        AXIsProcessTrusted()
+    /// Checks if the app has the Input Monitoring permission.
+    public static func hasInputMonitoringPermission() -> Bool {
+        IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
     }
 
-    /// Prompts user to grant Accessibility permissions.
-    /// Returns true if already granted, false if prompt was shown.
+    /// Prompts user to grant the Input Monitoring permission.
+    /// Returns true if already granted.
     @discardableResult
-    public static func requestAccessibilityPermissions() -> Bool {
-        let key = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
-        let options = [key: true] as CFDictionary
-        return AXIsProcessTrustedWithOptions(options)
+    public static func requestInputMonitoringPermission() -> Bool {
+        IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
     }
 
     /// Returns current modifier flags from the system.

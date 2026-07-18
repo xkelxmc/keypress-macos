@@ -9,7 +9,7 @@ final class OverlayController {
     // MARK: - Properties
 
     private let config: KeypressConfig
-    private let permission = AccessibilityPermission.shared
+    private let permission = InputMonitoringPermission.shared
     private var keyMonitor: KeyMonitor?
     private var overlayWindow: OverlayWindow?
     private var observationTask: Task<Void, Never>?
@@ -113,7 +113,7 @@ final class OverlayController {
             self.startObservingKeyState()
         } else {
             // Check if it's actually a permission issue vs. system resource issue
-            if KeyMonitor.hasAccessibilityPermissions() {
+            if KeyMonitor.hasInputMonitoringPermission() {
                 print(
                     "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
             } else {
@@ -121,7 +121,7 @@ final class OverlayController {
             }
 
             // Request permission (shows system dialog if app not in list)
-            AccessibilityPermission.request()
+            InputMonitoringPermission.request()
 
             // Subscribe to permission changes
             self.permission.onPermissionChange { [weak self] granted in

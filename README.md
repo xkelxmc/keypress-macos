@@ -25,7 +25,6 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 - ⌨️ Global hotkey to toggle visibility (default ⇧⌘K)
 - 📺 Two display modes: Single (shortcuts) or History (typing)
 - 🖱️ Click-through overlay — doesn't interfere with your work
-- 🔄 Auto-updates via Sparkle
 - 🎯 Perfect for content creators, demos, and screen sharing
 
 ## Requirements
@@ -34,9 +33,9 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 
 ## Install
 
-### From Releases
+### Mac App Store
 
-Download the latest `.zip` from [Releases](https://github.com/xkelxmc/keypress-macos/releases).
+Coming soon to the Mac App Store.
 
 ### From Source
 
@@ -76,9 +75,9 @@ bun run check          # Both
 | `Scripts/package_app.sh` | Build .app bundle |
 | `Scripts/launch.sh` | Launch existing app (kill previous first) |
 | `Scripts/build_icon.sh` | Generate Icon.icns from PNG |
-| `Scripts/release.sh` | Full release workflow |
-| `Scripts/sign-and-notarize.sh` | Sign and notarize for distribution |
-| `Scripts/make_appcast.sh` | Generate Sparkle update feed |
+| `Scripts/release.sh` | Cut a release (tag + push, CI uploads to App Store Connect) |
+| `Scripts/build_appstore.sh` | Sandboxed universal build, App Store signing, .pkg |
+| `Scripts/upload_appstore.sh` | Validate and upload .pkg to App Store Connect |
 | `Scripts/validate_changelog.sh` | Validate CHANGELOG before release |
 
 ## Documentation
@@ -95,7 +94,6 @@ bun run check          # Both
 - Swift 6 with strict concurrency
 - SwiftUI + AppKit
 - Swift Package Manager
-- Sparkle for auto-updates
 - KeyboardShortcuts for global hotkeys
 
 ## License

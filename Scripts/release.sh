@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Cut a release. Finalizes CHANGELOG.md, bumps version.env, commits, tags,
 # and pushes. The tag push triggers .github/workflows/release.yml, which
-# builds, signs, notarizes, publishes the GitHub release, and updates the
-# Sparkle appcast.
+# builds, signs, and uploads the build to App Store Connect.
 #
 # Usage: ./Scripts/release.sh <version>   (e.g. 0.2.0)
 
@@ -74,4 +73,6 @@ fi
 gh run watch --exit-status "$RUN_ID"
 
 echo ""
-echo "==> Release ${VERSION} complete: https://github.com/xkelxmc/keypress-macos/releases/tag/${TAG}"
+echo "==> Build ${VERSION} uploaded to App Store Connect."
+echo "    Next: attach the build to the version in App Store Connect and submit for review:"
+echo "    https://appstoreconnect.apple.com/apps"

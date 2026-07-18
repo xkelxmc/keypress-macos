@@ -58,9 +58,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>NSHumanReadableCopyright</key><string>© 2025 Ilya Zhidkov. MIT License.</string>
     <key>BuildTimestamp</key><string>${BUILD_TIMESTAMP}</string>
     <key>GitCommit</key><string>${GIT_COMMIT}</string>
-    <key>SUFeedURL</key><string>https://raw.githubusercontent.com/xkelxmc/keypress-macos/main/appcast.xml</string>
-    <key>SUPublicEDKey</key><string>vGdL7QPuGcShL2RpiohpJe9YK/oV5hx3S3LEMU2Lb8c=</string>
-    <key>SUEnableAutomaticChecks</key><true/>
+    <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+    <key>ITSAppUsesNonExemptEncryption</key><false/>
 </dict>
 </plist>
 PLIST
@@ -80,23 +79,6 @@ for bundle in "$BUILD_DIR"/*.bundle; do
   cp -R "$bundle" "$APP/Contents/Resources/"
 done
 shopt -u nullglob
-
-# Embed Sparkle.framework
-if [[ -d "$BUILD_DIR/Sparkle.framework" ]]; then
-  mkdir -p "$APP/Contents/Frameworks"
-  cp -R "$BUILD_DIR/Sparkle.framework" "$APP/Contents/Frameworks/"
-  chmod -R a+rX "$APP/Contents/Frameworks/Sparkle.framework"
-  install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/$APP_NAME"
-
-  # Re-sign Sparkle components (ad-hoc)
-  SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
-  codesign --force --sign - "$SPARKLE/Versions/B/Sparkle"
-  codesign --force --sign - "$SPARKLE/Versions/B/Autoupdate"
-  codesign --force --sign - "$SPARKLE/Versions/B/Updater.app"
-  codesign --force --sign - "$SPARKLE/Versions/B/XPCServices/Downloader.xpc"
-  codesign --force --sign - "$SPARKLE/Versions/B/XPCServices/Installer.xpc"
-  codesign --force --sign - "$SPARKLE"
-fi
 
 # Strip extended attributes
 xattr -cr "$APP" 2>/dev/null || true

@@ -24,9 +24,9 @@ For detailed specs, see [docs/README.md](./docs/README.md).
 - Swift 6 with strict concurrency
 - SwiftUI + AppKit
 - Swift Package Manager
-- Sparkle for auto-updates
 - KeyboardShortcuts for global hotkeys
 - macOS 14+ (Sonoma)
+- Distribution: Mac App Store (sandboxed, Input Monitoring permission)
 
 ## Development
 
@@ -99,12 +99,12 @@ plan/                # Implementation plan & notes (gitignored)
 | Script | Description |
 |--------|-------------|
 | `Scripts/compile_and_run.sh` | Full dev loop: kill, build, package, launch |
-| `Scripts/package_app.sh` | Build .app bundle with Sparkle |
+| `Scripts/package_app.sh` | Build .app bundle |
 | `Scripts/launch.sh` | Launch existing app (kill previous first) |
 | `Scripts/build_icon.sh` | Generate Icon.icns from PNG |
 | `Scripts/release.sh` | Cut a release: finalize changelog, bump version, tag, push (CI does the rest) |
-| `Scripts/sign-and-notarize.sh` | Universal build, Developer ID signing, notarization (used by release CI) |
-| `Scripts/make_appcast.sh` | Generate Sparkle update feed |
+| `Scripts/build_appstore.sh` | Universal sandboxed build, App Store signing, .pkg (used by release CI) |
+| `Scripts/upload_appstore.sh` | Validate and upload .pkg to App Store Connect (used by release CI) |
 | `Scripts/validate_changelog.sh` | Validate CHANGELOG before release |
 
 ## Documentation

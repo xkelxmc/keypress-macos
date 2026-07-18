@@ -83,7 +83,7 @@ Sources/
 
 - Manages overlay window lifecycle and key monitoring
 - **Multi-monitor support:**
-  - Detects focused window's screen using Accessibility API
+  - Detects focused window's screen using Accessibility API (App Store build falls back to the main screen)
   - Updates position on each keypress to handle window switches within same app
   - Caches last detected screen to avoid unnecessary position updates
 
