@@ -48,6 +48,11 @@ assets/screenshots/*.png
 assets/screenshots/generated/*
 !assets/screenshots/generated/.gitkeep
 
+# App Store screenshots
+!assets/appstore/generated/
+assets/appstore/generated/*
+!assets/appstore/generated/.gitkeep
+
 # Debug/analysis docs
 docs/*-analysis.md
 docs/.astro/

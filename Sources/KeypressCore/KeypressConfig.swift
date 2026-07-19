@@ -834,9 +834,14 @@ public final class KeypressConfig {
 
     // MARK: - Testing Support
 
+    /// Creates an isolated settings instance backed by the supplied UserDefaults store.
+    public static func makeEphemeral(userDefaults: UserDefaults) -> KeypressConfig {
+        KeypressConfig(userDefaults: userDefaults)
+    }
+
     /// Creates a KeypressConfig instance with custom UserDefaults (for testing).
     static func makeForTesting(userDefaults: UserDefaults) -> KeypressConfig {
-        KeypressConfig(userDefaults: userDefaults)
+        KeypressConfig.makeEphemeral(userDefaults: userDefaults)
     }
 
     /// Resets all settings to defaults.

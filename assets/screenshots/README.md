@@ -1,47 +1,54 @@
-# Screenshots
+# App Store screenshots
 
-## Structure
+The screenshot generator renders the shipping SwiftUI keycap and keyboard frame components into seven deterministic
+Mac App Store frames. Each PNG is exactly 2880×1800 pixels.
 
-```
-assets/screenshots/
-├── README.md                  # This file
-├── screenshot-bg-light.png    # Light wallpaper background
-├── screenshot-bg-dark.png     # Dark wallpaper background
-└── generated/                 # Generated screenshots (gitignored)
-    └── keypress-*_*.png
+## Background images
+
+The `hero`, `in-context`, and `unobtrusive` scenes require these files:
+
+- `assets/screenshots/screenshot-bg-dark.png`
+- `assets/screenshots/screenshot-bg-light.png`
+
+Extract frames from macOS wallpaper videos or provide other desktop PNGs:
+
+```bash
+ffmpeg -i "$HOME/Library/Containers/com.apple.NeptuneOneExtension/Data/Library/Application Support/Videos/Tahoe Light Landscape.mov" \
+  -vframes 1 assets/screenshots/screenshot-bg-light.png
+ffmpeg -i "$HOME/Library/Containers/com.apple.NeptuneOneExtension/Data/Library/Application Support/Videos/Tahoe Dark Landscape.mov" \
+  -vframes 1 assets/screenshots/screenshot-bg-dark.png
 ```
 
 ## Generate screenshots
 
-### 1. Prepare background images
-
-Extract frames from macOS wallpaper videos (Tahoe example):
+Run every scene from the repository root:
 
 ```bash
-cd ~/Library/Containers/com.apple.NeptuneOneExtension/Data/Library/Application\ Support/Videos/
-ffmpeg -i "Tahoe Light Landscape.mov" -vframes 1 assets/screenshots/screenshot-bg-light.png
-ffmpeg -i "Tahoe Dark Landscape.mov" -vframes 1 assets/screenshots/screenshot-bg-dark.png
+bun run screenshots
 ```
 
-Or use any 16:9 images as backgrounds.
-
-### 2. Build and run
+Render selected scenes by passing one or more IDs directly to the executable:
 
 ```bash
 swift build
-.build/debug/Keypress --screenshot both
+.build/debug/Keypress --screenshot hero colors
 ```
 
-Options:
-- `light` — Generate only light mode
-- `dark` — Generate only dark mode
-- `both` — Generate both (default)
-
-Screenshots saved to `generated/` with timestamps.
-
-### 3. Copy to assets/images for README
+List the available scenes:
 
 ```bash
-cp assets/screenshots/generated/keypress-light_*.png assets/images/preview-light.png
-cp assets/screenshots/generated/keypress-dark_*.png assets/images/preview-dark.png
+.build/debug/Keypress --screenshot list
 ```
+
+Scenes are rendered in this order:
+
+1. `hero` — Every keystroke, on screen.
+2. `in-context` — Your audience sees what you pressed.
+3. `single-mode` — Just the shortcut.
+4. `history-mode` — Or every letter, as you type.
+5. `unobtrusive` — Invisible until you type.
+6. `keycap-styles` — Three ways to look.
+7. `colors` — Your colors. Ten key categories.
+
+Output is written to `assets/appstore/generated/` as stable `NN-<scene-id>.png` filenames. Re-running the generator
+overwrites the existing files.

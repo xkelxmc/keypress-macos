@@ -12,6 +12,7 @@
     "lint": "swiftlint --strict",
     "format": "swiftformat Sources Tests",
     "check": "swiftformat Sources Tests --lint && swiftlint --strict",
+    "screenshots": "swift build && .build/debug/Keypress --screenshot",
     "package": "./Scripts/package_app.sh",
     "package:release": "./Scripts/package_app.sh release",
     "release": "./Scripts/release.sh"
