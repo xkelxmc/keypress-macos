@@ -311,14 +311,20 @@ struct SingleKeyStateTests {
     @Test("New keypress replaces previous")
     @MainActor
     func newKeyReplacesPrevious() {
-        let state = SingleKeyState()
+        let state = SingleKeyState(isKeyDown: { _ in false })
 
-        // Press A
+        // Press and release A
         state.processEvent(
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
             symbol: KeySymbol(id: "key-a", display: "A"))
         #expect(state.pressedKeys.count == 1)
         #expect(state.pressedKeys.first?.symbol.display == "A")
+
+        state.processEvent(
+            KeyEvent(type: .keyUp, keyCode: 0x00, modifiers: []),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+        // Released key stays visible until the timeout
+        #expect(state.pressedKeys.count == 1)
 
         // Press B - should replace A
         state.processEvent(
@@ -378,7 +384,7 @@ struct SingleKeyStateTests {
     @Test("Modifier stays with key after release, clears on new keypress")
     @MainActor
     func modifierRelease() {
-        let state = SingleKeyState()
+        let state = SingleKeyState(isKeyDown: { _ in false })
 
         // Press Command
         state.processEvent(
@@ -485,6 +491,160 @@ struct SingleKeyStateTests {
 
         state.clear()
         #expect(state.hasKeys == false)
+    }
+}
+
+// MARK: - SingleKeyState Simultaneous Keys Tests
+
+/// Stands in for the system key-state probe so tests can hold keys down.
+private final class FakeKeyboard: @unchecked Sendable {
+    private var downKeys: Set<CGKeyCode> = []
+    private let lock = NSLock()
+
+    var probe: SingleKeyState.KeyDownProbe {
+        { keyCode in self.lock.withLock { self.downKeys.contains(keyCode) } }
+    }
+
+    func press(_ keyCode: CGKeyCode) {
+        self.lock.withLock { _ = self.downKeys.insert(keyCode) }
+    }
+
+    func release(_ keyCode: CGKeyCode) {
+        self.lock.withLock { _ = self.downKeys.remove(keyCode) }
+    }
+}
+
+@Suite("SingleKeyState Simultaneous Keys Tests")
+struct SingleKeyStateSimultaneousTests {
+    private static let keyA = KeySymbol(id: "key-a", display: "A")
+    private static let keyS = KeySymbol(id: "key-s", display: "S")
+    private static let codeA: Int64 = 0x00
+    private static let codeS: Int64 = 0x01
+
+    @MainActor
+    private func press(_ state: SingleKeyState, _ keyboard: FakeKeyboard, _ code: Int64, _ symbol: KeySymbol) {
+        keyboard.press(CGKeyCode(code))
+        state.processEvent(KeyEvent(type: .keyDown, keyCode: code, modifiers: []), symbol: symbol)
+    }
+
+    @MainActor
+    private func release(_ state: SingleKeyState, _ keyboard: FakeKeyboard, _ code: Int64, _ symbol: KeySymbol) {
+        keyboard.release(CGKeyCode(code))
+        state.processEvent(KeyEvent(type: .keyUp, keyCode: code, modifiers: []), symbol: symbol)
+    }
+
+    @Test("Keys held together are shown together")
+    @MainActor
+    func simultaneousKeysShowTogether() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        self.press(state, keyboard, Self.codeS, Self.keyS)
+
+        #expect(state.pressedKeys.count == 2)
+        #expect(state.pressedKeys.map(\.symbol.display) == ["A", "S"])
+    }
+
+    @Test("Releasing one key keeps the other on screen")
+    @MainActor
+    func releasingOneKeyKeepsOther() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        self.press(state, keyboard, Self.codeS, Self.keyS)
+        self.release(state, keyboard, Self.codeA, Self.keyA)
+
+        #expect(state.pressedKeys.map(\.symbol.display) == ["S"])
+    }
+
+    @Test("Combination stays visible after every key is released")
+    @MainActor
+    func combinationStaysAfterFullRelease() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        self.press(state, keyboard, Self.codeS, Self.keyS)
+        self.release(state, keyboard, Self.codeA, Self.keyA)
+        self.release(state, keyboard, Self.codeS, Self.keyS)
+
+        // Still displayed — the timeout, not the release, clears it
+        #expect(state.hasKeys == true)
+    }
+
+    @Test("Sequential typing does not accumulate keys")
+    @MainActor
+    func sequentialTypingDoesNotAccumulate() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        self.release(state, keyboard, Self.codeA, Self.keyA)
+        self.press(state, keyboard, Self.codeS, Self.keyS)
+
+        #expect(state.pressedKeys.map(\.symbol.display) == ["S"])
+    }
+
+    @Test("Key repeat does not duplicate a held key")
+    @MainActor
+    func keyRepeatDoesNotDuplicate() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+
+        #expect(state.pressedKeys.count == 1)
+    }
+
+    @Test("Missed key up does not strand a key in later combinations")
+    @MainActor
+    func missedKeyUpDoesNotStrandKey() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        // A is pressed and released, but its key up event never arrives
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        keyboard.release(CGKeyCode(Self.codeA))
+
+        self.press(state, keyboard, Self.codeS, Self.keyS)
+
+        #expect(state.pressedKeys.map(\.symbol.display) == ["S"])
+        #expect(state.physicallyPressedKeys.contains(Self.keyA.id) == false)
+    }
+
+    @Test("Simultaneous keys are capped")
+    @MainActor
+    func simultaneousKeysAreCapped() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        for index in 0..<6 {
+            let code = Int64(index)
+            self.press(state, keyboard, code, KeySymbol(id: "key-\(index)", display: "\(index)"))
+        }
+
+        #expect(state.pressedKeys.count == 4)
+        // Oldest presses are dropped, most recent kept
+        #expect(state.pressedKeys.map(\.symbol.display) == ["2", "3", "4", "5"])
+    }
+
+    @Test("Modifier is shown with simultaneously held keys")
+    @MainActor
+    func modifierWithSimultaneousKeys() {
+        let keyboard = FakeKeyboard()
+        let state = SingleKeyState(isKeyDown: keyboard.probe)
+
+        state.processEvent(
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
+        self.press(state, keyboard, Self.codeA, Self.keyA)
+        self.press(state, keyboard, Self.codeS, Self.keyS)
+
+        #expect(state.pressedKeys.map(\.symbol.display) == ["⌘", "A", "S"])
     }
 }
 

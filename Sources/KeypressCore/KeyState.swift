@@ -394,15 +394,31 @@ public final class KeyState: KeyStateProtocol {
 
 // MARK: - SingleKeyState
 
-/// Tracks only the latest key combination for visualization (Single mode).
-/// Each new keypress replaces the previous display.
+/// Tracks the latest key combination for visualization (Single mode).
+/// Keys held down at the same time are shown together; once every key is
+/// released the combination stays visible until the timeout fires.
 @MainActor
 @Observable
 public final class SingleKeyState: KeyStateProtocol {
+    // MARK: - Types
+
+    /// Reports whether a key is physically down right now.
+    /// Injectable so tests can drive the state machine deterministically.
+    public typealias KeyDownProbe = @Sendable (CGKeyCode) -> Bool
+
+    /// A non-modifier key that is currently held down.
+    private struct HeldKey {
+        let keyCode: CGKeyCode
+        let key: PressedKey
+    }
+
     // MARK: - Properties
 
-    /// Currently displayed keys (latest combination only).
-    /// Modifiers + one non-modifier key.
+    /// Cap on simultaneously displayed non-modifier keys — Single mode shows a
+    /// combination, not a typing stream.
+    private static let maxSimultaneousKeys = 4
+
+    /// Currently displayed keys: active modifiers followed by the combination.
     public private(set) var pressedKeys: [PressedKey] = []
 
     /// Whether any keys are currently displayed.
@@ -419,21 +435,33 @@ public final class SingleKeyState: KeyStateProtocol {
     /// Currently held modifiers (tracked separately for combination display).
     private var activeModifiers: [PressedKey] = []
 
-    /// Last non-modifier key pressed (kept for display when modifiers change).
-    private var lastNonModifierKey: PressedKey?
+    /// Non-modifier keys physically held right now, in press order.
+    private var heldKeys: [HeldKey] = []
 
-    /// Modifiers that were released but kept visible because lastNonModifierKey exists
+    /// Last combination, kept visible after every key of it was released.
+    private var lingeringKeys: [PressedKey] = []
+
+    /// Modifiers that were released but kept visible because a combination is shown.
     private var releasedModifiers: Set<String> = []
 
     private var timeoutTask: Task<Void, Never>?
+
+    private let isKeyDown: KeyDownProbe
 
     /// All keys that are physically pressed right now (by symbol.id).
     /// Used for press animation — tracks both modifiers and regular keys.
     public private(set) var physicallyPressedKeys: Set<String> = []
 
+    /// Whether a combination is on screen (held or waiting for the timeout).
+    private var hasComboKeys: Bool {
+        !self.heldKeys.isEmpty || !self.lingeringKeys.isEmpty
+    }
+
     // MARK: - Initialization
 
-    public init() {}
+    public init(isKeyDown: @escaping KeyDownProbe = { CGEventSource.keyState(.combinedSessionState, key: $0) }) {
+        self.isKeyDown = isKeyDown
+    }
 
     // MARK: - Public Methods
 
@@ -443,7 +471,7 @@ public final class SingleKeyState: KeyStateProtocol {
 
         switch event.type {
         case .keyDown:
-            self.handleKeyDown(symbol: symbol)
+            self.handleKeyDown(keyCode: event.keyCode, symbol: symbol)
         case .keyUp:
             self.handleKeyUp(symbol: symbol)
         case .flagsChanged:
@@ -458,7 +486,8 @@ public final class SingleKeyState: KeyStateProtocol {
         self.pressedKeys.removeAll()
         self.activeModifiers.removeAll()
         self.releasedModifiers.removeAll()
-        self.lastNonModifierKey = nil
+        self.heldKeys.removeAll()
+        self.lingeringKeys.removeAll()
         self.physicallyPressedKeys.removeAll()
     }
 
@@ -477,7 +506,7 @@ public final class SingleKeyState: KeyStateProtocol {
 
     // MARK: - Private Methods
 
-    private func handleKeyDown(symbol: KeySymbol) {
+    private func handleKeyDown(keyCode: Int64, symbol: KeySymbol) {
         // Track physical press state
         self.physicallyPressedKeys.insert(symbol.id)
 
@@ -487,25 +516,38 @@ public final class SingleKeyState: KeyStateProtocol {
                 let key = PressedKey(symbol: symbol)
                 self.activeModifiers.append(key)
             }
-            // Update display with current modifiers (preserve last non-modifier key)
+            // Pressed again — no longer a released modifier kept for the combo
+            self.releasedModifiers.remove(symbol.id)
+            // Update display with current modifiers (preserve the current combination)
             self.updateDisplay()
-        } else {
-            // If showModifiersOnly and no modifiers, ignore this key entirely
-            if self.showModifiersOnly, self.activeModifiers.isEmpty {
-                return
-            }
-
-            // Non-modifier key: clear released modifiers first (they're not part of this new combo)
-            for modifierId in self.releasedModifiers {
-                self.activeModifiers.removeAll { $0.symbol.id == modifierId }
-            }
-            self.releasedModifiers.removeAll()
-
-            // Store new key and show combination
-            self.lastNonModifierKey = PressedKey(symbol: symbol)
-            self.updateDisplay()
-            self.scheduleTimeout()
+            return
         }
+
+        // If showModifiersOnly and no modifiers, ignore this key entirely
+        if self.showModifiersOnly, self.activeModifiers.isEmpty {
+            return
+        }
+
+        self.dropStaleHeldKeys()
+
+        if self.heldKeys.isEmpty {
+            // Nothing is held — this key starts a new combination
+            self.lingeringKeys.removeAll()
+            self.forgetReleasedModifiers()
+        }
+
+        // Key repeats fire keyDown over and over while a key is held
+        if !self.heldKeys.contains(where: { $0.key.symbol.id == symbol.id }) {
+            self.heldKeys.append(HeldKey(
+                keyCode: CGKeyCode(truncatingIfNeeded: keyCode),
+                key: PressedKey(symbol: symbol)))
+            if self.heldKeys.count > Self.maxSimultaneousKeys {
+                self.heldKeys.removeFirst(self.heldKeys.count - Self.maxSimultaneousKeys)
+            }
+        }
+
+        self.updateDisplay()
+        self.scheduleTimeout()
     }
 
     private func handleKeyUp(symbol: KeySymbol) {
@@ -518,7 +560,42 @@ public final class SingleKeyState: KeyStateProtocol {
             if self.showModifiersOnly, self.activeModifiers.isEmpty {
                 self.pressedKeys.removeAll()
             }
+            return
         }
+
+        guard self.heldKeys.contains(where: { $0.key.symbol.id == symbol.id }) else { return }
+
+        let displayedKeys = self.heldKeys.map(\.key)
+        self.heldKeys.removeAll { $0.key.symbol.id == symbol.id }
+
+        if self.heldKeys.isEmpty {
+            // Everything released — keep the combination up until the timeout
+            self.lingeringKeys = displayedKeys
+            self.scheduleTimeout()
+        }
+
+        self.updateDisplay()
+    }
+
+    /// Drops keys the system no longer reports as pressed. A key up can be missed
+    /// (tap disabled by the system, overlay toggled off, app switch), which would
+    /// otherwise strand a key on screen and glue it to later combinations.
+    private func dropStaleHeldKeys() {
+        let staleIds = Set(
+            self.heldKeys
+                .filter { !self.isKeyDown($0.keyCode) }
+                .map(\.key.symbol.id))
+        guard !staleIds.isEmpty else { return }
+
+        self.heldKeys.removeAll { staleIds.contains($0.key.symbol.id) }
+        self.physicallyPressedKeys.subtract(staleIds)
+    }
+
+    private func forgetReleasedModifiers() {
+        for modifierId in self.releasedModifiers {
+            self.activeModifiers.removeAll { $0.symbol.id == modifierId }
+        }
+        self.releasedModifiers.removeAll()
     }
 
     private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
@@ -540,20 +617,16 @@ public final class SingleKeyState: KeyStateProtocol {
             self.releasedModifiers.remove(symbol.id)
         } else {
             // Modifier released
-            if self.lastNonModifierKey != nil {
+            if self.hasComboKeys {
                 // Keep modifier visible — mark as released but don't remove
                 self.releasedModifiers.insert(symbol.id)
             } else {
-                // No key to keep combo with — remove immediately
+                // No combination to keep it with — remove immediately
                 self.activeModifiers.removeAll { $0.symbol.id == symbol.id }
             }
         }
 
-        // Update display to reflect current modifiers
-        // Only update if we have something displayed or modifiers changed
-        if !self.pressedKeys.isEmpty || !self.activeModifiers.isEmpty || self.lastNonModifierKey != nil {
-            self.updateDisplay()
-        }
+        self.updateDisplay()
     }
 
     private func isModifierPressed(keyCode: Int64, flags: CGEventFlags) -> Bool {
@@ -568,31 +641,19 @@ public final class SingleKeyState: KeyStateProtocol {
     }
 
     private func updateDisplay() {
-        var newKeys: [PressedKey] = []
+        // Held keys are the live truth; the lingering snapshot only shows once
+        // everything is released.
+        let comboKeys = self.heldKeys.isEmpty ? self.lingeringKeys : self.heldKeys.map(\.key)
 
-        // Add active modifiers (sorted)
-        let sortedModifiers = self.activeModifiers.sorted { lhs, rhs in
+        guard !self.showModifiersOnly || !self.activeModifiers.isEmpty else {
+            self.pressedKeys = []
+            return
+        }
+
+        var newKeys = self.activeModifiers.sorted { lhs, rhs in
             lhs.pressedAt < rhs.pressedAt
         }
-        newKeys.append(contentsOf: sortedModifiers)
-
-        // Add the last non-modifier key if exists
-        if let lastKey = self.lastNonModifierKey {
-            newKeys.append(lastKey)
-        }
-
-        // Apply showModifiersOnly filter
-        if self.showModifiersOnly {
-            let hasModifiers = !self.activeModifiers.isEmpty
-            let hasNonModifier = self.lastNonModifierKey != nil
-            // Only show if we have modifiers AND a non-modifier key
-            if !hasModifiers || !hasNonModifier {
-                // Don't update display for non-modified keys
-                if self.lastNonModifierKey != nil, !hasModifiers {
-                    return
-                }
-            }
-        }
+        newKeys.append(contentsOf: comboKeys)
 
         self.pressedKeys = newKeys
     }
@@ -605,18 +666,23 @@ public final class SingleKeyState: KeyStateProtocol {
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
-                self?.clearKeyAndReleasedModifiers()
+                self?.handleTimeout()
             }
         }
     }
 
-    private func clearKeyAndReleasedModifiers() {
-        self.lastNonModifierKey = nil
-        // Remove modifiers that were released while key was visible
-        for modifierId in self.releasedModifiers {
-            self.activeModifiers.removeAll { $0.symbol.id == modifierId }
+    private func handleTimeout() {
+        self.dropStaleHeldKeys()
+
+        // Keys still held stay on screen; re-arming means a missed key up is
+        // caught by the next check instead of stranding the combination.
+        guard self.heldKeys.isEmpty else {
+            self.scheduleTimeout()
+            return
         }
-        self.releasedModifiers.removeAll()
+
+        self.lingeringKeys.removeAll()
+        self.forgetReleasedModifiers()
         self.updateDisplay()
     }
 }
