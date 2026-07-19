@@ -48,7 +48,7 @@ bun run package         # Build Keypress.app
 bun run stop            # Kill running instances
 
 # Or directly with Swift/scripts
-swift build
+swift build              # Compile only (no .app bundle)
 swift test
 ./Scripts/compile_and_run.sh
 ./Scripts/package_app.sh
@@ -103,11 +103,11 @@ plan/                # Implementation plan & notes (gitignored)
 | Script | Description |
 |--------|-------------|
 | `Scripts/compile_and_run.sh` | Full dev loop: kill, build, package, launch |
-| `Scripts/package_app.sh` | Build .app bundle |
+| `Scripts/package_app.sh` | Build Keypress.app via the generated Xcode project |
 | `Scripts/launch.sh` | Launch existing app (kill previous first) |
 | `Scripts/build_icon.sh` | Generate Icon.icns from PNG |
 | `Scripts/release.sh` | Cut a release: finalize changelog, bump version, tag, push (CI does the rest) |
-| `Scripts/build_appstore.sh` | Universal sandboxed build, App Store signing, .pkg (used by release CI) |
+| `Scripts/build_appstore.sh` | Xcode archive + export: sandboxed universal .pkg (used by release CI) |
 | `Scripts/upload_appstore.sh` | Validate and upload .pkg to App Store Connect (used by release CI) |
 | `Scripts/validate_changelog.sh` | Validate CHANGELOG before release |
 

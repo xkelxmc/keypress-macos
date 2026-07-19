@@ -73,11 +73,11 @@ bun run check          # Both
 | Script | Description |
 |--------|-------------|
 | `Scripts/compile_and_run.sh` | Full dev loop: kill, build, package, launch |
-| `Scripts/package_app.sh` | Build .app bundle |
+| `Scripts/package_app.sh` | Build Keypress.app via the generated Xcode project |
 | `Scripts/launch.sh` | Launch existing app (kill previous first) |
 | `Scripts/build_icon.sh` | Generate Icon.icns from PNG |
 | `Scripts/release.sh` | Cut a release (tag + push, CI uploads to App Store Connect) |
-| `Scripts/build_appstore.sh` | Sandboxed universal build, App Store signing, .pkg |
+| `Scripts/build_appstore.sh` | Xcode archive + export: sandboxed universal .pkg for the App Store |
 | `Scripts/upload_appstore.sh` | Validate and upload .pkg to App Store Connect |
 | `Scripts/validate_changelog.sh` | Validate CHANGELOG before release |
 

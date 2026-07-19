@@ -1,10 +1,11 @@
 # Release Process (Mac App Store)
 
 Keypress is distributed through the Mac App Store. Pushing a `v*` tag triggers
-GitHub Actions, which builds a sandboxed universal (arm64 + x86_64) binary,
-signs it for App Store distribution, packages it as a `.pkg`, and uploads it to
-App Store Connect. Attaching the build to a version and submitting for review
-is done manually in App Store Connect.
+GitHub Actions, which builds a sandboxed universal (arm64 + x86_64) app through
+the Xcode project generated from `project.yml`, signs it for App Store
+distribution, exports a `.pkg`, and uploads it to App Store Connect. Attaching
+the build to a version and submitting for review is done manually in App Store
+Connect.
 
 ## One-time setup (Apple Developer account holder)
 
@@ -20,6 +21,10 @@ From a Certificate Authority → Saved to disk):
 
 1. **Apple Distribution** — signs the app bundle.
 2. **Mac Installer Distribution** — signs the installer `.pkg`.
+
+The legacy certificate types (**Mac App Distribution** / identities named
+"3rd Party Mac Developer Application/Installer") work too — the pipeline
+detects identity names from the imported certificates automatically.
 
 Download both `.cer` files, double-click to add them to the Keychain of the Mac
 that created the CSR, then export each from Keychain Access → My Certificates
@@ -103,11 +108,20 @@ New" from the changelog, and submit for review.
 1. Verifies the tag matches `MARKETING_VERSION` and sits on `origin/main`;
    validates the changelog; runs tests.
 2. Imports both distribution certificates into a temporary keychain.
-3. `Scripts/build_appstore.sh` — universal build, embeds the provisioning
-   profile, signs with the App Sandbox entitlements (`Keypress.entitlements`),
-   builds the signed `.pkg`.
+3. `Scripts/build_appstore.sh` — generates the Xcode project from `project.yml`
+   (xcodegen), then `xcodebuild archive` + `-exportArchive` (method
+   `app-store-connect`) produce the signed universal `.pkg`. Building through
+   Xcode is load-bearing: App Store server-side processing **silently drops**
+   hand-assembled bundles (no error, no email — the build just never appears),
+   because they lack metadata Xcode stamps automatically
+   (`application-identifier` entitlements, `DTXcode`/`DTSDK*` keys,
+   `CFBundleSupportedPlatforms`, …). Do not replace this with a manual
+   `swift build` + `codesign` + `productbuild` pipeline.
 4. `Scripts/upload_appstore.sh` — validates and uploads via `altool` with the
    App Store Connect API key.
+
+Dev builds (`bun run start` → `Scripts/package_app.sh`) go through the same
+Xcode project, so the local app and the store artifact cannot drift apart.
 
 ## Sandbox notes
 
