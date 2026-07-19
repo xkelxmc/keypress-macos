@@ -7,8 +7,11 @@
 #
 # Required env:
 #   PROVISIONING_PROFILE    Path to the Mac App Store .provisionprofile
-# Requires certificates (Apple Distribution + Mac Installer Distribution) in
-# the keychain and xcodegen installed.
+#   APP_IDENTITY            App signing identity name (Apple Distribution /
+#                           3rd Party Mac Developer Application)
+#   INSTALLER_IDENTITY      Installer signing identity name (Mac Installer
+#                           Distribution / 3rd Party Mac Developer Installer)
+# Requires both certificates in the keychain and xcodegen installed.
 
 set -euo pipefail
 
@@ -24,6 +27,12 @@ if [[ -z "${PROVISIONING_PROFILE:-}" || ! -f "${PROVISIONING_PROFILE:-}" ]]; the
   echo "ERROR: PROVISIONING_PROFILE must point to a .provisionprofile file" >&2
   exit 1
 fi
+for var in APP_IDENTITY INSTALLER_IDENTITY; do
+  if [[ -z "${!var:-}" ]]; then
+    echo "ERROR: $var is required" >&2
+    exit 1
+  fi
+done
 command -v xcodegen >/dev/null || { echo "ERROR: xcodegen not installed (brew install xcodegen)" >&2; exit 1; }
 
 WORK_DIR=$(mktemp -d)
@@ -44,7 +53,7 @@ cp "$PROVISIONING_PROFILE" "$PROFILE_DIR/$PROFILE_UUID.provisionprofile"
 cat > "$XCCONFIG" <<EOF
 CODE_SIGN_STYLE = Manual
 DEVELOPMENT_TEAM = ${TEAM_ID}
-CODE_SIGN_IDENTITY = Apple Distribution
+CODE_SIGN_IDENTITY = ${APP_IDENTITY}
 PROVISIONING_PROFILE_SPECIFIER = ${PROFILE_NAME}
 EOF
 
@@ -76,7 +85,8 @@ cat > "$WORK_DIR/ExportOptions.plist" <<EOF
     <key>destination</key><string>export</string>
     <key>signingStyle</key><string>manual</string>
     <key>teamID</key><string>${TEAM_ID}</string>
-    <key>signingCertificate</key><string>Apple Distribution</string>
+    <key>signingCertificate</key><string>${APP_IDENTITY}</string>
+    <key>installerSigningCertificate</key><string>${INSTALLER_IDENTITY}</string>
     <key>provisioningProfiles</key>
     <dict>
         <key>dev.keypress.app</key><string>${PROFILE_NAME}</string>
