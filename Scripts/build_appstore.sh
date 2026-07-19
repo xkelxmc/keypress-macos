@@ -37,12 +37,34 @@ lipo -info "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 echo "==> Embedding provisioning profile"
 cp "$PROVISIONING_PROFILE" "$APP_BUNDLE/Contents/embedded.provisionprofile"
 
+# App Store processing silently drops builds whose signature lacks the
+# application-identifier / team-identifier entitlements (Xcode injects them
+# from the profile automatically; a manual codesign must do the same).
+echo "==> Generating signing entitlements from the provisioning profile"
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+security cms -D -i "$PROVISIONING_PROFILE" > "$WORK_DIR/profile.plist"
+APP_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.application-identifier' "$WORK_DIR/profile.plist")
+TEAM_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.team-identifier' "$WORK_DIR/profile.plist")
+echo "    application-identifier: $APP_IDENTIFIER"
+echo "    team-identifier:        $TEAM_IDENTIFIER"
+
+SIGN_ENTITLEMENTS="$WORK_DIR/entitlements.plist"
+cp "$ENTITLEMENTS" "$SIGN_ENTITLEMENTS"
+/usr/libexec/PlistBuddy -c "Add :com.apple.application-identifier string $APP_IDENTIFIER" "$SIGN_ENTITLEMENTS"
+/usr/libexec/PlistBuddy -c "Add :com.apple.developer.team-identifier string $TEAM_IDENTIFIER" "$SIGN_ENTITLEMENTS"
+plutil -lint "$SIGN_ENTITLEMENTS"
+
 echo "==> Signing with $APP_IDENTITY"
 codesign --force --timestamp --sign "$APP_IDENTITY" \
-  --entitlements "$ENTITLEMENTS" "$APP_BUNDLE"
+  --entitlements "$SIGN_ENTITLEMENTS" "$APP_BUNDLE"
 
 codesign --verify --deep --strict "$APP_BUNDLE"
 codesign -d --entitlements - "$APP_BUNDLE"
+codesign -d --entitlements :- "$APP_BUNDLE" 2>/dev/null | grep -q "com.apple.application-identifier" || {
+  echo "ERROR: signed app is missing com.apple.application-identifier" >&2
+  exit 1
+}
 
 echo "==> Building installer package"
 rm -f "$PKG_NAME"
