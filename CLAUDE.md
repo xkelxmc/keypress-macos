@@ -30,6 +30,10 @@ For detailed specs, see [docs/README.md](./docs/README.md).
 
 ## Development
 
+Prerequisite: `xcodegen` (`brew install xcodegen`) — app bundles (dev and App
+Store) are built through the Xcode project generated from `project.yml`; SPM
+remains for code organization and tests.
+
 ```bash
 # Using bun scripts (recommended)
 bun run start           # Kill, build, package, launch, verify

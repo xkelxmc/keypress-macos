@@ -40,6 +40,7 @@ Coming soon to the Mac App Store.
 ### From Source
 
 ```bash
+brew install xcodegen
 git clone https://github.com/xkelxmc/keypress-macos.git
 cd keypress-macos
 bun run start
