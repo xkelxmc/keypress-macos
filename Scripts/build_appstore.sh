@@ -1,74 +1,96 @@
 #!/usr/bin/env bash
-# Build and sign Keypress for Mac App Store submission.
+# Build and sign Keypress for Mac App Store submission via a generated Xcode
+# project (xcodegen + xcodebuild archive/export). Xcode stamps all bundle
+# metadata App Store processing expects — hand-rolled bundles get silently
+# dropped server-side.
 # Produces Keypress-<version>.pkg ready for upload to App Store Connect.
 #
 # Required env:
-#   APP_IDENTITY            Apple Distribution (or 3rd Party Mac Developer Application) identity
-#   INSTALLER_IDENTITY      Mac Installer Distribution (3rd Party Mac Developer Installer) identity
-#   PROVISIONING_PROFILE    Path to the Mac App Store .provisionprofile for the bundle id
+#   PROVISIONING_PROFILE    Path to the Mac App Store .provisionprofile
+# Requires certificates (Apple Distribution + Mac Installer Distribution) in
+# the keychain and xcodegen installed.
 
 set -euo pipefail
 
 APP_NAME="Keypress"
-APP_BUNDLE="Keypress.app"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 source "$ROOT/version.env"
 
 PKG_NAME="${APP_NAME}-${MARKETING_VERSION}.pkg"
-ENTITLEMENTS="$ROOT/Keypress.entitlements"
+XCCONFIG="Config/appstore-signing.xcconfig"
 
-for var in APP_IDENTITY INSTALLER_IDENTITY PROVISIONING_PROFILE; do
-  if [[ -z "${!var:-}" ]]; then
-    echo "ERROR: $var is required" >&2
-    exit 1
-  fi
-done
-
-if [[ ! -f "$PROVISIONING_PROFILE" ]]; then
-  echo "ERROR: Provisioning profile not found: $PROVISIONING_PROFILE" >&2
+if [[ -z "${PROVISIONING_PROFILE:-}" || ! -f "${PROVISIONING_PROFILE:-}" ]]; then
+  echo "ERROR: PROVISIONING_PROFILE must point to a .provisionprofile file" >&2
   exit 1
 fi
+command -v xcodegen >/dev/null || { echo "ERROR: xcodegen not installed (brew install xcodegen)" >&2; exit 1; }
 
-echo "==> Building universal binary"
-ARCHES=${ARCHES:-"arm64 x86_64"} ./Scripts/package_app.sh release
-lipo -info "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-
-echo "==> Embedding provisioning profile"
-cp "$PROVISIONING_PROFILE" "$APP_BUNDLE/Contents/embedded.provisionprofile"
-
-# App Store processing silently drops builds whose signature lacks the
-# application-identifier / team-identifier entitlements (Xcode injects them
-# from the profile automatically; a manual codesign must do the same).
-echo "==> Generating signing entitlements from the provisioning profile"
 WORK_DIR=$(mktemp -d)
-trap 'rm -rf "$WORK_DIR"' EXIT
+cp "$XCCONFIG" "$WORK_DIR/xcconfig.default"
+trap 'cp "$WORK_DIR/xcconfig.default" "$XCCONFIG"; rm -rf "$WORK_DIR"' EXIT
+
+echo "==> Reading provisioning profile"
 security cms -D -i "$PROVISIONING_PROFILE" > "$WORK_DIR/profile.plist"
-APP_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.application-identifier' "$WORK_DIR/profile.plist")
-TEAM_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.team-identifier' "$WORK_DIR/profile.plist")
-echo "    application-identifier: $APP_IDENTIFIER"
-echo "    team-identifier:        $TEAM_IDENTIFIER"
+PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$WORK_DIR/profile.plist")
+PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$WORK_DIR/profile.plist")
+TEAM_ID=$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$WORK_DIR/profile.plist")
+echo "    profile: $PROFILE_NAME ($PROFILE_UUID), team: $TEAM_ID"
 
-SIGN_ENTITLEMENTS="$WORK_DIR/entitlements.plist"
-cp "$ENTITLEMENTS" "$SIGN_ENTITLEMENTS"
-/usr/libexec/PlistBuddy -c "Add :com.apple.application-identifier string $APP_IDENTIFIER" "$SIGN_ENTITLEMENTS"
-/usr/libexec/PlistBuddy -c "Add :com.apple.developer.team-identifier string $TEAM_IDENTIFIER" "$SIGN_ENTITLEMENTS"
-plutil -lint "$SIGN_ENTITLEMENTS"
+PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+mkdir -p "$PROFILE_DIR"
+cp "$PROVISIONING_PROFILE" "$PROFILE_DIR/$PROFILE_UUID.provisionprofile"
 
-echo "==> Signing with $APP_IDENTITY"
-codesign --force --timestamp --sign "$APP_IDENTITY" \
-  --entitlements "$SIGN_ENTITLEMENTS" "$APP_BUNDLE"
+cat > "$XCCONFIG" <<EOF
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM = ${TEAM_ID}
+CODE_SIGN_IDENTITY = Apple Distribution
+PROVISIONING_PROFILE_SPECIFIER = ${PROFILE_NAME}
+EOF
 
-codesign --verify --deep --strict "$APP_BUNDLE"
-codesign -d --entitlements - "$APP_BUNDLE"
-codesign -d --entitlements :- "$APP_BUNDLE" 2>/dev/null | grep -q "com.apple.application-identifier" || {
-  echo "ERROR: signed app is missing com.apple.application-identifier" >&2
+echo "==> Generating Xcode project"
+xcodegen generate
+
+echo "==> Archiving"
+ARCHIVE="build/${APP_NAME}.xcarchive"
+rm -rf build
+xcodebuild archive -quiet \
+  -project "${APP_NAME}.xcodeproj" -scheme "$APP_NAME" -configuration Release \
+  -archivePath "$ARCHIVE" -destination 'generic/platform=macOS' \
+  MARKETING_VERSION="$MARKETING_VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+
+APP_IN_ARCHIVE="$ARCHIVE/Products/Applications/${APP_NAME}.app"
+lipo -info "$APP_IN_ARCHIVE/Contents/MacOS/$APP_NAME"
+codesign -d --entitlements :- "$APP_IN_ARCHIVE" 2>/dev/null | grep -q "com.apple.application-identifier" || {
+  echo "ERROR: archived app is missing com.apple.application-identifier" >&2
   exit 1
 }
 
-echo "==> Building installer package"
+echo "==> Exporting .pkg for App Store Connect"
+cat > "$WORK_DIR/ExportOptions.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key><string>app-store-connect</string>
+    <key>destination</key><string>export</string>
+    <key>signingStyle</key><string>manual</string>
+    <key>teamID</key><string>${TEAM_ID}</string>
+    <key>signingCertificate</key><string>Apple Distribution</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>dev.keypress.app</key><string>${PROFILE_NAME}</string>
+    </dict>
+</dict>
+</plist>
+EOF
+xcodebuild -exportArchive \
+  -archivePath "$ARCHIVE" \
+  -exportOptionsPlist "$WORK_DIR/ExportOptions.plist" \
+  -exportPath build/export
+
 rm -f "$PKG_NAME"
-productbuild --component "$APP_BUNDLE" /Applications \
-  --sign "$INSTALLER_IDENTITY" "$PKG_NAME"
+mv "build/export/${APP_NAME}.pkg" "$PKG_NAME"
+pkgutil --check-signature "$PKG_NAME"
 
 echo "Done: $PKG_NAME"

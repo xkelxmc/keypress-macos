@@ -1,0 +1,67 @@
+# XcodeGen spec, used only for Mac App Store release builds.
+# Day-to-day development still uses SwiftPM (Package.swift); keep the
+# KeyboardShortcuts version here in sync with Package.swift.
+# Generate with: xcodegen generate (Scripts/build_appstore.sh does this)
+name: Keypress
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    from: 2.0.0
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.0.0"
+    CURRENT_PROJECT_VERSION: "0"
+targets:
+  KeypressCore:
+    type: library.static
+    platform: macOS
+    sources:
+      - Sources/KeypressCore
+  Keypress:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/Keypress
+      - path: Icon.icns
+        buildPhase: resources
+    dependencies:
+      - target: KeypressCore
+      - package: KeyboardShortcuts
+    configFiles:
+      Debug: Config/appstore-signing.xcconfig
+      Release: Config/appstore-signing.xcconfig
+    entitlements:
+      path: Keypress.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleName: Keypress
+        CFBundleDisplayName: Keypress
+        CFBundleIdentifier: dev.keypress.app
+        CFBundlePackageType: APPL
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSMinimumSystemVersion: "14.0"
+        LSUIElement: true
+        CFBundleIconFile: Icon
+        LSApplicationCategoryType: public.app-category.utilities
+        ITSAppUsesNonExemptEncryption: false
+        NSHumanReadableCopyright: "© 2025 Ilya Zhidkov. MIT License."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.keypress.app
+        PRODUCT_NAME: Keypress
+schemes:
+  Keypress:
+    build:
+      targets:
+        Keypress: all
+    archive:
+      config: Release

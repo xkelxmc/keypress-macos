@@ -100,6 +100,9 @@ jobs:
           security cms -D -i "$PROFILE_PATH" > /dev/null
           echo "PROVISIONING_PROFILE=$PROFILE_PATH" >> "$GITHUB_ENV"
 
+      - name: Install xcodegen
+        run: brew install xcodegen
+
       - name: Build and sign pkg
         run: ./Scripts/build_appstore.sh
 
