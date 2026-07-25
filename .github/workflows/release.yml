@@ -31,8 +31,12 @@ jobs:
         if: github.event_name == 'push'
         run: |
           source version.env
-          if [[ "$GITHUB_REF_NAME" != "v${MARKETING_VERSION}" ]]; then
-            echo "Tag $GITHUB_REF_NAME does not match MARKETING_VERSION=$MARKETING_VERSION" >&2
+          # A rejected build is re-uploaded under the same version, so the tag
+          # may carry the build number: v1.0.0-build.7
+          if [[ "$GITHUB_REF_NAME" != "v${MARKETING_VERSION}" \
+             && "$GITHUB_REF_NAME" != "v${MARKETING_VERSION}-build.${BUILD_NUMBER}" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match version.env" \
+                 "(MARKETING_VERSION=$MARKETING_VERSION BUILD_NUMBER=$BUILD_NUMBER)" >&2
             exit 1
           fi
 
