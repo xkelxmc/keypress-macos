@@ -1,4 +1,4 @@
-import CoreGraphics
+import AppKit
 import Foundation
 import Testing
 @testable import KeypressCore
@@ -64,7 +64,7 @@ struct KeyCodeMapperTests {
 
     @Test("Letter keycodes are recognized")
     func letterKeys() {
-        // Without CGEvent, character keys return "?" (actual char comes from CGEvent at runtime)
+        // Without the event, character keys return "?" (actual char comes from the event at runtime)
         // We just verify the keycodes are recognized as valid keys
         #expect(KeyCodeMapper.symbol(for: 0x00) != nil) // A
         #expect(KeyCodeMapper.symbol(for: 0x0B) != nil) // B
@@ -75,7 +75,7 @@ struct KeyCodeMapperTests {
 
     @Test("Number keycodes are recognized")
     func numberKeys() {
-        // Without CGEvent, character keys return "?" (actual char comes from CGEvent at runtime)
+        // Without the event, character keys return "?" (actual char comes from the event at runtime)
         #expect(KeyCodeMapper.symbol(for: 0x12) != nil) // 1
         #expect(KeyCodeMapper.symbol(for: 0x13) != nil) // 2
         #expect(KeyCodeMapper.symbol(for: 0x1D) != nil) // 0
@@ -105,7 +105,7 @@ struct KeyCodeMapperTests {
 
     @Test("activeModifiers extracts flags correctly")
     func test_activeModifiers() {
-        let flags: CGEventFlags = [.maskCommand, .maskShift]
+        let flags: NSEvent.ModifierFlags = [.command, .shift]
         let modifiers = KeyCodeMapper.activeModifiers(from: flags)
 
         #expect(modifiers.count == 2)
@@ -128,12 +128,12 @@ struct KeyEventTests {
         let event = KeyEvent(
             type: .keyDown,
             keyCode: 0x00,
-            modifiers: .maskCommand,
+            modifiers: .command,
             timestamp: timestamp)
 
         #expect(event.type == KeyEvent.EventType.keyDown)
         #expect(event.keyCode == 0x00)
-        #expect(event.modifiers == CGEventFlags.maskCommand)
+        #expect(event.modifiers == NSEvent.ModifierFlags.command)
         #expect(event.timestamp == timestamp)
     }
 
@@ -259,8 +259,8 @@ struct FullKeyboardTests {
         for (keyCode, expectedDisplay) in letterKeycodes {
             let symbol = KeyCodeMapper.symbol(for: keyCode)
             #expect(symbol != nil, "Letter \(expectedDisplay) should produce a symbol")
-            // Note: with CGEvent, actual display depends on keyboard layout
-            // Without CGEvent, we get "?" for character keys
+            // Note: with the event, actual display depends on keyboard layout
+            // Without the event, we get "?" for character keys
             #expect(symbol?.isModifier == false, "Letter keys should not be modifiers")
         }
     }
@@ -368,7 +368,7 @@ struct FullKeyboardTests {
         for (keyCode, expectedDisplay) in numpadKeycodes {
             let symbol = KeyCodeMapper.symbol(for: keyCode)
             #expect(symbol != nil, "Numpad key should produce a symbol")
-            // Without CGEvent, character keys return "?"
+            // Without the event, character keys return "?"
         }
     }
 
@@ -403,7 +403,7 @@ struct FullKeyboardTests {
 struct ModifierCombinationTests {
     @Test("Command + Shift combination flags")
     func cmdShiftFlags() {
-        let flags: CGEventFlags = [.maskCommand, .maskShift]
+        let flags: NSEvent.ModifierFlags = [.command, .shift]
         let modifiers = KeyCodeMapper.activeModifiers(from: flags)
 
         #expect(modifiers.count == 2)
@@ -413,7 +413,7 @@ struct ModifierCombinationTests {
 
     @Test("All four modifiers combination")
     func allFourModifiers() {
-        let flags: CGEventFlags = [.maskCommand, .maskShift, .maskAlternate, .maskControl]
+        let flags: NSEvent.ModifierFlags = [.command, .shift, .option, .control]
         let modifiers = KeyCodeMapper.activeModifiers(from: flags)
 
         #expect(modifiers.count == 4)
@@ -425,7 +425,7 @@ struct ModifierCombinationTests {
 
     @Test("Command + Option combination")
     func cmdOptionFlags() {
-        let flags: CGEventFlags = [.maskCommand, .maskAlternate]
+        let flags: NSEvent.ModifierFlags = [.command, .option]
         let modifiers = KeyCodeMapper.activeModifiers(from: flags)
 
         #expect(modifiers.count == 2)
@@ -435,7 +435,7 @@ struct ModifierCombinationTests {
 
     @Test("Control + Shift combination")
     func ctrlShiftFlags() {
-        let flags: CGEventFlags = [.maskControl, .maskShift]
+        let flags: NSEvent.ModifierFlags = [.control, .shift]
         let modifiers = KeyCodeMapper.activeModifiers(from: flags)
 
         #expect(modifiers.count == 2)

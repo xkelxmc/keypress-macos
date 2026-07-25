@@ -1,4 +1,4 @@
-import CoreGraphics
+import AppKit
 import Foundation
 import Testing
 @testable import KeypressCore
@@ -32,7 +32,7 @@ struct KeyStateTests {
     func modifierKeyDown() {
         let state = KeyState()
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
-        let event = KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand)
+        let event = KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .command)
 
         state.processEvent(event, symbol: symbol)
 
@@ -46,7 +46,7 @@ struct KeyStateTests {
         let state = KeyState()
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
 
-        state.processEvent(KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand), symbol: symbol)
+        state.processEvent(KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .command), symbol: symbol)
         #expect(state.pressedKeys.count == 1)
 
         state.processEvent(KeyEvent(type: .keyUp, keyCode: 0x37, modifiers: []), symbol: symbol)
@@ -71,7 +71,7 @@ struct KeyStateTests {
     func noDuplicateModifiers() {
         let state = KeyState()
         let symbol = KeySymbol(id: "command", display: "⌘", isModifier: true)
-        let event = KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand)
+        let event = KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .command)
 
         state.processEvent(event, symbol: symbol)
         state.processEvent(event, symbol: symbol)
@@ -110,7 +110,7 @@ struct KeyStateTests {
             KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),
             symbol: KeySymbol(id: "key-a", display: "A"))
         state.processEvent(
-            KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .command),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         #expect(state.pressedKeys.count == 2)
@@ -132,7 +132,7 @@ struct KeyStateTests {
 
         // Add modifier second
         state.processEvent(
-            KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .command),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         #expect(state.pressedKeys.count == 2)
@@ -208,7 +208,7 @@ struct KeyStateTests {
         let symbol = KeySymbol(id: "command-left", display: "⌘", isModifier: true)
 
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .command),
             symbol: symbol)
 
         #expect(state.pressedKeys.count == 1)
@@ -223,7 +223,7 @@ struct KeyStateTests {
 
         // Press
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .command),
             symbol: symbol)
         #expect(state.pressedKeys.count == 1)
 
@@ -341,12 +341,12 @@ struct SingleKeyStateTests {
 
         // Press Command
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .command),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press A
         state.processEvent(
-            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .maskCommand),
+            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .command),
             symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.pressedKeys.count == 2)
@@ -361,17 +361,17 @@ struct SingleKeyStateTests {
 
         // Press Command
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .command),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press Shift
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x38, modifiers: [.maskCommand, .maskShift]),
+            KeyEvent(type: .flagsChanged, keyCode: 0x38, modifiers: [.command, .shift]),
             symbol: KeySymbol(id: "shift", display: "⇧", isModifier: true))
 
         // Press A
         state.processEvent(
-            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: [.maskCommand, .maskShift]),
+            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: [.command, .shift]),
             symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.pressedKeys.count == 3)
@@ -388,12 +388,12 @@ struct SingleKeyStateTests {
 
         // Press Command
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .command),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press A (creates Cmd+A combination)
         state.processEvent(
-            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .maskCommand),
+            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .command),
             symbol: KeySymbol(id: "key-a", display: "A"))
         #expect(state.pressedKeys.count == 2)
 
@@ -454,12 +454,12 @@ struct SingleKeyStateTests {
 
         // Press Command
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .command),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
 
         // Press A (with modifier) - should show
         state.processEvent(
-            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .maskCommand),
+            KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: .command),
             symbol: KeySymbol(id: "key-a", display: "A"))
 
         #expect(state.pressedKeys.count == 2)
@@ -639,7 +639,7 @@ struct SingleKeyStateSimultaneousTests {
         let state = SingleKeyState(isKeyDown: keyboard.probe)
 
         state.processEvent(
-            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .command),
             symbol: KeySymbol(id: "command", display: "⌘", isModifier: true))
         self.press(state, keyboard, Self.codeA, Self.keyA)
         self.press(state, keyboard, Self.codeS, Self.keyS)

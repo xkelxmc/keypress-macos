@@ -5,7 +5,7 @@
 ```
 Sources/
 ├── KeypressCore/       # Core logic, no UI dependencies
-│   ├── KeyMonitor      # CGEvent tap, key event processing
+│   ├── KeyMonitor      # NSEvent monitors, key event processing
 │   ├── KeyState        # Current pressed keys state
 │   └── Settings        # Settings storage and defaults
 │
@@ -25,7 +25,7 @@ Sources/
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │  KeyMonitor  │────▶│   KeyState   │────▶│   Overlay    │
-│  (CGEvent)   │     │  (pressed)   │     │   (SwiftUI)  │
+│  (NSEvent)   │     │  (pressed)   │     │   (SwiftUI)  │
 └──────────────┘     └──────────────┘     └──────────────┘
                             │
                             ▼
@@ -35,7 +35,7 @@ Sources/
                      └──────────────┘
 ```
 
-1. **KeyMonitor** captures global keyboard events via CGEvent tap
+1. **KeyMonitor** captures global keyboard events via NSEvent monitors
 2. **KeyState** maintains set of currently pressed keys
 3. **Overlay** subscribes to KeyState and renders visualization
 4. **Settings** provides configuration (timeout, position, etc.)
@@ -56,9 +56,9 @@ Sources/
 
 ### KeyMonitor
 
-- Creates `CGEvent` tap for keyboard events
+- Installs `NSEvent` global and local monitors for keyboard events
 - Filters relevant events (keyDown, keyUp, flagsChanged)
-- Translates keycodes to displayable symbols using `CGEvent.keyboardGetUnicodeString`
+- Translates keycodes to displayable symbols using `NSEvent.characters`
 - **Respects current keyboard layout** (Russian, German, etc.) — not hardcoded English
 - Publishes to KeyState
 

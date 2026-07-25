@@ -298,10 +298,10 @@ struct KeyboardFrameView<Content: View>: View {
         .onAppear {
             Task { @MainActor in
                 keyState.processEvent(
-                    KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .maskCommand),
+                    KeyEvent(type: .keyDown, keyCode: 0x37, modifiers: .command),
                     symbol: KeySymbol(id: "cmd", display: "⌘", isModifier: true))
                 keyState.processEvent(
-                    KeyEvent(type: .keyDown, keyCode: 0x38, modifiers: .maskShift),
+                    KeyEvent(type: .keyDown, keyCode: 0x38, modifiers: .shift),
                     symbol: KeySymbol(id: "shift", display: "⇧", isModifier: true))
                 keyState.processEvent(
                     KeyEvent(type: .keyDown, keyCode: 0x00, modifiers: []),

@@ -92,48 +92,41 @@ final class OverlayController {
 
         // Create key monitor with callback
         self.keyMonitor = KeyMonitor { [weak self] event, symbol in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                // Update position on keyDown to catch window switches within the same app
-                if event.type == .keyDown {
-                    self.updatePositionIfScreenChanged()
-                }
-                self.currentKeyState?.processEvent(event, symbol: symbol)
+            guard let self else { return }
+            // Update position on keyDown to catch window switches within the same app
+            if event.type == .keyDown {
+                self.updatePositionIfScreenChanged()
             }
+            self.currentKeyState?.processEvent(event, symbol: symbol)
         }
 
         // Start observing screen changes
         self.startObservingScreens()
 
-        // Try to start monitoring directly - KeyMonitor.start() returns false if no permissions
-        if self.keyMonitor?.start() == true {
+        self.keyMonitor?.start()
+        // Sync with currently held modifiers
+        self.keyMonitor?.emitCurrentModifiers()
+        self.startObservingKeyState()
+
+        guard !KeyMonitor.hasInputMonitoringPermission() else {
             print("[Keypress] KeyMonitor started successfully")
-            // Sync with currently held modifiers
-            self.keyMonitor?.emitCurrentModifiers()
-            self.startObservingKeyState()
-        } else {
-            // Check if it's actually a permission issue vs. system resource issue
-            if KeyMonitor.hasInputMonitoringPermission() {
-                print(
-                    "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
-            } else {
-                print("[Keypress] KeyMonitor.start() failed, requesting permissions...")
-            }
-
-            // Request permission (shows system dialog if app not in list)
-            InputMonitoringPermission.request()
-
-            // Subscribe to permission changes
-            self.permission.onPermissionChange { [weak self] granted in
-                print("[Keypress] Permission changed: \(granted)")
-                if granted {
-                    self?.startMonitoring()
-                }
-            }
-
-            // Start polling as fallback
-            self.permission.startPolling()
+            return
         }
+
+        print("[Keypress] Input Monitoring not granted, requesting...")
+        // Request permission (shows system dialog if app not in list)
+        InputMonitoringPermission.request()
+
+        // Monitors installed before the grant stay inert, so reinstall them once it lands
+        self.permission.onPermissionChange { [weak self] granted in
+            print("[Keypress] Permission changed: \(granted)")
+            if granted {
+                self?.restartMonitoring()
+            }
+        }
+
+        // Start polling as fallback
+        self.permission.startPolling()
     }
 
     /// Stops key monitoring and hides overlay.
@@ -178,7 +171,7 @@ final class OverlayController {
     private func updatePositionIfScreenChanged() {
         guard case .auto = self.config.monitorSelection else { return }
 
-        let currentScreen = self.screenOfFrontmostApp()
+        let currentScreen = self.activeScreen()
         if currentScreen != self.lastDetectedScreen {
             self.lastDetectedScreen = currentScreen
             self.overlayWindow?.updatePosition(on: currentScreen ?? NSScreen.main)
@@ -189,8 +182,7 @@ final class OverlayController {
     private func selectedScreen() -> NSScreen? {
         switch self.config.monitorSelection {
         case .auto:
-            // Get screen of the frontmost application's key window
-            return self.screenOfFrontmostApp() ?? NSScreen.main
+            return self.activeScreen()
         case let .fixed(index):
             let screens = NSScreen.screens
             // Fallback to main screen if index is out of bounds (monitor disconnected)
@@ -198,59 +190,12 @@ final class OverlayController {
         }
     }
 
-    /// Returns the screen that contains the frontmost application's key window.
-    private func screenOfFrontmostApp() -> NSScreen? {
-        guard let frontmostApp = NSWorkspace.shared.frontmostApplication else {
-            return nil
-        }
-
-        // Try to get the key window's screen using Accessibility API
-        let pid = frontmostApp.processIdentifier
-        let appRef = AXUIElementCreateApplication(pid)
-
-        var windowRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(appRef, kAXFocusedWindowAttribute as CFString, &windowRef) == .success,
-              let window = windowRef
-        else {
-            return nil
-        }
-
-        // Get window position
-        // CFTypeRef from AXUIElementCopyAttributeValue for window should be AXUIElement
-        guard CFGetTypeID(window) == AXUIElementGetTypeID() else {
-            print("[Keypress] WARNING: Unexpected type for window reference")
-            return nil
-        }
-        // swiftlint:disable:next force_cast
-        let windowElement = window as! AXUIElement
-
-        var positionRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(windowElement, kAXPositionAttribute as CFString, &positionRef) == .success,
-              let positionValue = positionRef
-        else {
-            return nil
-        }
-
-        // Extract position
-        // CFTypeRef from position attribute should be AXValue
-        guard CFGetTypeID(positionValue) == AXValueGetTypeID() else {
-            print("[Keypress] WARNING: Unexpected type for position reference")
-            return nil
-        }
-        // swiftlint:disable:next force_cast
-        let axValue = positionValue as! AXValue
-
-        var position = CGPoint.zero
-        guard AXValueGetValue(axValue, .cgPoint, &position) else {
-            return nil
-        }
-
-        // Find the screen that contains this position
-        for screen in NSScreen.screens where screen.frame.contains(position) {
-            return screen
-        }
-
-        return nil
+    /// Returns the screen the user is currently working on.
+    /// The pointer is the best permission-free proxy: whoever is typing has
+    /// their cursor on the display they are looking at.
+    private func activeScreen() -> NSScreen? {
+        let pointer = NSEvent.mouseLocation
+        return NSScreen.screens.first { $0.frame.contains(pointer) } ?? NSScreen.main
     }
 
     /// Updates overlay opacity based on current settings.
@@ -301,12 +246,10 @@ final class OverlayController {
         }
     }
 
-    private func startMonitoring() {
-        let started = self.keyMonitor?.start() ?? false
-        print("[Keypress] KeyMonitor.start() returned: \(started)")
-        if started {
-            self.startObservingKeyState()
-        }
+    private func restartMonitoring() {
+        self.keyMonitor?.stop()
+        self.keyMonitor?.start()
+        self.keyMonitor?.emitCurrentModifiers()
     }
 
     private func startObservingKeyState() {

@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import Foundation
 
@@ -220,7 +221,7 @@ public final class KeyState: KeyStateProtocol {
         }
     }
 
-    private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
+    private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: NSEvent.ModifierFlags) {
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
 
         // Track physical press state
@@ -240,18 +241,18 @@ public final class KeyState: KeyStateProtocol {
         }
     }
 
-    private func isModifierPressed(keyCode: Int64, flags: CGEventFlags) -> Bool {
+    private func isModifierPressed(keyCode: Int64, flags: NSEvent.ModifierFlags) -> Bool {
         switch keyCode {
         case 0x37, 0x36: // Command
-            flags.contains(.maskCommand)
+            flags.contains(.command)
         case 0x38, 0x3C: // Shift
-            flags.contains(.maskShift)
+            flags.contains(.shift)
         case 0x3A, 0x3D: // Option
-            flags.contains(.maskAlternate)
+            flags.contains(.option)
         case 0x3B, 0x3E: // Control
-            flags.contains(.maskControl)
+            flags.contains(.control)
         case 0x3F: // Fn
-            flags.contains(.maskSecondaryFn)
+            flags.contains(.function)
         default:
             false
         }
@@ -598,7 +599,7 @@ public final class SingleKeyState: KeyStateProtocol {
         self.releasedModifiers.removeAll()
     }
 
-    private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: CGEventFlags) {
+    private func handleFlagsChanged(keyCode: Int64, symbol: KeySymbol, flags: NSEvent.ModifierFlags) {
         let isPressed = self.isModifierPressed(keyCode: keyCode, flags: flags)
 
         // Track physical press state
@@ -629,13 +630,13 @@ public final class SingleKeyState: KeyStateProtocol {
         self.updateDisplay()
     }
 
-    private func isModifierPressed(keyCode: Int64, flags: CGEventFlags) -> Bool {
+    private func isModifierPressed(keyCode: Int64, flags: NSEvent.ModifierFlags) -> Bool {
         switch keyCode {
-        case 0x37, 0x36: flags.contains(.maskCommand)
-        case 0x38, 0x3C: flags.contains(.maskShift)
-        case 0x3A, 0x3D: flags.contains(.maskAlternate)
-        case 0x3B, 0x3E: flags.contains(.maskControl)
-        case 0x3F: flags.contains(.maskSecondaryFn)
+        case 0x37, 0x36: flags.contains(.command)
+        case 0x38, 0x3C: flags.contains(.shift)
+        case 0x3A, 0x3D: flags.contains(.option)
+        case 0x3B, 0x3E: flags.contains(.control)
+        case 0x3F: flags.contains(.function)
         default: false
         }
     }

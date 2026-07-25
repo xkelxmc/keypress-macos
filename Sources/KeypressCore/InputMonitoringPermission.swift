@@ -1,5 +1,4 @@
 import AppKit
-@preconcurrency import ApplicationServices
 import Foundation
 import IOKit.hid
 import os.log
@@ -7,8 +6,8 @@ import os.log
 private let logger = Logger(subsystem: "dev.keypress.app", category: "InputMonitoringPermission")
 
 /// Manages Input Monitoring permission state with live updates.
-/// Input Monitoring (not Accessibility) is what a listen-only CGEvent tap
-/// requires since macOS 10.15, and it is available to sandboxed apps.
+/// Input Monitoring (not Accessibility) is what NSEvent global monitors
+/// require since macOS 10.15, and it is available to sandboxed apps.
 @MainActor
 public final class InputMonitoringPermission {
     // MARK: - Singleton
@@ -33,7 +32,7 @@ public final class InputMonitoringPermission {
     private init() {
         self.isGranted = Self.check()
         self.lastKnownState = self.isGranted
-        logger.info("Init: IOHIDCheckAccess=\(self.isGranted), functionalTest=\(Self.functionalTest())")
+        logger.info("Init: IOHIDCheckAccess=\(self.isGranted)")
     }
 
     // Note: No deinit cleanup needed - this is a singleton that lives for app lifetime.
@@ -79,22 +78,20 @@ public final class InputMonitoringPermission {
 
                 pollCount += 1
                 let granted = Self.check()
-                let functional = Self.functionalTest()
 
                 // Log every 10th poll or when state changes
                 if pollCount % 10 == 0 {
-                    print("[InputMonitoringPermission] Poll #\(pollCount): granted=\(granted), func=\(functional)")
+                    print("[InputMonitoringPermission] Poll #\(pollCount): granted=\(granted)")
                 }
 
-                // Use functional test as the source of truth
-                if functional != self.lastKnownState {
-                    print("[InputMonitoringPermission] Permission changed! functional=\(functional)")
-                    self.lastKnownState = functional
-                    self.isGranted = functional
-                    self.changeHandler?(functional)
+                if granted != self.lastKnownState {
+                    print("[InputMonitoringPermission] Permission changed! granted=\(granted)")
+                    self.lastKnownState = granted
+                    self.isGranted = granted
+                    self.changeHandler?(granted)
 
                     // Stop polling once granted
-                    if functional {
+                    if granted {
                         print("[InputMonitoringPermission] Granted, stopping polling")
                         return
                     }
@@ -107,26 +104,5 @@ public final class InputMonitoringPermission {
     public func stopPolling() {
         self.pollingTask?.cancel()
         self.pollingTask = nil
-    }
-
-    /// Performs a functional test by attempting to create an event tap.
-    /// This is more reliable than IOHIDCheckAccess() in some edge cases.
-    public static func functionalTest() -> Bool {
-        let eventMask: CGEventMask = 1 << CGEventType.keyDown.rawValue
-
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .listenOnly,
-            eventsOfInterest: eventMask,
-            callback: { _, _, event, _ in Unmanaged.passUnretained(event) },
-            userInfo: nil)
-        else {
-            return false
-        }
-
-        // Immediately disable and release the tap
-        CGEvent.tapEnable(tap: tap, enable: false)
-        return true
     }
 }
