@@ -5,7 +5,7 @@
 ```
 Sources/
 ├── KeypressCore/       # Core logic, no UI dependencies
-│   ├── KeyMonitor      # NSEvent monitors, key event processing
+│   ├── KeyMonitor      # CGEvent tap, key event processing
 │   ├── KeyState        # Current pressed keys state
 │   └── Settings        # Settings storage and defaults
 │
@@ -25,7 +25,7 @@ Sources/
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │  KeyMonitor  │────▶│   KeyState   │────▶│   Overlay    │
-│  (NSEvent)   │     │  (pressed)   │     │   (SwiftUI)  │
+│  (CGEvent)   │     │  (pressed)   │     │   (SwiftUI)  │
 └──────────────┘     └──────────────┘     └──────────────┘
                             │
                             ▼
@@ -35,7 +35,7 @@ Sources/
                      └──────────────┘
 ```
 
-1. **KeyMonitor** captures global keyboard events via NSEvent monitors
+1. **KeyMonitor** captures global keyboard events via CGEvent tap
 2. **KeyState** maintains set of currently pressed keys
 3. **Overlay** subscribes to KeyState and renders visualization
 4. **Settings** provides configuration (timeout, position, etc.)
@@ -56,9 +56,9 @@ Sources/
 
 ### KeyMonitor
 
-- Installs `NSEvent` global and local monitors for keyboard events
+- Creates `CGEvent` tap for keyboard events
 - Filters relevant events (keyDown, keyUp, flagsChanged)
-- Translates keycodes to displayable symbols using `NSEvent.characters`
+- Translates keycodes to displayable symbols using `CGEvent.keyboardGetUnicodeString`
 - **Respects current keyboard layout** (Russian, German, etc.) — not hardcoded English
 - Publishes to KeyState
 
@@ -83,7 +83,7 @@ Sources/
 
 - Manages overlay window lifecycle and key monitoring
 - **Multi-monitor support:**
-  - Detects focused window's screen using Accessibility API (App Store build falls back to the main screen)
+  - Detects the active screen from the pointer position (no Accessibility API)
   - Updates position on each keypress to handle window switches within same app
   - Caches last detected screen to avoid unnecessary position updates
 

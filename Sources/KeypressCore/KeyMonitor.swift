@@ -1,4 +1,6 @@
-import AppKit
+@preconcurrency import ApplicationServices
+import Carbon.HIToolbox
+@preconcurrency import CoreFoundation
 import Foundation
 import IOKit.hid
 
@@ -14,10 +16,10 @@ public struct KeyEvent: Sendable, Equatable {
 
     public let type: EventType
     public let keyCode: Int64
-    public let modifiers: NSEvent.ModifierFlags
+    public let modifiers: CGEventFlags
     public let timestamp: Date
 
-    public init(type: EventType, keyCode: Int64, modifiers: NSEvent.ModifierFlags, timestamp: Date = Date()) {
+    public init(type: EventType, keyCode: Int64, modifiers: CGEventFlags, timestamp: Date = Date()) {
         self.type = type
         self.keyCode = keyCode
         self.modifiers = modifiers
@@ -45,31 +47,41 @@ public struct KeySymbol: Sendable, Equatable, Hashable, Identifiable {
 
 // MARK: - KeyMonitor
 
-/// Monitors keyboard events with NSEvent monitors, which report key presses
-/// without ever touching the Accessibility framework.
-/// Requires the Input Monitoring permission for events of other apps.
-@MainActor
-public final class KeyMonitor {
+/// Monitors global keyboard events using a listen-only CGEvent tap.
+/// Requires the Input Monitoring permission.
+public final class KeyMonitor: @unchecked Sendable {
     // MARK: - Types
 
-    public typealias EventHandler = (KeyEvent, KeySymbol?) -> Void
+    public typealias EventHandler = @Sendable (KeyEvent, KeySymbol?) -> Void
 
     // MARK: - Properties
 
-    /// The global monitor covers every other app; the local one covers our own
-    /// windows (Settings), which a global monitor never sees.
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
+    private var eventTap: CFMachPort?
+    private var runLoopSource: CFRunLoopSource?
+    private var runLoop: CFRunLoop?
+    private var monitorThread: Thread?
     private let eventHandler: EventHandler
+    private let lock = NSLock()
 
-    private static let monitoredEvents: NSEvent.EventTypeMask = [.keyDown, .keyUp, .flagsChanged]
+    // Rate limiting for tap re-enable (prevents CPU spin if tap keeps getting disabled)
+    private var lastReenableTime: Date?
+    private var reenableCount: Int = 0
+    private static let maxReenableAttempts = 5
+    private static let reenableWindowSeconds: TimeInterval = 1.0
 
-    public private(set) var isRunning = false
+    private var _isRunning = false
+    public var isRunning: Bool {
+        self.lock.withLock { self._isRunning }
+    }
 
     // MARK: - Initialization
 
     public init(eventHandler: @escaping EventHandler) {
         self.eventHandler = eventHandler
+    }
+
+    deinit {
+        self.stop()
     }
 
     // MARK: - Public Methods
@@ -87,19 +99,19 @@ public final class KeyMonitor {
     }
 
     /// Returns current modifier flags from the system.
-    public static func currentModifierFlags() -> NSEvent.ModifierFlags {
-        NSEvent.modifierFlags
+    public static func currentModifierFlags() -> CGEventFlags {
+        CGEventSource.flagsState(.combinedSessionState)
     }
 
     /// Emits flagsChanged events for currently pressed modifiers.
     /// Call this after start() to sync state with physically held keys.
     public func emitCurrentModifiers() {
         let flags = Self.currentModifierFlags()
-        let modifierKeyCodes: [(Int64, NSEvent.ModifierFlags)] = [
-            (0x37, .command), // Left Command
-            (0x38, .shift), // Left Shift
-            (0x3A, .option), // Left Option
-            (0x3B, .control), // Left Control
+        let modifierKeyCodes: [(Int64, CGEventFlags)] = [
+            (0x37, .maskCommand), // Left Command
+            (0x38, .maskShift), // Left Shift
+            (0x3A, .maskAlternate), // Left Option
+            (0x3B, .maskControl), // Left Control
         ]
 
         for (keyCode, mask) in modifierKeyCodes where flags.contains(mask) {
@@ -111,47 +123,138 @@ public final class KeyMonitor {
     }
 
     /// Starts monitoring keyboard events.
-    /// Monitors are installed regardless of permission state; events of other
-    /// apps only start flowing once Input Monitoring is granted.
+    /// Returns false if permissions are not granted or tap creation fails.
     @discardableResult
     public func start() -> Bool {
-        guard !self.isRunning else { return true }
+        self.lock.lock()
+        defer { self.lock.unlock() }
 
-        self.globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: Self.monitoredEvents) { [weak self] event in
-            MainActor.assumeIsolated {
-                self?.handle(event)
-            }
+        guard !self._isRunning else { return true }
+
+        let eventMask: CGEventMask =
+            (1 << CGEventType.keyDown.rawValue) |
+            (1 << CGEventType.keyUp.rawValue) |
+            (1 << CGEventType.flagsChanged.rawValue)
+
+        let refcon = Unmanaged.passUnretained(self).toOpaque()
+
+        guard let tap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .listenOnly,
+            eventsOfInterest: eventMask,
+            callback: Self.eventCallback,
+            userInfo: refcon)
+        else {
+            return false
         }
 
-        self.localMonitor = NSEvent.addLocalMonitorForEvents(matching: Self.monitoredEvents) { [weak self] event in
-            MainActor.assumeIsolated {
-                self?.handle(event)
-            }
-            return event
+        self.eventTap = tap
+
+        guard let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0) else {
+            self.eventTap = nil
+            return false
         }
 
-        self.isRunning = self.globalMonitor != nil
-        return self.isRunning
+        self.runLoopSource = source
+        self._isRunning = true
+
+        let thread = Thread { [weak self] in
+            guard let self else { return }
+
+            let runLoop = CFRunLoopGetCurrent()
+            self.lock.withLock {
+                self.runLoop = runLoop
+            }
+
+            CFRunLoopAddSource(runLoop, source, .commonModes)
+            CGEvent.tapEnable(tap: tap, enable: true)
+
+            CFRunLoopRun()
+
+            CFRunLoopRemoveSource(runLoop, source, .commonModes)
+        }
+
+        thread.name = "KeyMonitor"
+        thread.qualityOfService = .userInteractive
+        self.monitorThread = thread
+        thread.start()
+
+        return true
     }
 
     /// Stops monitoring keyboard events.
     public func stop() {
-        if let globalMonitor = self.globalMonitor {
-            NSEvent.removeMonitor(globalMonitor)
-            self.globalMonitor = nil
+        self.lock.lock()
+
+        guard self._isRunning else {
+            self.lock.unlock()
+            return
         }
-        if let localMonitor = self.localMonitor {
-            NSEvent.removeMonitor(localMonitor)
-            self.localMonitor = nil
+
+        self._isRunning = false
+
+        // Capture references before clearing (to use after unlock)
+        let tap = self.eventTap
+        let runLoop = self.runLoop
+
+        // Clear all state inside lock to prevent race conditions
+        self.monitorThread = nil
+        self.eventTap = nil
+        self.runLoopSource = nil
+        self.runLoop = nil
+
+        self.lock.unlock()
+
+        // Safe to use local copies outside lock
+        if let tap {
+            CGEvent.tapEnable(tap: tap, enable: false)
         }
-        self.isRunning = false
+        if let runLoop {
+            CFRunLoopStop(runLoop)
+        }
     }
 
-    // MARK: - Event Handling
+    // MARK: - Event Callback
 
-    private func handle(_ event: NSEvent) {
+    private static let eventCallback: CGEventTapCallBack = { _, type, event, refcon in
+        guard let refcon else { return Unmanaged.passUnretained(event) }
+
+        let monitor = Unmanaged<KeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
+
+        // Handle tap disabled event with rate limiting
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            let reason = type == .tapDisabledByTimeout ? "timeout" : "user input"
+            let now = Date()
+
+            // Check if we're re-enabling too frequently (possible system issue)
+            if let lastTime = monitor.lastReenableTime,
+               now.timeIntervalSince(lastTime) < KeyMonitor.reenableWindowSeconds
+            {
+                monitor.reenableCount += 1
+                if monitor.reenableCount > KeyMonitor.maxReenableAttempts {
+                    print(
+                        "[Keypress] ERROR: Event tap repeatedly disabled " +
+                            "(\(monitor.reenableCount)x in \(KeyMonitor.reenableWindowSeconds)s), stopping")
+                    return Unmanaged.passUnretained(event)
+                }
+            } else {
+                monitor.reenableCount = 1
+            }
+            monitor.lastReenableTime = now
+
+            print("[Keypress] WARNING: Event tap was disabled by system (\(reason)), re-enabling...")
+            if let tap = monitor.eventTap {
+                CGEvent.tapEnable(tap: tap, enable: true)
+            }
+            return Unmanaged.passUnretained(event)
+        }
+
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        let modifiers = event.flags
+
         let eventType: KeyEvent.EventType
-        switch event.type {
+        switch type {
         case .keyDown:
             eventType = .keyDown
         case .keyUp:
@@ -159,19 +262,19 @@ public final class KeyMonitor {
         case .flagsChanged:
             eventType = .flagsChanged
         default:
-            return
+            return Unmanaged.passUnretained(event)
         }
 
-        let keyCode = Int64(event.keyCode)
-        let modifiers = event.modifierFlags
+        let keyEvent = KeyEvent(
+            type: eventType,
+            keyCode: keyCode,
+            modifiers: modifiers)
 
-        // `characters` is only defined for key events; reading it on a
-        // flagsChanged event raises.
-        let character = eventType == .flagsChanged ? nil : event.characters
+        // Get symbol with current keyboard layout support
+        let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: modifiers, event: event)
+        monitor.eventHandler(keyEvent, symbol)
 
-        let keyEvent = KeyEvent(type: eventType, keyCode: keyCode, modifiers: modifiers)
-        let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: modifiers, character: character)
-        self.eventHandler(keyEvent, symbol)
+        return Unmanaged.passUnretained(event)
     }
 }
 
@@ -260,7 +363,7 @@ public enum KeyCodeMapper {
         0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5B, 0x5C,
     ]
 
-    /// Fallback US QWERTY mapping for when the event carries a control character (Ctrl pressed).
+    /// Fallback US QWERTY mapping for when CGEvent returns control characters (Ctrl pressed).
     private static let fallbackCharacters: [Int64: String] = [
         // Letters (US QWERTY)
         0x00: "A", 0x0B: "B", 0x08: "C", 0x02: "D", 0x0E: "E", 0x03: "F",
@@ -283,13 +386,9 @@ public enum KeyCodeMapper {
 
     // MARK: - Public Methods
 
-    /// Returns the symbol for a given keycode, using the event's character for accurate representation.
+    /// Returns the symbol for a given keycode, using CGEvent for accurate character representation.
     /// This method respects the current keyboard layout (e.g., Russian, German, etc.).
-    public static func symbol(
-        for keyCode: Int64,
-        modifiers: NSEvent.ModifierFlags = [],
-        character: String? = nil) -> KeySymbol?
-    {
+    public static func symbol(for keyCode: Int64, modifiers: CGEventFlags = [], event: CGEvent? = nil) -> KeySymbol? {
         // Check modifier keys first
         if let modifier = modifierKeys[keyCode] {
             return modifier
@@ -300,12 +399,12 @@ public enum KeyCodeMapper {
             return special
         }
 
-        // For character keys, use the character the event carries
+        // For character keys, try to get the actual character from CGEvent
         if self.characterKeycodes.contains(keyCode) {
-            if let character, let displayable = Self.displayableCharacter(character) {
-                return KeySymbol(id: "key-\(keyCode)", display: displayable.uppercased())
+            if let event, let character = Self.extractCharacter(from: event) {
+                return KeySymbol(id: "key-\(keyCode)", display: character.uppercased())
             }
-            // Fallback to US QWERTY when the event carries control chars (Ctrl pressed)
+            // Fallback to US QWERTY when CGEvent returns control chars (Ctrl pressed)
             if let fallback = fallbackCharacters[keyCode] {
                 return KeySymbol(id: "key-\(keyCode)", display: fallback)
             }
@@ -315,9 +414,18 @@ public enum KeyCodeMapper {
         return nil
     }
 
-    /// Returns the character if it can be shown on a keycap.
+    /// Extracts the character from a CGEvent using the current keyboard layout.
     /// Returns nil for control characters (when Ctrl is pressed).
-    private static func displayableCharacter(_ string: String) -> String? {
+    private static func extractCharacter(from event: CGEvent) -> String? {
+        var length = 0
+        event.keyboardGetUnicodeString(maxStringLength: 0, actualStringLength: &length, unicodeString: nil)
+
+        guard length > 0 else { return nil }
+
+        var buffer = [UniChar](repeating: 0, count: length)
+        event.keyboardGetUnicodeString(maxStringLength: length, actualStringLength: &length, unicodeString: &buffer)
+
+        let string = String(utf16CodeUnits: buffer, count: length)
         guard !string.isEmpty else { return nil }
 
         // Filter out control characters (ASCII 0-31) - these occur when Ctrl is pressed
@@ -338,19 +446,19 @@ public enum KeyCodeMapper {
     }
 
     /// Extracts active modifier symbols from event flags.
-    public static func activeModifiers(from flags: NSEvent.ModifierFlags) -> [KeySymbol] {
+    public static func activeModifiers(from flags: CGEventFlags) -> [KeySymbol] {
         var modifiers: [KeySymbol] = []
 
-        if flags.contains(.control) {
+        if flags.contains(.maskControl) {
             modifiers.append(KeySymbol(id: "control", display: "⌃", isModifier: true))
         }
-        if flags.contains(.option) {
+        if flags.contains(.maskAlternate) {
             modifiers.append(KeySymbol(id: "option", display: "⌥", isModifier: true))
         }
-        if flags.contains(.shift) {
+        if flags.contains(.maskShift) {
             modifiers.append(KeySymbol(id: "shift", display: "⇧", isModifier: true))
         }
-        if flags.contains(.command) {
+        if flags.contains(.maskCommand) {
             modifiers.append(KeySymbol(id: "command", display: "⌘", isModifier: true))
         }
 

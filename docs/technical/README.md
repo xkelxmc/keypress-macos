@@ -16,7 +16,7 @@
 
 ### Input Monitoring
 
-- `NSEvent` global + local monitors for keyboard events (no Accessibility APIs)
+- `CGEvent` tap (listen-only) for global keyboard events
 - Requires the Input Monitoring permission (sandbox-compatible, via `IOHIDRequestAccess`)
 
 ### Overlay Window

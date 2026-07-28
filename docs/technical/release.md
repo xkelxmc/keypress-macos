@@ -125,10 +125,10 @@ Xcode project, so the local app and the store artifact cannot drift apart.
 
 ## Sandbox notes
 
-- The app runs sandboxed (required for the App Store). Key monitoring uses
-  `NSEvent` global and local monitors, which work in the sandbox once the user
-  grants **Input Monitoring** (System Settings → Privacy & Security), requested
-  via `IOHIDRequestAccess`.
+- The app runs sandboxed (required for the App Store). Key monitoring uses a
+  listen-only CGEvent tap, which works in the sandbox once the user grants
+  **Input Monitoring** (System Settings → Privacy & Security), requested via
+  `IOHIDRequestAccess`.
 - No Accessibility API is used anywhere: App Review rejects that under
   guideline 2.4.5. Auto monitor selection uses the pointer's screen instead.
 - A locally built (`bun run start`) copy is unsandboxed and uses the same

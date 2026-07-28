@@ -135,7 +135,7 @@ Modifiers show **icon + label** stacked vertically:
 ### Keyboard Layout Support
 
 - **Respects current keyboard layout** — typing in Russian shows Cyrillic, German shows umlauts, etc.
-- Characters extracted from the key event at runtime, not hardcoded English
+- Characters extracted from CGEvent at runtime, not hardcoded English
 - Shift modifier affects displayed character (e.g., `!` instead of `1`)
 
 ## Timing
