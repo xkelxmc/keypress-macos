@@ -5,7 +5,8 @@ GitHub Actions, which builds a sandboxed universal (arm64 + x86_64) app through
 the Xcode project generated from `project.yml`, signs it for App Store
 distribution, exports a `.pkg`, and uploads it to App Store Connect. Attaching
 the build to a version and submitting for review is done manually in App Store
-Connect.
+Connect. For canonical `vX.Y.Z` tags, the same workflow also publishes a GitHub
+Release whose notes are copied from that version's `CHANGELOG.md` section.
 
 ## One-time setup (Apple Developer account holder)
 
@@ -124,6 +125,8 @@ git tag v1.1.0-build.9 && git push origin v1.1.0-build.9
 The workflow accepts both `v<version>` and `v<version>-build.<n>`. Build numbers
 never reset when the marketing version changes — they grow across the whole
 project, so a re-upload and a new version both just take the next one.
+Build-suffixed tags upload the corrected App Store build without creating a
+duplicate GitHub Release.
 
 Never move an existing tag with `git tag -f`: it burns App Store build numbers
 and makes the history untraceable. `workflow_dispatch` on release.yml does the
@@ -145,6 +148,10 @@ same job without any tag, reusing whatever `version.env` holds on `main`.
    `swift build` + `codesign` + `productbuild` pipeline.
 4. `Scripts/upload_appstore.sh` — validates and uploads via `altool` with the
    App Store Connect API key.
+5. For a canonical `vX.Y.Z` tag, extracts the matching changelog section and
+   creates the GitHub Release. Workflow reruns are idempotent and keep an
+   existing release unchanged; build-suffixed tags and manual dispatches skip
+   this step.
 
 Dev builds (`bun run start` → `Scripts/package_app.sh`) go through the same
 Xcode project, so the local app and the store artifact cannot drift apart.

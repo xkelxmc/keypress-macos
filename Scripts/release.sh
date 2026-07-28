@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Cut a release. Finalizes CHANGELOG.md, bumps version.env, commits, tags,
 # and pushes. The tag push triggers .github/workflows/release.yml, which
-# builds, signs, and uploads the build to App Store Connect.
+# builds, signs, uploads the build to App Store Connect, and publishes the
+# GitHub Release from the matching changelog section.
 #
 # Usage: ./Scripts/release.sh <version>   (e.g. 0.2.0)
 
@@ -73,6 +74,6 @@ fi
 gh run watch --exit-status "$RUN_ID"
 
 echo ""
-echo "==> Build ${VERSION} uploaded to App Store Connect."
+echo "==> Build ${VERSION} uploaded to App Store Connect and GitHub Release published."
 echo "    Next: attach the build to the version in App Store Connect and submit for review:"
 echo "    https://appstoreconnect.apple.com/apps"

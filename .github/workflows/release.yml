@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: release
@@ -123,6 +123,36 @@ jobs:
         run: |
           source version.env
           ./Scripts/upload_appstore.sh "Keypress-${MARKETING_VERSION}.pkg"
+
+      - name: Publish GitHub Release
+        if: github.event_name == 'push' && !contains(github.ref_name, '-build.')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source version.env
+          NOTES_FILE="$RUNNER_TEMP/github-release-notes.md"
+          CHANGELOG_HEADING="## [${MARKETING_VERSION}]"
+
+          awk -v heading="$CHANGELOG_HEADING" '
+            index($0, heading) == 1 { capture = 1; next }
+            capture && /^## / { exit }
+            capture { print }
+          ' CHANGELOG.md > "$NOTES_FILE"
+
+          if [[ ! -s "$NOTES_FILE" ]]; then
+            echo "No changelog notes found for ${MARKETING_VERSION}" >&2
+            exit 1
+          fi
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "GitHub Release ${GITHUB_REF_NAME} already exists; skipping"
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --verify-tag \
+              --title "Keypress ${MARKETING_VERSION}" \
+              --notes-file "$NOTES_FILE" \
+              --latest
+          fi
 
       - name: Clean up keychain
         if: always()

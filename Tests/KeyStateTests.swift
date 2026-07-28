@@ -235,6 +235,49 @@ struct KeyStateTests {
     }
 }
 
+@Suite("Physical Modifier Sides")
+struct PhysicalModifierSideTests {
+    private let leftShift = KeySymbol(id: "shift-left", display: "⇧", isModifier: true)
+    private let rightShift = KeySymbol(id: "shift-right", display: "⇧", isModifier: true)
+
+    @Test("Releasing one side preserves the other in every state machine")
+    @MainActor
+    func independentSides() {
+        let states: [any KeyStateProtocol] = [
+            KeyState(),
+            SingleKeyState(),
+            StackedHistoryState(),
+        ]
+
+        for state in states {
+            state.processEvent(
+                KeyEvent(
+                    type: .flagsChanged,
+                    keyCode: 0x38,
+                    modifiers: .maskShift,
+                    modifierIsPressed: true),
+                symbol: self.leftShift)
+            state.processEvent(
+                KeyEvent(
+                    type: .flagsChanged,
+                    keyCode: 0x3C,
+                    modifiers: .maskShift,
+                    modifierIsPressed: true),
+                symbol: self.rightShift)
+            state.processEvent(
+                KeyEvent(
+                    type: .flagsChanged,
+                    keyCode: 0x38,
+                    modifiers: .maskShift,
+                    modifierIsPressed: false),
+                symbol: self.leftShift)
+
+            #expect(!state.physicallyPressedKeys.contains(self.leftShift.id))
+            #expect(state.physicallyPressedKeys.contains(self.rightShift.id))
+        }
+    }
+}
+
 @Suite("PressedKey Tests")
 struct PressedKeyTests {
     @Test("Modifier PressedKey uses stable ID from symbol")
@@ -726,5 +769,244 @@ struct KeyStateMaxDisplayedKeysTests {
         }
 
         #expect(state.pressedKeys.count == 3)
+    }
+}
+
+@Suite("KeyState Regression Tests")
+struct KeyStateRegressionTests {
+    @Test("Non-duplicated regular key expires by its actual entry ID")
+    @MainActor
+    func nonDuplicateTimeout() async {
+        let state = KeyState()
+        state.duplicateLetters = false
+        state.keyTimeout = 0.01
+        let symbol = KeySymbol(id: "key-a", display: "A")
+
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: []),
+            symbol: symbol)
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: []),
+            symbol: symbol)
+
+        try? await Task.sleep(for: .milliseconds(30))
+        #expect(state.pressedKeys.isEmpty)
+    }
+
+    @Test("Eviction removes stale modifier associations")
+    @MainActor
+    func evictionCleansModifierAssociation() {
+        let state = KeyState()
+        state.maxDisplayedKeys = 3
+        let command = KeySymbol(id: "command-left", display: "⌘", isModifier: true)
+
+        state.processEvent(
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            symbol: command)
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: .maskCommand),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+        state.processEvent(
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: []),
+            symbol: command)
+
+        for index in 1...3 {
+            state.processEvent(
+                KeyEvent(type: .keyDown, keyCode: Int64(index), modifiers: []),
+                symbol: KeySymbol(id: "key-\(index)", display: "\(index)"))
+        }
+
+        #expect(!state.pressedKeys.contains { $0.symbol.id == command.id })
+    }
+
+    @Test("Hidden modifiers are promoted only when a key forms a combination")
+    @MainActor
+    func hiddenModifierPromotion() {
+        let state = KeyState()
+        state.filters.showStandaloneModifiers = false
+        let command = KeySymbol(id: "command-left", display: "⌘", isModifier: true)
+
+        state.processEvent(
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            symbol: command)
+        #expect(state.pressedKeys.isEmpty)
+
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: .maskCommand),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+
+        #expect(state.pressedKeys.map(\.symbol.display) == ["⌘", "A"])
+    }
+}
+
+@Suite("StackedHistoryState Tests")
+struct StackedHistoryStateTests {
+    @Test("Continuous typing groups into one text row")
+    @MainActor
+    func continuousText() {
+        let state = StackedHistoryState()
+        let start = Date()
+
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: [], timestamp: start),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+        state.processEvent(
+            KeyEvent(
+                type: .keyDown,
+                keyCode: 1,
+                modifiers: [],
+                timestamp: start.addingTimeInterval(0.2)),
+            symbol: KeySymbol(id: "key-s", display: "S"))
+
+        #expect(state.entries.count == 1)
+        #expect(state.entries[0].text == "AS")
+    }
+
+    @Test("Space joins the current text fragment")
+    @MainActor
+    func spaceJoinsText() {
+        let state = StackedHistoryState()
+        let start = Date()
+
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: [], timestamp: start),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+        state.processEvent(
+            KeyEvent(
+                type: .keyDown,
+                keyCode: 0x31,
+                modifiers: [],
+                timestamp: start.addingTimeInterval(0.1)),
+            symbol: KeySymbol(id: "space", display: "␣", isSpecial: true))
+        state.processEvent(
+            KeyEvent(
+                type: .keyDown,
+                keyCode: 1,
+                modifiers: [],
+                timestamp: start.addingTimeInterval(0.2)),
+            symbol: KeySymbol(id: "key-b", display: "B"))
+
+        #expect(state.entries[0].text == "A B")
+    }
+
+    @Test("Typing gap starts a new text fragment")
+    @MainActor
+    func typingGap() {
+        let state = StackedHistoryState()
+        let start = Date()
+
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: [], timestamp: start),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+        state.processEvent(
+            KeyEvent(
+                type: .keyDown,
+                keyCode: 1,
+                modifiers: [],
+                timestamp: start.addingTimeInterval(0.7)),
+            symbol: KeySymbol(id: "key-b", display: "B"))
+
+        #expect(state.entries.map(\.text) == ["A", "B"])
+    }
+
+    @Test("A filtered special key closes the current text fragment")
+    @MainActor
+    func filteredSpecialClosesText() {
+        var settings = KeyboardSettings()
+        settings.filters.showSpecialKeys = false
+        let state = StackedHistoryState(settings: settings)
+        let start = Date()
+
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: [], timestamp: start),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+        state.processEvent(
+            KeyEvent(
+                type: .keyDown,
+                keyCode: 0x24,
+                modifiers: [],
+                timestamp: start.addingTimeInterval(0.1)),
+            symbol: KeySymbol(id: "return", display: "↩", isSpecial: true))
+        state.processEvent(
+            KeyEvent(
+                type: .keyDown,
+                keyCode: 1,
+                modifiers: [],
+                timestamp: start.addingTimeInterval(0.2)),
+            symbol: KeySymbol(id: "key-b", display: "B"))
+
+        #expect(state.entries.map(\.text) == ["A", "B"])
+    }
+
+    @Test("Modifiers and key share one shortcut row")
+    @MainActor
+    func shortcutRow() {
+        var settings = KeyboardSettings()
+        settings.filters.showStandaloneModifiers = false
+        let state = StackedHistoryState(settings: settings)
+
+        state.processEvent(
+            KeyEvent(type: .flagsChanged, keyCode: 0x37, modifiers: .maskCommand),
+            symbol: KeySymbol(id: "command-left", display: "⌘", isModifier: true))
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: .maskCommand),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+
+        #expect(state.entries.count == 1)
+        #expect(state.entries[0].keys.map(\.symbol.display) == ["⌘", "A"])
+        #expect(state.entries[0].text == nil)
+    }
+
+    @Test("Shortcuts-only mode rejects an unmodified key")
+    @MainActor
+    func shortcutsOnly() {
+        let state = StackedHistoryState(settings: KeyboardSettings(contentMode: .shortcutsOnly))
+
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0, modifiers: []),
+            symbol: KeySymbol(id: "key-a", display: "A"))
+
+        #expect(state.entries.isEmpty)
+    }
+
+    @Test("Stack limit counts rows")
+    @MainActor
+    func rowLimit() {
+        let state = StackedHistoryState(settings: KeyboardSettings(maxItems: 3))
+        let start = Date()
+
+        for index in 0..<5 {
+            state.processEvent(
+                KeyEvent(
+                    type: .keyDown,
+                    keyCode: Int64(index),
+                    modifiers: [],
+                    timestamp: start.addingTimeInterval(Double(index))),
+                symbol: KeySymbol(id: "key-\(index)", display: "\(index)"))
+        }
+
+        #expect(state.entries.count == 3)
+        #expect(state.entries.compactMap(\.text) == ["2", "3", "4"])
+    }
+
+    @Test("Text fragment is capped at 24 characters")
+    @MainActor
+    func textCap() {
+        let state = StackedHistoryState()
+        let start = Date()
+
+        for index in 0..<25 {
+            state.processEvent(
+                KeyEvent(
+                    type: .keyDown,
+                    keyCode: 0,
+                    modifiers: [],
+                    timestamp: start.addingTimeInterval(Double(index) * 0.01)),
+                symbol: KeySymbol(id: "key-a", display: "A"))
+        }
+
+        #expect(state.entries.count == 2)
+        #expect(state.entries[0].text?.count == 24)
+        #expect(state.entries[1].text == "A")
     }
 }

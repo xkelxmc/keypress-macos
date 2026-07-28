@@ -18,12 +18,20 @@ public struct KeyEvent: Sendable, Equatable {
     public let keyCode: Int64
     public let modifiers: CGEventFlags
     public let timestamp: Date
+    public let modifierIsPressed: Bool?
 
-    public init(type: EventType, keyCode: Int64, modifiers: CGEventFlags, timestamp: Date = Date()) {
+    public init(
+        type: EventType,
+        keyCode: Int64,
+        modifiers: CGEventFlags,
+        timestamp: Date = Date(),
+        modifierIsPressed: Bool? = nil)
+    {
         self.type = type
         self.keyCode = keyCode
         self.modifiers = modifiers
         self.timestamp = timestamp
+        self.modifierIsPressed = modifierIsPressed
     }
 }
 
@@ -60,6 +68,7 @@ public final class KeyMonitor: @unchecked Sendable {
     private var runLoopSource: CFRunLoopSource?
     private var runLoop: CFRunLoop?
     private var monitorThread: Thread?
+    private var generation: UInt64 = 0
     private let eventHandler: EventHandler
     private let lock = NSLock()
 
@@ -71,7 +80,16 @@ public final class KeyMonitor: @unchecked Sendable {
 
     private var _isRunning = false
     public var isRunning: Bool {
-        self.lock.withLock { self._isRunning }
+        self.lock.withLock {
+            guard self._isRunning,
+                  self.monitorThread != nil,
+                  self.runLoop != nil,
+                  let eventTap = self.eventTap
+            else {
+                return false
+            }
+            return CGEvent.tapIsEnabled(tap: eventTap)
+        }
     }
 
     // MARK: - Initialization
@@ -108,10 +126,10 @@ public final class KeyMonitor: @unchecked Sendable {
     public func emitCurrentModifiers() {
         let flags = Self.currentModifierFlags()
         let modifierKeyCodes: [(Int64, CGEventFlags)] = [
-            (0x37, .maskCommand), // Left Command
-            (0x38, .maskShift), // Left Shift
-            (0x3A, .maskAlternate), // Left Option
-            (0x3B, .maskControl), // Left Control
+            (0x37, .maskCommand),
+            (0x38, .maskShift),
+            (0x3A, .maskAlternate),
+            (0x3B, .maskControl),
         ]
 
         for (keyCode, mask) in modifierKeyCodes where flags.contains(mask) {
@@ -158,21 +176,35 @@ public final class KeyMonitor: @unchecked Sendable {
 
         self.runLoopSource = source
         self._isRunning = true
+        self.generation &+= 1
+        let generation = self.generation
 
         let thread = Thread { [weak self] in
             guard let self else { return }
 
             let runLoop = CFRunLoopGetCurrent()
-            self.lock.withLock {
+            let shouldRun = self.lock.withLock {
+                guard self._isRunning, self.generation == generation else {
+                    return false
+                }
                 self.runLoop = runLoop
+                CFRunLoopAddSource(runLoop, source, .commonModes)
+                CGEvent.tapEnable(tap: tap, enable: true)
+                return true
             }
-
-            CFRunLoopAddSource(runLoop, source, .commonModes)
-            CGEvent.tapEnable(tap: tap, enable: true)
+            guard shouldRun else { return }
 
             CFRunLoopRun()
 
             CFRunLoopRemoveSource(runLoop, source, .commonModes)
+            self.lock.withLock {
+                guard self.generation == generation else { return }
+                self._isRunning = false
+                self.eventTap = nil
+                self.runLoopSource = nil
+                self.runLoop = nil
+                self.monitorThread = nil
+            }
         }
 
         thread.name = "KeyMonitor"
@@ -193,12 +225,11 @@ public final class KeyMonitor: @unchecked Sendable {
         }
 
         self._isRunning = false
+        self.generation &+= 1
 
-        // Capture references before clearing (to use after unlock)
         let tap = self.eventTap
         let runLoop = self.runLoop
 
-        // Clear all state inside lock to prevent race conditions
         self.monitorThread = nil
         self.eventTap = nil
         self.runLoopSource = nil
@@ -206,7 +237,6 @@ public final class KeyMonitor: @unchecked Sendable {
 
         self.lock.unlock()
 
-        // Safe to use local copies outside lock
         if let tap {
             CGEvent.tapEnable(tap: tap, enable: false)
         }
@@ -222,12 +252,10 @@ public final class KeyMonitor: @unchecked Sendable {
 
         let monitor = Unmanaged<KeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
 
-        // Handle tap disabled event with rate limiting
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             let reason = type == .tapDisabledByTimeout ? "timeout" : "user input"
             let now = Date()
 
-            // Check if we're re-enabling too frequently (possible system issue)
             if let lastTime = monitor.lastReenableTime,
                now.timeIntervalSince(lastTime) < KeyMonitor.reenableWindowSeconds
             {
@@ -244,9 +272,7 @@ public final class KeyMonitor: @unchecked Sendable {
             monitor.lastReenableTime = now
 
             print("[Keypress] WARNING: Event tap was disabled by system (\(reason)), re-enabling...")
-            if let tap = monitor.eventTap {
-                CGEvent.tapEnable(tap: tap, enable: true)
-            }
+            monitor.reenableEventTap()
             return Unmanaged.passUnretained(event)
         }
 
@@ -269,12 +295,19 @@ public final class KeyMonitor: @unchecked Sendable {
             type: eventType,
             keyCode: keyCode,
             modifiers: modifiers)
-
-        // Get symbol with current keyboard layout support
         let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: modifiers, event: event)
         monitor.eventHandler(keyEvent, symbol)
 
         return Unmanaged.passUnretained(event)
+    }
+
+    private func reenableEventTap() {
+        let tap = self.lock.withLock {
+            self._isRunning ? self.eventTap : nil
+        }
+        if let tap {
+            CGEvent.tapEnable(tap: tap, enable: true)
+        }
     }
 }
 

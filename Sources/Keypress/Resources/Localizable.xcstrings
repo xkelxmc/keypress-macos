@@ -1,0 +1,2368 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "about.legal" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Rechtliches" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Legal" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Información legal" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mentions légales" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Правовая информация" } }
+      }
+    },
+    "about.privacy" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Datenschutz" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Privacidad" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Confidentialité" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Конфиденциальность" } }
+      }
+    },
+    "about.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Version, Datenschutz und rechtliche Informationen." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version, privacy, and legal information." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Versión, privacidad e información legal." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Version, confidentialité et informations légales." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Версия, конфиденциальность и правовая информация." } }
+      }
+    },
+    "about.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Über Keypress" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Acerca de" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "À propos" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "О приложении" } }
+      }
+    },
+    "action.cancel" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Abbrechen" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Annuler" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отмена" } }
+      }
+    },
+    "action.done" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Fertig" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Listo" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Terminé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Готово" } }
+      }
+    },
+    "action.reset" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zurücksetzen" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить" } }
+      }
+    },
+    "appearance.background" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Hintergrund" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Background" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Fondo" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Arrière-plan" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Фон" } }
+      }
+    },
+    "appearance.custom" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastenkategorien" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Key Categories" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Categorías de teclas" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Catégories de touches" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Категории клавиш" } }
+      }
+    },
+    "appearance.customize" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigene bearbeiten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Custom" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar tema personalizado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Modifier le thème personnalisé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настроить свою тему" } }
+      }
+    },
+    "appearance.fontFamily" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schriftfamilie" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Font Family" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Familia tipográfica" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Police" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Гарнитура" } }
+      }
+    },
+    "appearance.fontWeight" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schriftstärke" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Font Weight" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Grosor de fuente" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Graisse de police" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Насыщенность" } }
+      }
+    },
+    "appearance.opacity" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Deckkraft" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Opacity" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Opacidad" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Opacité" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Непрозрачность" } }
+      }
+    },
+    "appearance.size" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Größe" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Size" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tamaño" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Taille" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Размер" } }
+      }
+    },
+    "appearance.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur, Zeiger und Statusanzeige gestalten." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shape the keyboard, pointer, and status HUD." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Personaliza el teclado, el puntero y el indicador de estado." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Personnalisez le clavier, le pointeur et l’indicateur d’état." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройте клавиатуру, указатель и индикатор состояния." } }
+      }
+    },
+    "appearance.theme" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Design" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Theme" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tema" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Thème" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тема" } }
+      }
+    },
+    "appearance.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Erscheinungsbild" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Appearance" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Apariencia" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Apparence" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оформление" } }
+      }
+    },
+    "displays.connected" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verbundene Displays" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connected Displays" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pantallas conectadas" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écrans connectés" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Подключённые дисплеи" } }
+      }
+    },
+    "displays.edit" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Auf dem Bildschirm positionieren …" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Position on Screen…" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Colocar en la pantalla…" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Positionner à l’écran…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Расположить на экране…" } }
+      }
+    },
+    "displays.placement" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Platzierung" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Placement" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ubicación" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Emplacement" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Размещение" } }
+      }
+    },
+    "displays.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Legen Sie fest, wo das Overlay auf jedem Display erscheint." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose where each display shows the overlay." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige dónde aparece la superposición en cada pantalla." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez où la superposition apparaît sur chaque écran." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выберите положение оверлея для каждого дисплея." } }
+      }
+    },
+    "displays.target" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zieldisplay" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Display Target" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pantalla de destino" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écran cible" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Целевой дисплей" } }
+      }
+    },
+    "displays.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Bildschirme und Position" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Displays & Position" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pantallas y posición" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écrans et position" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дисплеи и позиция" } }
+      }
+    },
+    "general.enabled" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress aktiviert" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress Enabled" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Keypress activado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Keypress activé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Keypress включён" } }
+      }
+    },
+    "general.hud" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Statusanzeige" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Status HUD" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Indicador de estado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Indicateur d’état" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Индикатор состояния" } }
+      }
+    },
+    "general.language" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Sprache" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Langue" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Язык" } }
+      }
+    },
+    "general.launchAtLogin" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Beim Anmelden öffnen" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Launch at Login" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir al iniciar sesión" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ouvrir à la connexion" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Запускать при входе" } }
+      }
+    },
+    "general.permission" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Eingabeüberwachung" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Input Monitoring" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Monitorización de entrada" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Surveillance de l’entrée" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мониторинг ввода" } }
+      }
+    },
+    "general.reset" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Alle Einstellungen zurücksetzen …" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset All Settings…" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer todos los ajustes…" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser tous les réglages…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить все настройки…" } }
+      }
+    },
+    "general.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "App, Sprache, Berechtigungen und Statusmeldungen verwalten." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Control the app, language, permissions, and status feedback." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Controla la app, el idioma, los permisos y los avisos de estado." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Gérez l’app, la langue, les autorisations et les confirmations d’état." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Управление приложением, языком, разрешениями и статусом." } }
+      }
+    },
+    "general.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Allgemein" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "General" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ajustes generales" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Général" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Основные" } }
+      }
+    },
+    "font.monospaced" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Monospace" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Monospaced" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Monoespaciada" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Monospace" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Моноширинный" } }
+      }
+    },
+    "font.rounded" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Abgerundet" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rounded" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Redondeada" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Arrondie" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скруглённый" } }
+      }
+    },
+    "font.system" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "System" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sistema" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Système" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Системный" } }
+      }
+    },
+    "font.weight.bold" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Fett" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bold" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Negrita" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Gras" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Жирный" } }
+      }
+    },
+    "font.weight.medium" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Mittel" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Medium" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Medio" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Moyen" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Средний" } }
+      }
+    },
+    "font.weight.regular" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Standard" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Regular" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Normal" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Normal" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обычный" } }
+      }
+    },
+    "font.weight.semibold" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Halbfett" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Semibold" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Seminegrita" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Demi-gras" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Полужирный" } }
+      }
+    },
+    "hud.content.all" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Alle Tasten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "All Keys" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Todas las teclas" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Toutes les touches" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Все клавиши" } }
+      }
+    },
+    "hud.content.shortcuts" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Nur Kurzbefehle" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shortcuts Only" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Solo atajos" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Raccourcis uniquement" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Только сочетания" } }
+      }
+    },
+    "hud.keypress.off" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress aus" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress Off" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Keypress desactivado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Keypress désactivé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Keypress выключен" } }
+      }
+    },
+    "hud.keypress.on" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress ein" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress On" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Keypress activado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Keypress activé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Keypress включён" } }
+      }
+    },
+    "hud.pointer.off" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger aus" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer Off" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntero desactivado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur désactivé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Указатель выключен" } }
+      }
+    },
+    "hud.pointer.on" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger ein" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer On" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntero activado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur activé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Указатель включён" } }
+      }
+    },
+    "hud.positionSaved" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Position gespeichert" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Position Saved" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Posición guardada" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Position enregistrée" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Позиция сохранена" } }
+      }
+    },
+    "hud.secureInput" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur ausgeblendet — Sichere Eingabe" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard hidden — Secure Input" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclado oculto — Entrada segura" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clavier masqué — Saisie sécurisée" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиатура скрыта — Защищённый ввод" } }
+      }
+    },
+    "hud.size" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Overlay-Größe: %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Overlay Size: %@" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tamaño de superposición: %@" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Taille de la superposition : %@" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Размер оверлея: %@" } }
+      }
+    },
+    "keyboard.animation" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastenanimation" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Press Animation" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Animación de pulsación" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Animation des touches" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Анимация нажатия" } }
+      }
+    },
+    "keyboard.behavior" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verhalten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Behavior" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Comportamiento" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Comportement" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Поведение" } }
+      }
+    },
+    "keyboard.content" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Inhalt" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Content" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Contenido" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Contenu" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Содержимое" } }
+      }
+    },
+    "keyboard.filters" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Filter" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Filters" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Filtros" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Filtres" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Фильтры" } }
+      }
+    },
+    "keyboard.history" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verlauf" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Historique" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "История" } }
+      }
+    },
+    "keyboard.mode" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Anzeigemodus" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Display Mode" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo de visualización" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mode d’affichage" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Режим отображения" } }
+      }
+    },
+    "keyboard.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Legen Sie fest, welche Tasten erscheinen und wie sie sich verhalten." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose which keys appear and how they behave." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige qué teclas aparecen y cómo se comportan." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez les touches affichées et leur comportement." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выберите клавиши и их поведение." } }
+      }
+    },
+    "keyboard.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clavier" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиатура" } }
+      }
+    },
+    "language.system" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Systemstandard" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System Default" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Predeterminado del sistema" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Langue du système" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Как в системе" } }
+      }
+    },
+    "menu.enabled" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Aktiviert" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enabled" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Включено" } }
+      }
+    },
+    "menu.quit" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress beenden" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quit Keypress" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Salir de Keypress" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Quitter Keypress" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Завершить Keypress" } }
+      }
+    },
+    "menu.settings" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Einstellungen…" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings…" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ajustes…" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réglages…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки…" } }
+      }
+    },
+    "keyboard.enabled" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur-Overlay" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard Overlay" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Superposición de teclado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Superposition du clavier" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оверлей клавиатуры" } }
+      }
+    },
+    "keyboard.maxKeys" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Maximale Tastenanzahl" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Maximum Keys" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Máximo de teclas" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nombre maximal de touches" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Максимум клавиш" } }
+      }
+    },
+    "keyboard.timeout" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastenanzeigedauer" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Key Timeout" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tiempo de tecla" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Durée d’affichage" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Время показа клавиши" } }
+      }
+    },
+    "pointer.behavior" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verhalten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Behavior" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Comportamiento" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Comportement" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Поведение" } }
+      }
+    },
+    "pointer.effect" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Effekt" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Effect" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Efecto" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Effet" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Эффект" } }
+      }
+    },
+    "pointer.enabled" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger-Overlay" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer Overlay" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Superposición del puntero" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Superposition du pointeur" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оверлей указателя" } }
+      }
+    },
+    "pointer.events" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ereignisse" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Events" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Eventos" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Événements" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "События" } }
+      }
+    },
+    "pointer.events.minimum" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Für diesen Sichtbarkeitsmodus muss mindestens ein Ereignis aktiviert bleiben." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep at least one event enabled for this visibility mode." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mantén al menos un evento activado para este modo de visibilidad." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Conservez au moins un événement activé pour ce mode de visibilité." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Для этого режима видимости должно оставаться включённым хотя бы одно событие." } }
+      }
+    },
+    "pointer.leftClick" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Primärklick" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Primary Click" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Clic principal" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clic principal" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Основной клик" } }
+      }
+    },
+    "pointer.rightClick" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Sekundärklick" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Secondary Click" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Clic secundario" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clic secondaire" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дополнительный клик" } }
+      }
+    },
+    "pointer.shape" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Form" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shape" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Forma" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Forme" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Форма" } }
+      }
+    },
+    "pointer.size" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Größe" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Size" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tamaño" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Taille" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Размер" } }
+      }
+    },
+    "pointer.visibility" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Sichtbarkeit" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Visibility" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Visibilidad" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Visibilité" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Видимость" } }
+      }
+    },
+    "position.center" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Mitte" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Center" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Centro" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Centre" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "По центру" } }
+      }
+    },
+    "position.editor.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress positionieren" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Positioning Keypress" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Posicionando Keypress" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Positionnement de Keypress" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Позиционирование Keypress" } }
+      }
+    },
+    "position.editor.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Ziehen Sie das Tastatur-Overlay und klicken Sie auf „Fertig“." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Drag the keyboard overlay, then click Done." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Arrastra la superposición del teclado y pulsa Listo." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Faites glisser la superposition du clavier, puis cliquez sur Terminé." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Перетащите оверлей клавиатуры и нажмите «Готово»." } }
+      }
+    },
+    "pointer.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegung, Klicks, Ziehen und Scrollen deutlich darstellen." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Make movement, clicks, dragging, and scrolling easy to follow." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Haz que el movimiento, los clics, el arrastre y el desplazamiento sean fáciles de seguir." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rendez les mouvements, clics, glissements et défilements faciles à suivre." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сделайте движение, клики, перетаскивание и прокрутку заметными." } }
+      }
+    },
+    "pointer.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntero" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Указатель" } }
+      }
+    },
+    "shortcuts.conflictHint" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Konflikte mit vorhandenen Kurzbefehlen können nicht aufgezeichnet werden." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Conflicting shortcuts cannot be recorded." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se pueden grabar atajos que entren en conflicto." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les raccourcis en conflit ne peuvent pas être enregistrés." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нельзя назначить конфликтующие сочетания." } }
+      }
+    },
+    "shortcuts.content" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Inhaltsmodus wechseln" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Switch Content Mode" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cambiar modo de contenido" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Changer le mode de contenu" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сменить режим содержимого" } }
+      }
+    },
+    "shortcuts.content.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zwischen allen Tasten und nur Kurzbefehlen wechseln." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Switch between all keys and shortcuts only." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Alterna entre todas las teclas y solo los atajos." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Alterner entre toutes les touches et les raccourcis uniquement." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переключаться между всеми клавишами и только сочетаниями." } }
+      }
+    },
+    "shortcuts.duplicateConflict" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Bereits einer anderen Keypress-Aktion zugewiesen." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Already assigned to another Keypress action." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ya está asignado a otra acción de Keypress." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Déjà attribué à une autre action Keypress." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Уже назначено другому действию Keypress." } }
+      }
+    },
+    "shortcuts.global" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Globale Kurzbefehle" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Global Shortcuts" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajos globales" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Raccourcis globaux" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Глобальные сочетания" } }
+      }
+    },
+    "shortcuts.hint" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Kurzbefehle verwenden physische Tastenpositionen und funktionieren in jeder App." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shortcuts use physical key positions and work in every app." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Los atajos usan posiciones físicas de teclas y funcionan en todas las apps." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les raccourcis utilisent la position physique des touches et fonctionnent dans toutes les apps." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сочетания используют физическое расположение клавиш и работают во всех приложениях." } }
+      }
+    },
+    "shortcuts.invalidConflict" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verwenden Sie eine Taste mit mindestens einer Sondertaste." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Use a key with at least one modifier." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Usa una tecla con al menos un modificador." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Utilisez une touche avec au moins une touche de modification." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Используйте клавишу хотя бы с одним модификатором." } }
+      }
+    },
+    "shortcuts.reservedConflict" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Dieser Kurzbefehl ist von macOS reserviert." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This shortcut is reserved by macOS." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Este atajo está reservado por macOS." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ce raccourci est réservé par macOS." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Это сочетание зарезервировано macOS." } }
+      }
+    },
+    "shortcuts.pointer" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger umschalten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Toggle Pointer" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar o desactivar puntero" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activer ou désactiver le pointeur" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переключить указатель" } }
+      }
+    },
+    "shortcuts.pointer.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Das Zeiger-Overlay aktivieren oder deaktivieren." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enable or disable the pointer overlay." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activa o desactiva la superposición del puntero." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activer ou désactiver la superposition du pointeur." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Включить или выключить оверлей указателя." } }
+      }
+    },
+    "shortcuts.position" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Position bearbeiten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Position" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar posición" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Modifier la position" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Изменить позицию" } }
+      }
+    },
+    "shortcuts.position.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Den Positionierungseditor auf dem Bildschirm öffnen." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open the on-screen positioning editor." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abre el editor de posición en pantalla." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ouvrir l’éditeur de position à l’écran." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть экранный редактор позиции." } }
+      }
+    },
+    "shortcuts.size.decrease" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Overlay verkleinern" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Decrease Overlay Size" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Reducir superposición" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réduire la superposition" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Уменьшить оверлей" } }
+      }
+    },
+    "shortcuts.size.decrease.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zur nächstkleineren Tastaturgröße wechseln." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Move to the next smaller keyboard size." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cambia al siguiente tamaño de teclado más pequeño." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Passer à la taille de clavier inférieure." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переключиться на меньший размер клавиатуры." } }
+      }
+    },
+    "shortcuts.size.increase" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Overlay vergrößern" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Increase Overlay Size" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Aumentar superposición" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Agrandir la superposition" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Увеличить оверлей" } }
+      }
+    },
+    "shortcuts.size.increase.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zur nächstgrößeren Tastaturgröße wechseln." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Move to the next larger keyboard size." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cambia al siguiente tamaño de teclado más grande." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Passer à la taille de clavier supérieure." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переключиться на больший размер клавиатуры." } }
+      }
+    },
+    "shortcuts.toggle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress umschalten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Toggle Keypress" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar o desactivar Keypress" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activer ou désactiver Keypress" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переключить Keypress" } }
+      }
+    },
+    "shortcuts.toggle.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Alle Visualisierungen aktivieren oder deaktivieren." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enable or disable all visualization." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activa o desactiva toda la visualización." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activer ou désactiver toutes les visualisations." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Включить или выключить всю визуализацию." } }
+      }
+    },
+    "shortcuts.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Globale Kurzbefehle für häufige Aktionen festlegen." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record shortcuts for commands you use anywhere." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Graba atajos para comandos que uses en cualquier app." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Enregistrez des raccourcis utilisables dans toutes les apps." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Назначьте глобальные сочетания для частых команд." } }
+      }
+    },
+    "shortcuts.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Kurzbefehle" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shortcuts" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajos" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Raccourcis" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сочетания клавиш" } }
+      }
+    },
+    "sidebar.about" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Über Keypress" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Acerca de" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "À propos" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "О приложении" } }
+      }
+    },
+    "sidebar.appearance" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Erscheinungsbild" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Appearance" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Apariencia" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Apparence" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оформление" } }
+      }
+    },
+    "sidebar.displays" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Bildschirme und Position" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Displays & Position" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pantallas y posición" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écrans et position" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дисплеи и позиция" } }
+      }
+    },
+    "sidebar.general" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Allgemein" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "General" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ajustes generales" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Général" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Основные" } }
+      }
+    },
+    "sidebar.keyboard" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clavier" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиатура" } }
+      }
+    },
+    "sidebar.pointer" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntero" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Указатель" } }
+      }
+    },
+    "sidebar.shortcuts" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Kurzbefehle" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shortcuts" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajos" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Raccourcis" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сочетания" } }
+      }
+    },
+    "size.large" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Groß" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Large" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Grande" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Grande" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Большой" } }
+      }
+    },
+    "size.medium" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Mittel" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Medium" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mediano" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Moyenne" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Средний" } }
+      }
+    },
+    "size.small" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Klein" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Small" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pequeño" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Petite" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Маленький" } }
+      }
+    },
+    "theme.custom" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigene" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Custom" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Personalizado" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Personnalisé" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Своя" } }
+      }
+    },
+    "theme.system" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Systemdesign" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sistema" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Système" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Системная" } }
+      }
+    },
+    "about.copyright" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "© 2025–2026 Ilya Zhidkov" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "© 2025–2026 Ilya Zhidkov" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "© 2025–2026 Ilya Zhidkov" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "© 2025–2026 Ilya Zhidkov" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "© 2025–2026 Ilya Zhidkov" } }
+    } },
+    "about.diagnostics.detail" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Exportieren Sie für den Support eine lokale Momentaufnahme von System und Einstellungen. Sie enthält niemals Eingabeinhalte, Zeigerkoordinaten, Pfade, Benutzernamen oder Display-IDs." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Export a local system and settings snapshot for support. It never includes input content, pointer coordinates, paths, usernames, or display identifiers." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Exporta una instantánea local del sistema y los ajustes para soporte. Nunca incluye contenido introducido, coordenadas del puntero, rutas, nombres de usuario ni identificadores de pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Exportez un instantané local du système et des réglages pour l’assistance. Il ne contient jamais de saisies, coordonnées du pointeur, chemins, noms d’utilisateur ni identifiants d’écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Экспортируйте локальный снимок системы и настроек для поддержки. В нём никогда нет содержимого ввода, координат указателя, путей, имён пользователей или идентификаторов дисплеев." } }
+    } },
+    "about.diagnostics.export" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Diagnosebericht exportieren…" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Export Diagnostic Report…" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar informe de diagnóstico…" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Exporter le rapport de diagnostic…" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Экспортировать отчёт диагностики…" } }
+    } },
+    "about.diagnostics.failed" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Der Diagnosebericht konnte nicht gespeichert werden." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "The diagnostic report could not be saved." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "No se pudo guardar el informe de diagnóstico." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Le rapport de diagnostic n’a pas pu être enregistré." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось сохранить отчёт диагностики." } }
+    } },
+    "about.link.community" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "GitHub-Community" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "GitHub Community" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Comunidad de GitHub" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Communauté GitHub" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сообщество на GitHub" } }
+    } },
+    "about.link.creator" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Erstellt von xkelxmc" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Created by xkelxmc" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Creado por xkelxmc" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Créé par xkelxmc" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Автор — xkelxmc" } }
+    } },
+    "about.link.issue" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Problem melden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Report an Issue" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Informar de un problema" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Signaler un problème" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сообщить о проблеме" } }
+    } },
+    "about.link.review" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress bewerten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Review Keypress" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Valorar Keypress" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Noter Keypress" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оценить Keypress" } }
+    } },
+    "about.link.review.soon" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Demnächst" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming Soon" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Próximamente" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Bientôt" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скоро" } }
+    } },
+    "about.link.website" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Website" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Website" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Sitio web" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Site web" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Веб-сайт" } }
+    } },
+    "about.links" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Links & Support" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Links & Support" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Enlaces y soporte" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Liens et assistance" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ссылки и поддержка" } }
+    } },
+    "about.privacy.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatureingaben werden lokal verarbeitet und niemals aufgezeichnet, gespeichert oder übertragen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard input is processed locally and is never recorded, stored, or transmitted." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La entrada del teclado se procesa localmente y nunca se graba, almacena ni transmite." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les saisies clavier sont traitées localement et ne sont jamais enregistrées, stockées ni transmises." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ввод с клавиатуры обрабатывается локально и никогда не записывается, не сохраняется и не передаётся." } }
+    } },
+    "about.privacy.detail" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress verarbeitet Tastatur- und Zeigerereignisse nur, um Einblendungen darzustellen. Tastenanschläge, eingegebener Text, Zeigerpositionen oder Nutzungsanalysen werden weder aufgezeichnet noch gespeichert oder übertragen. Alles läuft auf Ihrem Mac." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress processes keyboard and pointer events only to draw its overlays. It does not record, store, or transmit keystrokes, typed text, pointer positions, or usage analytics. Everything runs on your Mac." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Keypress procesa los eventos del teclado y del puntero solo para dibujar sus superposiciones. No graba, almacena ni transmite pulsaciones, texto escrito, posiciones del puntero ni analíticas de uso. Todo funciona en tu Mac." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Keypress traite les événements du clavier et du pointeur uniquement pour afficher ses superpositions. Les frappes, le texte saisi, les positions du pointeur et les données d’utilisation ne sont ni enregistrés, ni stockés, ni transmis. Tout s’exécute sur votre Mac." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Keypress обрабатывает события клавиатуры и указателя только для отрисовки оверлеев. Нажатия, введённый текст, положения указателя и аналитика использования не записываются, не сохраняются и не передаются. Всё работает на вашем Mac." } }
+    } },
+    "about.product.description" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress macht Tastenkürzel und Zeigeraktionen in Tutorials, Präsentationen, Live-Demos und Bildschirmaufnahmen leicht verständlich. Alles wird lokal dargestellt; Designs, Layout und Bildschirmpositionen lassen sich anpassen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress makes keyboard shortcuts and pointer actions easy to follow in tutorials, presentations, live demos, and screen recordings. Everything is rendered locally, with customizable themes, layouts, and display placement." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Keypress hace que los atajos de teclado y las acciones del puntero sean fáciles de seguir en tutoriales, presentaciones, demostraciones y grabaciones de pantalla. Todo se representa localmente y permite personalizar temas, diseños y posiciones en pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Keypress rend les raccourcis clavier et les actions du pointeur faciles à suivre dans les tutoriels, présentations, démonstrations et enregistrements d’écran. Tout est rendu localement, avec des thèmes, des dispositions et des positions d’écran personnalisables." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Keypress делает сочетания клавиш и действия указателя понятными в обучающих материалах, презентациях, демонстрациях и записях экрана. Всё отрисовывается локально, а темы, компоновка и положение на дисплеях настраиваются." } }
+    } },
+    "about.product.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Produktinformationen, Datenschutz, Neuigkeiten und Support." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Product information, privacy, release notes, and support." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Información del producto, privacidad, novedades y soporte." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Informations produit, confidentialité, nouveautés et assistance." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Информация о продукте, конфиденциальность, новинки и поддержка." } }
+    } },
+    "about.release.cursor.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigene Formen, Farben, Leuchten und reaktive Klick-, Zieh-, Bewegungs- und Scroll-Effekte." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Custom shapes, colors, glow, and responsive click, drag, motion, and scroll reactions." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Formas, colores, resplandor y reacciones a clics, arrastre, movimiento y desplazamiento." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Formes, couleurs, lueur et réactions aux clics, glissements, mouvements et défilements." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настраиваемые формы, цвета, свечение и реакции на клики, перетаскивание, движение и прокрутку." } }
+    } },
+    "about.release.cursor.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Cursor-Halo" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Cursor Halo" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Halo del cursor" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Halo du curseur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Подсветка курсора" } }
+    } },
+    "about.release.displays.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigen Sie einen Tastaturstatus auf ausgewählten Displays mit gespeicherten Positionen pro Bildschirm." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show one keyboard state across selected displays with positions saved per screen." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra un mismo estado del teclado en las pantallas elegidas con posiciones guardadas por pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Affichez un même état du clavier sur les écrans sélectionnés avec une position mémorisée par écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывайте одно состояние клавиатуры на выбранных дисплеях с отдельной сохранённой позицией для каждого." } }
+    } },
+    "about.release.displays.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Mehrere Displays" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Multi-Display" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Varias pantallas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Multi-écrans" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Несколько дисплеев" } }
+    } },
+    "about.release.history.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nutzen Sie den gestapelten Verlauf und bestimmen Sie sichtbare Modifikator-, Funktions- und Sondertasten." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Use stacked typing history and decide which modifiers, function, and special keys appear." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Usa el historial apilado y elige qué modificadores y teclas de función o especiales aparecen." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Utilisez l’historique empilé et choisissez les modificateurs, touches de fonction et touches spéciales affichés." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Используйте историю столбцом и выбирайте, какие модификаторы, функциональные и специальные клавиши показывать." } }
+    } },
+    "about.release.history.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Verlauf & Filter" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "History & Filters" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial y filtros" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Historique et filtres" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "История и фильтры" } }
+    } },
+    "about.release.position.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ziehen Sie das echte Tastatur-Overlay mit Einrasten, Zurücksetzen und Abbrechen an die gewünschte Stelle." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Drag the real keyboard overlay into place with snapping, reset, and cancel." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Arrastra la superposición real del teclado con ajuste, restablecimiento y cancelación." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Placez la véritable superposition du clavier par glissement, avec alignement, réinitialisation et annulation." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Перетаскивайте настоящий оверлей клавиатуры с привязкой, сбросом и отменой." } }
+    } },
+    "about.release.position.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Positionierung auf dem Bildschirm" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "On-Screen Positioning" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Posición en pantalla" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Positionnement à l’écran" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Позиционирование на экране" } }
+    } },
+    "about.release.reliability.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Robustere Behandlung von Tasten, Modifikatoren, Zeitlimits, Berechtigungen und Overlay-Zuständen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "More resilient key, modifier, timeout, permission, and overlay state handling." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Gestión más resistente de teclas, modificadores, tiempos, permisos y estados de superposición." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Gestion plus robuste des touches, modificateurs, délais, autorisations et états de superposition." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Более надёжная обработка клавиш, модификаторов, таймаутов, разрешений и состояния оверлея." } }
+    } },
+    "about.release.reliability.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zuverlässige Eingabe" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Reliable Input" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Entrada fiable" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Saisie fiable" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Надёжный ввод" } }
+    } },
+    "about.release.studio.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eine skalierbare native Seitenleiste, angeheftete Live-Vorschauen und unabhängige Tastatur- und Zeigerdesigns." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "A resizable native sidebar, pinned live previews, and independent keyboard and pointer themes." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Una barra lateral nativa redimensionable, vistas previas fijas y temas independientes para teclado y puntero." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Une barre latérale native redimensionnable, des aperçus épinglés et des thèmes indépendants pour le clavier et le pointeur." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Изменяемая нативная боковая панель, закреплённые живые превью и независимые темы клавиатуры и указателя." } }
+    } },
+    "about.release.studio.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Natives Studio" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Native Studio" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Estudio nativo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Studio natif" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нативная студия" } }
+    } },
+    "about.release.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Neu in 2.0.0" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "What’s New in 2.0.0" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Novedades de 2.0.0" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nouveautés de la version 2.0.0" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Что нового в 2.0.0" } }
+    } },
+    "about.version" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Version %@ (Build %@)" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Version %@ (%@)" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Versión %@ (%@)" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Version %@ (compilation %@)" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Версия %@ (%@)" } }
+    } },
+    "appearance.accentColor" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Akzent" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Accent" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Acento" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Couleur d’accentuation" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Акцент" } }
+    } },
+    "appearance.accents" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger und Statusanzeige" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer & HUD" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntero e indicador" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur et indicateur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Указатель и индикатор" } }
+    } },
+    "appearance.backgroundColor" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Hintergrundfarbe" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Background" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Color de fondo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Couleur d’arrière-plan" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Цвет фона" } }
+    } },
+    "appearance.border" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Rahmen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Border" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Borde" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Bordure" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Граница" } }
+    } },
+    "appearance.categoryStyle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Stil" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Style" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Estilo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Style des catégories" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Стиль" } }
+    } },
+    "appearance.color" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Farbe" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Color" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Color de tecla" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Couleur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Цвет" } }
+    } },
+    "appearance.core" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Kern" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Core" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Núcleo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cœur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Центр" } }
+    } },
+    "appearance.corners" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ecken" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Corners" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Esquinas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Angles" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Углы" } }
+    } },
+    "appearance.depth" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tiefe" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Depth" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Profundidad" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Profondeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Глубина" } }
+    } },
+    "appearance.fontScale" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Schriftskalierung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Font Scale" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Escala de fuente" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Échelle de police" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Масштаб шрифта" } }
+    } },
+    "appearance.hudColors" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Farben der Statusanzeige" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "HUD colors" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Colores del indicador" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Couleurs de l’indicateur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Цвета индикатора" } }
+    } },
+    "appearance.keycapStyle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastenkappenstil" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keycap Style" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Estilo de teclas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Style des touches" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Стиль клавиш" } }
+    } },
+    "appearance.keyboardTheme" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clavier" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиатура" } }
+    } },
+    "appearance.keySpacing" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastenabstand" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Key Spacing" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Espaciado entre teclas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Espacement des touches" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Расстояние между клавишами" } }
+    } },
+    "appearance.overlay" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einblendung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Overlay" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Superposición" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Superposition" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оверлей" } }
+    } },
+    "appearance.override" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese Kategorie überschreiben" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Override This Category" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Personalizar esta categoría" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Remplacer cette catégorie" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переопределить категорию" } }
+    } },
+    "appearance.override.disabled" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Aktivieren Sie „Eigene“, um diese Kategorie anzupassen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Enable Custom to override this category." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Activa Personalizado para modificar esta categoría." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activez Personnalisé pour modifier cette catégorie." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Включите свою тему, чтобы изменить эту категорию." } }
+    } },
+    "appearance.pointerColors" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigerfarben" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer colors" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Colores del puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Couleurs du pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Цвета указателя" } }
+    } },
+    "appearance.presetsImmutable" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Integrierte Designs sind schreibgeschützt. Ihr eigenes Design bleibt erhalten." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Built-in themes are read-only. Your Custom theme is preserved." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Los temas integrados son de solo lectura. Tu tema personalizado se conserva." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les thèmes intégrés sont en lecture seule. Votre thème personnalisé est conservé." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Встроенные темы нельзя изменять. Ваша тема сохраняется." } }
+    } },
+    "appearance.primary" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Primär" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Primary" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Principal" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Principale" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Основной" } }
+    } },
+    "appearance.resetCustom" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigenes Design zurücksetzen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset Custom Theme" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer tema personalizado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser le thème personnalisé" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить свою тему" } }
+    } },
+    "appearance.resetCustom.confirm.message" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Dadurch werden alle Farben und Stile des eigenen Designs wiederhergestellt." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "This restores all Custom theme colors and styles." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Esto restaura todos los colores y estilos del tema personalizado." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette action restaure toutes les couleurs et tous les styles du thème personnalisé." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Будут восстановлены все цвета и стили своей темы." } }
+    } },
+    "appearance.resetCustom.confirm.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigenes Design zurücksetzen?" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset Custom Theme?" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Restablecer el tema personalizado?" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser le thème personnalisé ?" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить свою тему?" } }
+    } },
+    "appearance.secondary" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Sekundär" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Secondary" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Secundario" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Secondaire" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дополнительный" } }
+    } },
+    "appearance.shadow" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Schatten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Shadow" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Sombra" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ombre" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тень" } }
+    } },
+    "appearance.textColor" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Textfarbe" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Text" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Texto" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Texte" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Текст" } }
+    } },
+    "background.frame" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Rahmen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Frame" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Marco" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cadre" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Рамка" } }
+    } },
+    "background.none" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Kein Hintergrund" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "None" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Ninguno" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aucun" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Без фона" } }
+    } },
+    "background.overlay" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einblendung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Overlay" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Superposición" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Superposition" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оверлей" } }
+    } },
+    "category.capsLock" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Feststelltaste" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Caps Lock" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Bloq Mayús" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Verr. Maj." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиша Caps Lock" } }
+    } },
+    "category.command" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Befehl" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Command" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Comando" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Commande" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиша Command" } }
+    } },
+    "category.control" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Steuerung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Control" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tecla Control" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Contrôle" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиша Control" } }
+    } },
+    "category.editing" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Bearbeitung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Editing" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Edición" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Édition" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Редактирование" } }
+    } },
+    "category.escape" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Escape-Taste" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Escape" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tecla Escape" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Échap." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиша Escape" } }
+    } },
+    "category.function" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Funktion" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Function" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Función" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Fonction" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Функциональные" } }
+    } },
+    "category.letter" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Buchstaben und Ziffern" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Letters & Digits" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Letras y números" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lettres et chiffres" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Буквы и цифры" } }
+    } },
+    "category.navigation" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Navigationstasten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Navigation" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Navegación" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches de navigation" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Навигация" } }
+    } },
+    "category.option" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wahltaste" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Option" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Opción" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touche Option" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиша Option" } }
+    } },
+    "category.shift" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Umschalttaste" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Shift" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mayús" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Maj." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиша Shift" } }
+    } },
+    "displays.configure" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Konfigurieren" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Configure" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Configurar" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Configurer" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настроить" } }
+    } },
+    "displays.custom.help" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ziehen Sie das Overlay direkt auf diesem Display." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Drag the overlay directly on this display." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Arrastra la superposición directamente en esta pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Faites glisser la superposition directement sur cet écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Перетащите оверлей прямо на этом дисплее." } }
+    } },
+    "displays.empty" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keine Displays gefunden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "No Displays Found" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "No se encontraron pantallas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aucun écran détecté" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дисплеи не найдены" } }
+    } },
+    "displays.main" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "HAUPTDISPLAY" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "MAIN" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "PRINCIPAL" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "PRINCIPAL" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "ОСНОВНОЙ" } }
+    } },
+    "displays.offset" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Abstand zum Rand" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Preset edge offset" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Desplazamiento desde el borde" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Décalage du bord" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отступ от края" } }
+    } },
+    "displays.position" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Positionierung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Position" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Posición" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Positionnement" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Позиция" } }
+    } },
+    "displays.position.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wählen Sie eine Vorgabe oder platzieren Sie das Overlay direkt." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a preset or place the overlay directly." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige una posición predefinida o coloca la superposición directamente." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez une position prédéfinie ou placez directement la superposition." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выберите готовую позицию или разместите оверлей вручную." } }
+    } },
+    "displays.target.fixed" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ein Display" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "One Display" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Una pantalla" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Un écran" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Один дисплей" } }
+    } },
+    "displays.target.help" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "„Zeiger folgen“ verwendet das Display unter dem Zeiger. Positionen bleiben pro Display gespeichert." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Follow Pointer uses the display under the pointer. Placements stay saved per display." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Seguir puntero usa la pantalla bajo el puntero. Las posiciones se guardan para cada pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Suivre le pointeur utilise l’écran sous le pointeur. Les positions restent enregistrées par écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Режим «За указателем» использует дисплей под указателем. Позиции сохраняются отдельно для каждого дисплея." } }
+    } },
+    "displays.target.pointer" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger folgen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Follow Pointer" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Seguir puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Suivre le pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "За указателем" } }
+    } },
+    "displays.target.selected" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählte Displays" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Selected Displays" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Pantallas elegidas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écrans sélectionnés" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выбранные дисплеи" } }
+    } },
+    "general.app" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Anwendung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Application" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Aplicación" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réglages de l’application" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Приложение" } }
+    } },
+    "general.enabled.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Hauptschalter für Tastatur- und Zeiger-Overlays." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Master switch for keyboard and pointer overlays." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Interruptor principal para las superposiciones de teclado y puntero." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Interrupteur principal des superpositions du clavier et du pointeur." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Главный переключатель оверлеев клавиатуры и указателя." } }
+    } },
+    "general.hud.duration" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Dauer" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Duration" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Duración" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Durée" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Длительность" } }
+    } },
+    "general.hud.duration.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie lange die Ein- oder Aus-Bestätigung sichtbar bleibt." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "How long the On or Off confirmation remains visible." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tiempo que permanece visible la confirmación de activación o desactivación." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Durée d’affichage de la confirmation d’activation ou de désactivation." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Как долго показывать подтверждение включения или выключения." } }
+    } },
+    "general.hud.enabled" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Statusanzeige einblenden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show Status HUD" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar indicador de estado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher l’indicateur d’état" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать индикатор состояния" } }
+    } },
+    "general.hud.enabled.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Änderungen über die Menüleiste oder einen Kurzbefehl bestätigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Confirm changes made from the menu bar or shortcut." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Confirma los cambios realizados desde la barra de menús o un atajo." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Confirmer les changements effectués depuis la barre des menus ou un raccourci." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Подтверждать изменения из строки меню или сочетанием клавиш." } }
+    } },
+    "general.language.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ändert die App-Sprache sofort." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Changes the app language immediately." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cambia el idioma de la app inmediatamente." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Change immédiatement la langue de l’app." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мгновенно меняет язык приложения." } }
+    } },
+    "general.launchAtLogin.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress nach der Anmeldung automatisch öffnen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Keypress automatically after signing in." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Abre Keypress automáticamente al iniciar sesión." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ouvrir automatiquement Keypress après la connexion." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Автоматически открывать Keypress после входа в систему." } }
+    } },
+    "general.permission.check" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Erneut prüfen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Check Again" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Comprobar de nuevo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vérifier à nouveau" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Проверить снова" } }
+    } },
+    "general.permission.granted" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Berechtigung erteilt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Permission Granted" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Permiso concedido" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Autorisation accordée" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Разрешение предоставлено" } }
+    } },
+    "general.permission.open" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Systemeinstellungen öffnen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Open System Settings" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir Ajustes del Sistema" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ouvrir Réglages Système" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть Системные настройки" } }
+    } },
+    "general.permission.required" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Berechtigung erforderlich" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Permission Required" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Permiso necesario" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Autorisation requise" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Требуется разрешение" } }
+    } },
+    "general.permission.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Erforderlich, um Tastatureingaben außerhalb von Keypress zu visualisieren." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Required to visualize keyboard input outside Keypress." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Necesario para visualizar la entrada del teclado fuera de Keypress." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nécessaire pour visualiser les saisies clavier en dehors de Keypress." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нужно для отображения ввода с клавиатуры вне Keypress." } }
+    } },
+    "general.reset.confirm.message" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Dadurch werden alle Einstellungen auf ihre Standardwerte zurückgesetzt." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "This restores every setting to its default value." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Esto restaura todos los ajustes a sus valores predeterminados." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette action restaure tous les réglages à leur valeur par défaut." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Все настройки будут возвращены к значениям по умолчанию." } }
+    } },
+    "general.reset.confirm.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Alle Einstellungen zurücksetzen?" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset All Settings?" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Restablecer todos los ajustes?" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser tous les réglages ?" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить все настройки?" } }
+    } },
+    "keyboard.animateKeys" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Reguläre Tasten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Regular Keys" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclas normales" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches normales" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обычные клавиши" } }
+    } },
+    "keyboard.animateKeys.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tasten animieren, während sie physisch gedrückt werden." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Animate keys while they are physically pressed." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Anima las teclas mientras están pulsadas físicamente." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Animer les touches pendant leur appui physique." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Анимировать клавиши, пока они физически нажаты." } }
+    } },
+    "keyboard.animateModifiers" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Modifikatortasten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Modifier Keys" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclas modificadoras" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches de modification" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиши-модификаторы" } }
+    } },
+    "keyboard.animateModifiers.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Befehl, Option, Steuerung und Umschalt animieren." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Animate Command, Option, Control, and Shift." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Anima Comando, Opción, Control y Mayús." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Animer Commande, Option, Contrôle et Majuscule." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Анимировать Command, Option, Control и Shift." } }
+    } },
+    "keyboard.content.all" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Alle Tasten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "All Keys" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Todas las teclas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Toutes les touches" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Все клавиши" } }
+    } },
+    "keyboard.content.shortcuts" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nur Kurzbefehle" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Shortcuts Only" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Solo atajos" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Raccourcis uniquement" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Только сочетания" } }
+    } },
+    "keyboard.content.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Alle Tasten oder nur Kombinationen mit Modifikatortasten anzeigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show every key or only modified combinations." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra todas las teclas o solo combinaciones con modificadores." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher toutes les touches ou uniquement les combinaisons avec modificateurs." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать все клавиши или только комбинации с модификаторами." } }
+    } },
+    "keyboard.duplicates" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Doppelte Buchstaben" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Duplicate Letters" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Letras repetidas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lettres répétées" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторяющиеся буквы" } }
+    } },
+    "keyboard.duplicates.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wiederholte Buchstaben im Verlauf behalten." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep repeated letters in the history." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Conserva las letras repetidas en el historial." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Conserver les lettres répétées dans l’historique." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сохранять повторяющиеся буквы в истории." } }
+    } },
+    "keyboard.enabled.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatureingaben visualisieren." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Visualize keyboard input." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Visualiza la entrada del teclado." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Visualiser les saisies clavier." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Визуализировать ввод с клавиатуры." } }
+    } },
+    "keyboard.filter.functions" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Funktionstasten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Function Keys" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclas de función" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches de fonction" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Функциональные клавиши" } }
+    } },
+    "keyboard.filter.modifiers" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigenständige Modifikatortasten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Standalone Modifiers" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Modificadores independientes" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Modificateurs seuls" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отдельные модификаторы" } }
+    } },
+    "keyboard.filter.modifiers.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Modifikatortasten auch ohne reguläre Taste anzeigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show modifiers even when no regular key is pressed." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra los modificadores aunque no se pulse ninguna tecla normal." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher les modificateurs même sans autre touche enfoncée." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать модификаторы даже без нажатия обычной клавиши." } }
+    } },
+    "keyboard.filter.special" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Sondertasten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Special Keys" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclas especiales" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches spéciales" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Специальные клавиши" } }
+    } },
+    "keyboard.historyLayout" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Anordnung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Layout" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Disposición" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Disposition" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Расположение" } }
+    } },
+    "keyboard.layout.horizontal" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Waagerecht" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Horizontal" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "En horizontal" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Horizontale" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Горизонтально" } }
+    } },
+    "keyboard.layout.stacked" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Gestapelt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stacked" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Apilado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Empilée" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Столбцом" } }
+    } },
+    "keyboard.limitModifiers" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Modifikatortasten mitzählen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Limit Includes Modifiers" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Incluir modificadores en el límite" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Inclure les modificateurs dans la limite" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Учитывать модификаторы в лимите" } }
+    } },
+    "keyboard.limitModifiers.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Modifikatortasten auf das Verlaufslimit anrechnen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Count modifier keys toward the history limit." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuenta las teclas modificadoras para el límite del historial." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compter les touches de modification dans la limite de l’historique." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Учитывать клавиши-модификаторы в лимите истории." } }
+    } },
+    "keyboard.maxKeys.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Maximale Anzahl sichtbarer Verlaufseinträge." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Maximum number of visible history items." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Número máximo de elementos visibles del historial." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nombre maximal d’éléments visibles dans l’historique." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Максимальное число видимых элементов истории." } }
+    } },
+    "keyboard.mode.history" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Verlauf" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Historique" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "История" } }
+    } },
+    "keyboard.mode.single" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einzeln" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Single" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Único" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Unique" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Одна комбинация" } }
+    } },
+    "keyboard.mode.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Den letzten Kurzbefehl oder einen fortlaufenden Verlauf anzeigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show the latest shortcut or a running history." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra el último atajo o un historial continuo." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher le dernier raccourci ou un historique continu." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать последнее сочетание или непрерывную историю." } }
+    } },
+    "keyboard.timeout.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie lange losgelassene Tasten sichtbar bleiben." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "How long released keys remain visible." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tiempo que permanecen visibles las teclas soltadas." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Durée d’affichage des touches relâchées." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Как долго отпущенные клавиши остаются видимыми." } }
+    } },
+    "pointer.drag" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ziehen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Drag" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Arrastre" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Glissement" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Перетаскивание" } }
+    } },
+    "pointer.enabled.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigerbewegungen und Mausaktionen visualisieren." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Visualize pointer movement and mouse actions." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Visualiza el movimiento del puntero y las acciones del ratón." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Visualiser les mouvements du pointeur et les actions de la souris." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Визуализировать движение указателя и действия мыши." } }
+    } },
+    "pointer.glowIntensity" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Leuchtintensität" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Glow Intensity" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Intensidad del resplandor" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Intensité de la lueur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Интенсивность свечения" } }
+    } },
+    "pointer.glowRadius" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Leuchtradius" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Glow Radius" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Radio del resplandor" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rayon de la lueur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Радиус свечения" } }
+    } },
+    "pointer.idleDelay" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Leerlaufverzögerung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Idle Delay" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Retardo de inactividad" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Délai d’inactivité" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Задержка бездействия" } }
+    } },
+    "pointer.idleDelay.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Den Zeigereffekt nach Inaktivität ausblenden." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Hide the pointer effect after inactivity." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Oculta el efecto del puntero tras un periodo de inactividad." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Masquer l’effet du pointeur après une période d’inactivité." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скрывать эффект указателя после бездействия." } }
+    } },
+    "pointer.middleClick" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Mittelklick" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Middle Click" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Clic central" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clic central" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Средний клик" } }
+    } },
+    "pointer.motion" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Motion" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Movimiento" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mouvement" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Движение" } }
+    } },
+    "pointer.motionIntensity" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegungsintensität" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Motion Intensity" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Intensidad del movimiento" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Intensité du mouvement" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Интенсивность движения" } }
+    } },
+    "pointer.movement" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Movement" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Movimiento" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mouvement" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Движение" } }
+    } },
+    "pointer.preview.resting" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ruhezustand" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Resting" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Reposo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Au repos" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Покой" } }
+    } },
+    "pointer.opacity" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Deckkraft" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Opacity" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Opacidad" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Opacité" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Непрозрачность" } }
+    } },
+    "pointer.scroll" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Scrollen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Scroll" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Desplazamiento" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Défilement" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Прокрутка" } }
+    } },
+    "pointer.shape.circle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Kreis" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Circle" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Círculo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cercle" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Круг" } }
+    } },
+    "pointer.shape.diamond" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Raute" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Diamond" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Rombo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Losange" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ромб" } }
+    } },
+    "pointer.shape.square" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Quadrat" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Square" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuadrado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Carré" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Квадрат" } }
+    } },
+    "pointer.shape.squircle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Abgerundetes Quadrat" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Squircle" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuadrado redondeado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Carré arrondi" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скруглённый квадрат" } }
+    } },
+    "pointer.stroke" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Kontur" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stroke" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Contorno" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Contour" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обводка" } }
+    } },
+    "pointer.visibility.activity" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Bei Aktivität" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "On Activity" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Con actividad" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lors de l’activité" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "При активности" } }
+    } },
+    "pointer.visibility.actions" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Klicks & Aktionen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Clicks & Actions" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Clics y acciones" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clics et actions" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клики и действия" } }
+    } },
+    "pointer.visibility.always" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Immer" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Always" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Siempre" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Toujours" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Всегда" } }
+    } },
+    "pointer.visibility.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ständig, bei jeder Aktivität oder nur bei Klicks und Aktionen anzeigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show continuously, on any activity, or only for clicks and actions." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra continuamente, con cualquier actividad o solo con clics y acciones." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher en continu, lors de toute activité ou uniquement pour les clics et actions." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать постоянно, при любой активности или только при кликах и действиях." } }
+    } },
+    "position.bottomCenter" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Unten mittig" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Bottom Center" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Inferior centrado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "En bas au centre" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Снизу по центру" } }
+    } },
+    "position.bottomLeft" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Unten links" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Bottom Left" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Inferior izquierda" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "En bas à gauche" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Снизу слева" } }
+    } },
+    "position.bottomRight" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Unten rechts" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Bottom Right" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Inferior derecha" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "En bas à droite" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Снизу справа" } }
+    } },
+    "position.centerLeft" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Mittig links" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Center Left" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Centro izquierda" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Au centre à gauche" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "По центру слева" } }
+    } },
+    "position.centerRight" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Mittig rechts" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Center Right" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Centro derecha" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Au centre à droite" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "По центру справа" } }
+    } },
+    "position.custom" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Benutzerdefiniert…" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Custom…" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Personalizada…" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Personnalisée…" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Произвольно…" } }
+    } },
+    "position.topCenter" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Oben mittig" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Top Center" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Superior centrado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "En haut au centre" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сверху по центру" } }
+    } },
+    "position.topLeft" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Oben links" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Top Left" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Superior izquierda" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "En haut à gauche" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сверху слева" } }
+    } },
+    "position.topRight" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Oben rechts" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Top Right" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Superior derecha" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "En haut à droite" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сверху справа" } }
+    } },
+    "style.flat" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Flach" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Flat" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Plano" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Plat" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Плоский" } }
+    } },
+    "style.mechanical" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Mechanisch" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Mechanical" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mecánico" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mécanique" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Механический" } }
+    } },
+    "style.minimal" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Minimalistisch" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Minimal" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Minimalista" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Minimaliste" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Минималистичный" } }
+    } },
+    "theme.classic" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Klassisch" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Classic" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Clásico" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Classique" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Классическая" } }
+    } },
+    "theme.dark" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Dunkel" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Dark" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Oscuro" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Sombre" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тёмная" } }
+    } },
+    "theme.default" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Standard" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Default" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Predeterminado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Par défaut" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "По умолчанию" } }
+    } },
+    "theme.gaming" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Spiele" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Gaming" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Juegos" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Jeu" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Игровая" } }
+    } },
+    "theme.light" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Hell" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Light" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Claro" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clair" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Светлая" } }
+    } },
+    "theme.minimal" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Minimalistisch" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Minimal" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Minimalista" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Minimaliste" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Минималистичная" } }
+    } },
+    "theme.modern" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeitgemäß" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Modern" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Moderno" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Moderne" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Современная" } }
+    } },
+    "theme.mono" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Monochrom" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Mono" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Monocromo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Monochrome" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Монохромная" } }
+    } },
+    "theme.neon" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Neonfarben" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Neon" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Neón" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Néon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неоновая" } }
+    } },
+    "unit.points" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "pt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "pt" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "pt" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "pt" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "пт" } }
+    } },
+    "unit.seconds" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Sek." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "s" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "seg" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "sec." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "с" } }
+    } },
+    "keyboard.appearance.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wählen Sie einen visuellen Stil und verfeinern Sie das Tastatur-Overlay." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a visual style and refine the keyboard overlay." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige un estilo visual y ajusta la superposición del teclado." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez un style visuel et affinez la superposition du clavier." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выберите визуальный стиль и настройте оверлей клавиатуры." } }
+    } },
+    "keyboard.appearance.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastaturdarstellung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard Appearance" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Apariencia del teclado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Apparence du clavier" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оформление клавиатуры" } }
+    } },
+    "pointer.appearance.reset" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigerdesign zurücksetzen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset Pointer Theme" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer tema del puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser le thème du pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить тему указателя" } }
+    } },
+    "pointer.appearance.reset.confirm.message" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Dadurch wird das eigene Zeigerdesign auf die Standardwerte zurückgesetzt." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "This restores the Custom pointer theme to its default values." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Esto restaura el tema personalizado del puntero a sus valores predeterminados." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette action rétablit les valeurs par défaut du thème personnalisé du pointeur." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Своя тема указателя будет возвращена к значениям по умолчанию." } }
+    } },
+    "pointer.appearance.reset.confirm.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigerdesign zurücksetzen?" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset Pointer Theme?" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Restablecer tema del puntero?" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser le thème du pointeur ?" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить тему указателя?" } }
+    } },
+    "pointer.appearance.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Form, Leuchten, Farben und Bewegung des Zeigereffekts gestalten." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose the shape, glow, colors, and motion of the pointer halo." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige la forma, el resplandor, los colores y el movimiento del halo del puntero." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez la forme, la lueur, les couleurs et le mouvement du halo du pointeur." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройте форму, свечение, цвета и движение подсветки указателя." } }
+    } },
+    "pointer.appearance.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigerdarstellung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer Appearance" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Apariencia del puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Apparence du pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оформление указателя" } }
+    } },
+    "pointer.preview.try" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigerreaktionen ausprobieren" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Try pointer reactions" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Prueba las reacciones del puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Essayez les réactions du pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Попробуйте реакции указателя" } }
+    } },
+    "sidebar.section.keyboard" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clavier" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиатура" } }
+    } },
+    "sidebar.section.pointer" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Указатель" } }
+    } },
+    "sidebar.settings" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einstellungen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Ajustes" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réglages" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки" } }
+    } },
+    "about.release.all" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Alle Versionshinweise anzeigen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "View All Release Notes" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Ver todas las notas de la versión" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher toutes les notes de version" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Все примечания к выпускам" } }
+    } },
+    "keyboard.disabled.action" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatureinstellungen öffnen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Keyboard Settings" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir ajustes del teclado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ouvrir les réglages du clavier" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть настройки клавиатуры" } }
+    } },
+    "keyboard.disabled.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Aktiviere das Tastatur-Overlay, um Darstellung und Position zu konfigurieren." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Turn on the keyboard overlay to configure its appearance and position." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Activa la superposición del teclado para configurar su apariencia y posición." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activez la surcouche clavier pour régler son apparence et sa position." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Включите оверлей клавиатуры, чтобы настроить его оформление и позицию." } }
+    } },
+    "keyboard.disabled.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur-Overlay ist aus" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard Overlay Is Off" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La superposición del teclado está desactivada" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "La surcouche clavier est désactivée" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оверлей клавиатуры выключен" } }
+    } },
+    "pointer.decoration" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Detail" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Detail" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Detalle" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Détail" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Деталь" } }
+    } },
+    "pointer.decoration.centerDot" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Mittelpunkt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Center Dot" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Punto central" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Point central" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Точка в центре" } }
+    } },
+    "pointer.decoration.cornerBrackets" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ecken" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Corners" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Esquinas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Coins" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Уголки" } }
+    } },
+    "pointer.decoration.crosshair" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Fadenkreuz" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Crosshair" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Retícula" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réticule" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Перекрестие" } }
+    } },
+    "pointer.decoration.innerRing" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Innenring" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Inner Ring" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Anillo interior" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Anneau intérieur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Внутреннее кольцо" } }
+    } },
+    "pointer.decoration.none" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keine" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "None" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Ninguno" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aucun" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нет" } }
+    } },
+    "pointer.decoration.orbit" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Umlaufbahn" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Orbit" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Órbita" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Orbite" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Орбита" } }
+    } },
+    "pointer.disabled.action" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigereinstellungen öffnen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Pointer Settings" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir ajustes del puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ouvrir les réglages du pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть настройки указателя" } }
+    } },
+    "pointer.disabled.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Aktiviere das Zeiger-Overlay, um Design und Effekte zu konfigurieren." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Turn on the pointer overlay to configure its theme and effects." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Activa la superposición del puntero para configurar su tema y efectos." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activez la surcouche du pointeur pour régler son thème et ses effets." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Включите оверлей указателя, чтобы настроить его тему и эффекты." } }
+    } },
+    "pointer.disabled.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger-Overlay ist aus" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer Overlay Is Off" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La superposición del puntero está desactivada" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "La surcouche du pointeur est désactivée" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оверлей указателя выключен" } }
+    } },
+    "pointer.lineStyle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Linienstil" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Line Style" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Estilo de línea" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Style de ligne" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Стиль линии" } }
+    } },
+    "pointer.lineStyle.aura" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Aura" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Aura" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Aura" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aura" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Аура" } }
+    } },
+    "pointer.lineStyle.double" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Doppelt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Double" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Doble" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Double" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Двойная" } }
+    } },
+    "pointer.lineStyle.neonDepth" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Neontiefe" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Neon Depth" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Profundidad neón" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Profondeur néon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неоновая глубина" } }
+    } },
+    "pointer.lineStyle.segmented" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Segmentiert" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Segmented" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Segmentada" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Segmenté" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сегментированная" } }
+    } },
+    "pointer.lineStyle.solid" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Durchgehend" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Solid" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Continua" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сплошная" } }
+    } },
+    "preview.pressed" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Gedrückt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pressed" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Pulsado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Enfoncé" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нажатие" } }
+    } },
+    "preview.resting" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ruhend" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Resting" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Reposo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Au repos" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Покой" } }
+    } },
+    "window.settings.title" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress-Einstellungen" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress Settings" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ajustes de Keypress" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réglages de Keypress" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки Keypress" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

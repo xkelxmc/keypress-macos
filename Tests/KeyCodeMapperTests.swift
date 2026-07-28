@@ -365,7 +365,7 @@ struct FullKeyboardTests {
             (0x47, "⌧"), // Clear
         ]
 
-        for (keyCode, expectedDisplay) in numpadKeycodes {
+        for (keyCode, _) in numpadKeycodes {
             let symbol = KeyCodeMapper.symbol(for: keyCode)
             #expect(symbol != nil, "Numpad key should produce a symbol")
             // Without CGEvent, character keys return "?"

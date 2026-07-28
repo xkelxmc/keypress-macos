@@ -329,16 +329,17 @@ public struct KeyColorScheme: Codable, Sendable, Equatable {
         editing: .aluminum)
 }
 
-// MARK: - KeypressConfig
+// MARK: - LegacyKeypressConfig
 
 /// Application settings with UserDefaults persistence.
 @MainActor
 @Observable
-public final class KeypressConfig {
+@available(*, deprecated, message: "Use KeypressConfig")
+public final class LegacyKeypressConfig {
     // MARK: - Singleton
 
     /// Shared settings instance.
-    public static let shared = KeypressConfig()
+    public static let shared = LegacyKeypressConfig()
 
     // MARK: - UserDefaults Keys
 
@@ -835,13 +836,13 @@ public final class KeypressConfig {
     // MARK: - Testing Support
 
     /// Creates an isolated settings instance backed by the supplied UserDefaults store.
-    public static func makeEphemeral(userDefaults: UserDefaults) -> KeypressConfig {
-        KeypressConfig(userDefaults: userDefaults)
+    public static func makeEphemeral(userDefaults: UserDefaults) -> LegacyKeypressConfig {
+        LegacyKeypressConfig(userDefaults: userDefaults)
     }
 
     /// Creates a KeypressConfig instance with custom UserDefaults (for testing).
-    static func makeForTesting(userDefaults: UserDefaults) -> KeypressConfig {
-        KeypressConfig.makeEphemeral(userDefaults: userDefaults)
+    static func makeForTesting(userDefaults: UserDefaults) -> LegacyKeypressConfig {
+        LegacyKeypressConfig.makeEphemeral(userDefaults: userDefaults)
     }
 
     /// Resets all settings to defaults.

@@ -22,6 +22,7 @@ public final class InputMonitoringPermission {
     // MARK: - Properties
 
     private var pollingTask: Task<Void, Never>?
+    private var pollingGeneration: UInt64 = 0
     private var changeHandler: PermissionChangeHandler?
     private var lastKnownState: Bool = false
 
@@ -69,11 +70,23 @@ public final class InputMonitoringPermission {
     public func startPolling() {
         guard self.pollingTask == nil else { return }
         print("[InputMonitoringPermission] Starting polling...")
+        self.pollingGeneration &+= 1
+        let generation = self.pollingGeneration
 
         self.pollingTask = Task { [weak self] in
+            defer {
+                if self?.pollingGeneration == generation {
+                    self?.pollingTask = nil
+                }
+            }
+
             var pollCount = 0
             while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(500))
+                do {
+                    try await Task.sleep(for: .milliseconds(500))
+                } catch {
+                    return
+                }
 
                 guard let self else { return }
 
@@ -92,12 +105,11 @@ public final class InputMonitoringPermission {
                     self.lastKnownState = functional
                     self.isGranted = functional
                     self.changeHandler?(functional)
+                }
 
-                    // Stop polling once granted
-                    if functional {
-                        print("[InputMonitoringPermission] Granted, stopping polling")
-                        return
-                    }
+                if functional {
+                    print("[InputMonitoringPermission] Granted, stopping polling")
+                    return
                 }
             }
         }
@@ -105,6 +117,7 @@ public final class InputMonitoringPermission {
 
     /// Stops polling for permission changes.
     public func stopPolling() {
+        self.pollingGeneration &+= 1
         self.pollingTask?.cancel()
         self.pollingTask = nil
     }

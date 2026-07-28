@@ -4,91 +4,72 @@
 
 ```
 Sources/
-├── KeypressCore/       # Core logic, no UI dependencies
-│   ├── KeyMonitor      # CGEvent tap, key event processing
-│   ├── KeyState        # Current pressed keys state
-│   └── Settings        # Settings storage and defaults
+├── KeypressCore/
+│   ├── KeyMonitor         # Existing listen-only keyboard CGEvent tap
+│   ├── KeyState           # Single and horizontal keyboard state
+│   ├── StackedHistory     # Grouped in-memory history
+│   └── KeypressConfig     # Versioned settings and migration
 │
-├── Keypress/           # Main app target
-│   ├── App             # Entry point, AppDelegate
-│   ├── MenuBar         # Status item, dropdown menu
-│   ├── Overlay         # Key visualization window
-│   ├── Views           # SwiftUI views (keys, settings)
-│   ├── Settings        # Settings window
-│   └── ScreenshotGenerator  # CLI screenshot mode
+├── Keypress/
+│   ├── AppDelegate        # Menu bar and global actions
+│   ├── Overlay            # Pointer tap plus keyboard, cursor, and HUD windows
+│   ├── Views              # Keycap and overlay rendering
+│   ├── Settings           # Native Studio settings window
+│   └── ScreenshotGenerator
 │
-└── KeypressTests/      # Unit tests
+└── Tests/
 ```
 
-## Data Flow
+## Input Flow
 
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  KeyMonitor  │────▶│   KeyState   │────▶│   Overlay    │
-│  (CGEvent)   │     │  (pressed)   │     │   (SwiftUI)  │
-└──────────────┘     └──────────────┘     └──────────────┘
-                            │
-                            ▼
-                     ┌──────────────┐
-                     │   Settings   │
-                     │ (UserDefaults)│
-                     └──────────────┘
-```
+`KeyMonitor` keeps the proven keyboard-only listen-only `CGEventTap` on its
+dedicated thread. `PointerInputMonitor` owns a separate listen-only tap, copies
+only pointer event primitives, and immediately returns the original event.
+Neither tap performs UI work.
 
-1. **KeyMonitor** captures global keyboard events via CGEvent tap
-2. **KeyState** maintains set of currently pressed keys
-3. **Overlay** subscribes to KeyState and renders visualization
-4. **Settings** provides configuration (timeout, position, etc.)
+Keyboard events feed one of three in-memory state models:
 
-## Entry Points
+- `SingleKeyState`
+- `KeyState` for Horizontal History
+- `StackedHistoryState`
 
-- `KeypressApp` — SwiftUI App, Settings scene
-- `AppDelegate` — Menu bar setup, event tap initialization
-- `ScreenshotGenerator` — CLI mode for promotional screenshots (`--screenshot`)
+Pointer events feed `PointerOverlayController`, which resolves the latest
+physical cursor location and recovers missed button releases. No input history
+is written to disk.
 
-## Concurrency
+## Presentation
 
-- Key events arrive on background queue
-- UI updates dispatched to `@MainActor`
-- Use `@Observable` (Swift 5.9+) for reactive state
+`OverlayController` coordinates:
 
-## Key Components
+- one keyboard window for Follow Pointer or One Display;
+- one keyboard window per connected target in Selected Displays;
+- one cursor halo window on the physical pointer display;
+- one independent HUD window;
+- one temporary full-screen placement editor.
 
-### KeyMonitor
+All production overlay windows are transparent, non-activating, click-through
+panels that join every Space. The placement editor is the only interactive
+overlay.
 
-- Creates `CGEvent` tap for keyboard events
-- Filters relevant events (keyDown, keyUp, flagsChanged)
-- Translates keycodes to displayable symbols using `CGEvent.keyboardGetUnicodeString`
-- **Respects current keyboard layout** (Russian, German, etc.) — not hardcoded English
-- Publishes to KeyState
+## Settings
 
-### KeyState
+`KeypressConfig` is a main-actor observable facade over one versioned
+`AppSettings` snapshot. The snapshot groups general, keyboard, pointer,
+appearance, display, and HUD settings. Legacy individual `UserDefaults` keys
+are read once and migrated without deleting the old values.
 
-- `@Observable` class
-- Tracks currently pressed keys with timestamps
-- Handles modifier vs regular key logic:
-  - **Modifiers** — stable ID, no duplicates while held
-  - **Regular keys** — unique ID per press (allows "hello" → h e l l o)
-- Triggers fade-out timers for regular keys
-- Tracks `physicallyPressedKeys` for press animation (keys that are physically held vs visible-but-released)
+In-memory settings change immediately. Disk persistence is coalesced during
+continuous edits and explicitly flushed when the application terminates.
 
-### OverlayWindow
+Display preferences use stable `CGDisplay` UUID strings. Custom placement stores
+a normalized visual center inside `NSScreen.visibleFrame`, keeping the result
+stable across scaling, resolution, menu bar, and Dock changes.
 
-- Custom `NSPanel` subclass
-- Hosts SwiftUI `KeyVisualizationView`
-- Manages positioning based on settings
-- Handles show/hide animations
+## Permissions and Concurrency
 
-### OverlayController
-
-- Manages overlay window lifecycle and key monitoring
-- **Multi-monitor support:**
-  - Detects the active screen from the pointer position (no Accessibility API)
-  - Updates position on each keypress to handle window switches within same app
-  - Caches last detected screen to avoid unnecessary position updates
-
-### MenuBarController
-
-- Creates `NSStatusItem`
-- Builds `NSMenu` with status, controls
-- Handles toggle, settings, quit actions
+- Input Monitoring is the only requested privacy permission.
+- Accessibility and Screen Recording are not required.
+- UI and settings state are isolated to `@MainActor`.
+- The event tap lifecycle is protected against start/stop races.
+- Secure Input clears and suppresses keyboard presentation while pointer
+  visualization remains available.

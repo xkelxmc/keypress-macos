@@ -1,85 +1,165 @@
+import AppKit
 import KeyboardShortcuts
 import KeypressCore
 import ServiceManagement
 import SwiftUI
 
-// MARK: - GeneralSettingsPane
-
 @MainActor
 struct GeneralSettingsPane: View {
+    @Environment(\.studioStrings) private var strings
     @Bindable var config: KeypressConfig
+    @State private var permissionGranted = InputMonitoringPermission.check()
+    @State private var activeAlert: GeneralSettingsAlert?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // Appearance
-                SettingsSection("Appearance") {
-                    SettingsRow("Size") {
-                        Picker("Size", selection: self.$config.size) {
-                            ForEach(OverlaySize.allCases, id: \.self) { size in
-                                Text(size.displayName).tag(size)
-                            }
-                        }
+        StudioPage(
+            titleKey: "general.title",
+            subtitleKey: "general.subtitle")
+        {
+            FeatureToggleCard(
+                titleKey: "general.enabled",
+                subtitleKey: "general.enabled.subtitle",
+                systemImage: "power",
+                tint: .blue,
+                isOn: self.$config.general.enabled)
+
+            StudioCard("general.app", systemImage: "gearshape.fill", tint: .blue) {
+                SettingsRow("general.launchAtLogin", subtitleKey: "general.launchAtLogin.subtitle") {
+                    Toggle(
+                        self.strings["general.launchAtLogin"],
+                        isOn: self.launchAtLoginBinding)
                         .labelsHidden()
-                        .pickerStyle(.segmented)
-                        .frame(width: 180)
-                    }
-
-                    SettingsRow("Opacity") {
-                        HStack(spacing: 8) {
-                            Slider(value: self.$config.opacity, in: 0.3...1.0)
-                                .frame(width: 120)
-                            Text("\(Int(round(self.config.opacity * 100)))%")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .frame(width: 36, alignment: .trailing)
-                        }
-                    }
+                        .toggleStyle(.switch)
+                        .accessibilityLabel(self.strings["general.launchAtLogin"])
                 }
 
-                Divider()
+                StudioDivider()
 
-                // Behavior
-                SettingsSection("Behavior") {
-                    SettingsRow("Key timeout", subtitle: "How long keys stay visible") {
-                        HStack(spacing: 8) {
-                            Slider(value: self.$config.keyTimeout, in: 0.5...5.0, step: 0.5)
-                                .frame(width: 120)
-                            Text(String(format: "%.1fs", self.config.keyTimeout))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .frame(width: 36, alignment: .trailing)
-                        }
+                SettingsRow("general.language", subtitleKey: "general.language.subtitle") {
+                    Picker("", selection: self.$config.general.language) {
+                        Text(self.strings["language.system"]).tag(AppLanguage.system)
+                        Text("English").tag(AppLanguage.english)
+                        Text("Русский").tag(AppLanguage.russian)
+                        Text("Deutsch").tag(AppLanguage.german)
+                        Text("Español").tag(AppLanguage.spanish)
+                        Text("Français").tag(AppLanguage.french)
                     }
+                    .labelsHidden()
+                    .frame(width: 180)
                 }
-
-                Divider()
-
-                // System
-                SettingsSection("System") {
-                    Toggle("Launch at login", isOn: self.$config.launchAtLogin)
-                        .toggleStyle(.checkbox)
-                        .onChange(of: self.config.launchAtLogin) { _, newValue in
-                            self.updateLaunchAtLogin(newValue)
-                        }
-                }
-
-                Divider()
-
-                // Shortcuts
-                SettingsSection("Shortcuts") {
-                    SettingsRow("Toggle overlay", subtitle: "Global hotkey to show/hide") {
-                        KeyboardShortcuts.Recorder(for: .toggleOverlay)
-                            .frame(width: 150)
-                    }
-                }
-
-                Spacer()
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, 12)
-            .padding(.horizontal, 12)
+
+            StudioCard("general.hud", systemImage: "rectangle.and.text.magnifyingglass", tint: .purple) {
+                SettingsRow("general.hud.enabled", subtitleKey: "general.hud.enabled.subtitle") {
+                    Toggle(
+                        self.strings["general.hud.enabled"],
+                        isOn: self.$config.hud.enabled)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                        .accessibilityLabel(self.strings["general.hud.enabled"])
+                }
+
+                if self.config.hud.enabled {
+                    StudioDivider()
+
+                    SettingsRow("general.hud.duration", subtitleKey: "general.hud.duration.subtitle") {
+                        HStack(spacing: 8) {
+                            Slider(value: self.$config.hud.duration, in: 0.5...4, step: 0.5)
+                                .frame(width: 150)
+                            Text(self.config.hud.duration, format: .number.precision(.fractionLength(1)))
+                                .font(.caption.monospacedDigit())
+                                .frame(width: 26, alignment: .trailing)
+                            Text(self.strings["unit.seconds"])
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+
+            StudioCard("general.permission", systemImage: "hand.raised.fill", tint: self.permissionTint) {
+                HStack(spacing: 12) {
+                    Image(systemName: self
+                        .permissionGranted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        .foregroundStyle(self.permissionTint)
+                        .font(.title2)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(self.strings[
+                            self.permissionGranted ? "general.permission.granted" : "general.permission.required"
+                        ])
+                        .fontWeight(.medium)
+
+                        Text(self.strings["general.permission.subtitle"])
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if !self.permissionGranted {
+                        Button(self.strings["general.permission.open"]) {
+                            InputMonitoringPermission.openSettings()
+                        }
+                    }
+
+                    Button {
+                        self.permissionGranted = InputMonitoringPermission.check()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .help(self.strings["general.permission.check"])
+                }
+            }
+
+            DestructiveSettingsAction(
+                titleKey: "general.reset",
+                subtitleKey: "general.reset.confirm.message",
+                systemImage: "trash.fill")
+            {
+                self.activeAlert = .resetConfirmation
+            }
         }
+        .alert(item: self.$activeAlert) { alert in
+            switch alert {
+            case .resetConfirmation:
+                Alert(
+                    title: Text(self.strings["general.reset.confirm.title"]),
+                    message: Text(self.strings["general.reset.confirm.message"]),
+                    primaryButton: .destructive(Text(self.strings["general.reset"])) {
+                        self.resetAllSettings()
+                    },
+                    secondaryButton: .cancel(Text(self.strings["action.cancel"])))
+            case let .resetFailure(message):
+                Alert(
+                    title: Text(self.strings["general.reset.confirm.title"]),
+                    message: Text(message),
+                    dismissButton: .default(Text(self.strings["action.done"])))
+            case let .operationFailure(message):
+                Alert(
+                    title: Text(self.strings["general.app"]),
+                    message: Text(message),
+                    dismissButton: .default(Text(self.strings["action.done"])))
+            }
+        }
+        .onAppear {
+            self.synchronizeLaunchAtLogin()
+            self.permissionGranted = InputMonitoringPermission.check()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            self.synchronizeLaunchAtLogin()
+            self.permissionGranted = InputMonitoringPermission.check()
+        }
+    }
+
+    private var permissionTint: Color {
+        self.permissionGranted ? .green : .orange
+    }
+
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding(
+            get: { self.config.general.launchAtLogin },
+            set: { self.updateLaunchAtLogin($0) })
     }
 
     private func updateLaunchAtLogin(_ enabled: Bool) {
@@ -89,22 +169,54 @@ struct GeneralSettingsPane: View {
             } else {
                 try SMAppService.mainApp.unregister()
             }
+            self.config.general.launchAtLogin = enabled
         } catch {
-            print("[Keypress] ERROR: Failed to \(enabled ? "enable" : "disable") launch at login: \(error)")
-            // Revert on failure
-            self.config.launchAtLogin = !enabled
+            print("[Keypress] ERROR: Failed to update launch at login: \(error)")
+            self.activeAlert = .operationFailure(error.localizedDescription)
         }
+    }
+
+    private func synchronizeLaunchAtLogin() {
+        let isRegistered = SMAppService.mainApp.status == .enabled
+        if self.config.general.launchAtLogin != isRegistered {
+            self.config.general.launchAtLogin = isRegistered
+        }
+    }
+
+    private func resetAllSettings() {
+        do {
+            let loginStatus = SMAppService.mainApp.status
+            if loginStatus == .enabled || loginStatus == .requiresApproval {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            self.activeAlert = .resetFailure(error.localizedDescription)
+            return
+        }
+
+        [
+            KeyboardShortcuts.Name.toggleOverlay,
+            .togglePointer,
+            .switchContentMode,
+            .editPosition,
+            .increaseOverlaySize,
+            .decreaseOverlaySize,
+        ].forEach { KeyboardShortcuts.reset($0) }
+        self.config.resetToDefaults()
+        self.synchronizeLaunchAtLogin()
     }
 }
 
-// MARK: - OverlaySize Extension
+private enum GeneralSettingsAlert: Identifiable {
+    case resetConfirmation
+    case resetFailure(String)
+    case operationFailure(String)
 
-extension OverlaySize {
-    var displayName: String {
+    var id: Int {
         switch self {
-        case .small: "Small"
-        case .medium: "Medium"
-        case .large: "Large"
+        case .resetConfirmation: 0
+        case .resetFailure: 1
+        case .operationFailure: 2
         }
     }
 }

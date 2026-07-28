@@ -1,84 +1,57 @@
 # Features
 
-## Core Functionality
+## Keyboard Visualization
 
-### Key Visualization
+- Single mode for the latest key combination
+- Horizontal History with the original mechanical keycap presentation
+- Optional Stacked History that groups continuous typing into readable fragments
+- All Keys and Shortcuts Only content modes
+- Independent controls for standalone modifiers, function keys, and special keys
+- Configurable timeout, history size, duplicate handling, and press animations
+- Secure Input suppression without Accessibility or Screen Recording permission
 
-- Display pressed keys as realistic 3D mechanical keycaps
-- Show all keys (letters, numbers, modifiers, special keys)
-- Combinations displayed inline in a single block (e.g., ⌘ + Shift + K)
-- No permanent window — visualization appears only when typing
+## Pointer Visualization
 
-### Key Behavior
+- Cursor halo that follows the physical pointer across displays
+- Circle, squircle, square, and diamond shapes with visual selectors
+- Aura, solid, double, segmented, and neon-depth line treatments
+- Optional center dot, inner ring, crosshair, corner, and orbit details
+- Custom size, border, opacity, colors, and glow
+- Distinct motion for primary, secondary, and middle clicks
+- Velocity tilt, held-drag feedback, and axis-aware precise scrolling
+- Always Visible, On Activity, and Clicks & Actions visibility modes
+- Reduced Motion fallback
 
-| Key Type | Disappear Behavior |
-|----------|-------------------|
-| Modifiers (Cmd, Ctrl, Shift, Alt) | On key release |
-| Regular keys | After configurable timeout |
-| Held keys | Stay visually pressed while held |
+## Appearance
 
-### Positioning
+- Mechanical, Flat, and Minimal keycaps
+- Frame, Overlay, and frameless presentation
+- Separate System, Dark, Light, Mono, Classic, Modern, Minimal, Gaming, and Neon galleries for keyboard and pointer
+- One autosaved Custom keyboard theme and one autosaved Custom pointer theme
+- Installed font selection, text and border styling, key spacing, and opacity
+- Per-category color, depth, corner, shadow, and keycap-style overrides
 
-- 8 preset positions: 4 corners + 4 edge centers
-- Configurable edge offset (horizontal 0-500px, vertical 0-300px)
-- Visual position picker in settings (mini monitor preview)
-- Content aligns to the nearest edge based on selected position
+## Displays and Position
 
-## Menu Bar
+- Follow Pointer, One Display, and Selected Displays target modes
+- Stable display identifiers that survive monitor reordering
+- A separate saved placement for every physical display
+- Eight edge presets plus free positioning
+- Full-screen drag editor with snapping, guides, Done, Cancel, and Reset
+- Normalized positions that adapt to scaling, resolution, the menu bar, and Dock
 
-### Tray Icon
+## Controls and Feedback
 
-- Persistent menu bar icon (no Dock icon)
-- Click opens control menu
+- Menu bar application with no Dock icon
+- Independent keyboard and pointer visualization toggles
+- Global shortcuts for app state, halo, content mode, positioning, and size
+- Separate status HUD that never changes keyboard layout
+- Live English, Russian, German, Spanish, and French localization
+- Local privacy-safe diagnostic report export
 
-### Menu Contents
+## Privacy
 
-- App version
-- Status indicator (active/inactive with green/red dot)
-- Global hotkey hint
-- Toggle button (enable/disable)
-- Settings button
-- Quit button
-
-## Settings
-
-Settings are organized into 5 tabs:
-
-### General Tab
-- Size (Small/Medium/Large)
-- Opacity
-- Key timeout
-- Launch at login
-- Global hotkey
-
-### Position Tab
-- Multi-monitor visualization with real wallpapers
-- Auto mode (follows focused window) or fixed monitor
-- 8 preset positions with visual indicators
-- Per-monitor position and size controls
-
-### Display Tab
-- Display mode (Single/History)
-- Mode-specific options
-
-### Colors Tab
-- Color scheme (Auto/Dark/Mono/Light/Custom)
-- Key Style Editor (Custom mode) — master-detail UI for per-category customization
-
-### Style Tab
-- Keycap style (Mechanical/Flat/Minimal)
-- Background style (Frame/Overlay/None)
-- Press animation toggles (modifiers and regular keys)
-
-## Window Behavior
-
-- Always on top of all windows
-- Click-through (mouse events pass through)
-- Transparent background
-- No window chrome (borderless)
-
-## Future Considerations
-
-- Statistics/analytics (typing speed, key frequency)
-- Multiple visual themes
-- Custom key filtering (show only shortcuts)
+- Input events are processed entirely on device
+- Keystrokes, typed fragments, clicks, and pointer coordinates are never persisted
+- Input Monitoring is the only requested privacy permission
+- Keyboard visualization is cleared while macOS Secure Input is active

@@ -11,12 +11,9 @@ import SwiftUI
 /// Sized for the frame drop shadow (28pt) at the largest overlay scale (1.25).
 private let overlayShadowInset: CGFloat = 48
 
-/// Space available to the content itself, excluding the shadow inset.
-private let overlayContentSize = NSSize(width: 600, height: 120)
-
-private let overlayWindowSize = NSSize(
-    width: overlayContentSize.width + overlayShadowInset * 2,
-    height: overlayContentSize.height + overlayShadowInset * 2)
+private let initialOverlayWindowSize = NSSize(
+    width: 600 + overlayShadowInset * 2,
+    height: 120 + overlayShadowInset * 2)
 
 /// Transparent, click-through window for displaying key visualization.
 @MainActor
@@ -24,15 +21,18 @@ final class OverlayWindow: NSPanel {
     // MARK: - Properties
 
     private let config: KeypressConfig
+    private let layoutState = OverlayLayoutState()
     private var contentHostingView: NSHostingView<AnyView>?
+    private var targetScreen: NSScreen?
+    private var lastMeasuredContentSize = CGSize.zero
 
     // MARK: - Initialization (History mode)
 
-    init(keyState: KeyState, hintState: HintState, config: KeypressConfig) {
+    init(keyState: KeyState, config: KeypressConfig) {
         self.config = config
 
         super.init(
-            contentRect: NSRect(origin: .zero, size: overlayWindowSize),
+            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false)
@@ -40,19 +40,26 @@ final class OverlayWindow: NSPanel {
         self.configureWindow()
         self.setupContentView(
             OverlayContainerView(
-                keysView: AnyView(KeyVisualizationView(keyState: keyState, config: config)),
-                hintState: hintState,
-                config: config))
+                keysView: AnyView(
+                    KeyVisualizationView(
+                        keyState: keyState,
+                        config: config,
+                        appliesSizeScale: false)),
+                config: config,
+                layoutState: self.layoutState,
+                onContentSizeChange: { [weak self] size in
+                    self?.updateContentSize(size)
+                }))
         self.updatePosition()
     }
 
     // MARK: - Initialization (Single mode)
 
-    init(singleKeyState: SingleKeyState, hintState: HintState, config: KeypressConfig) {
+    init(singleKeyState: SingleKeyState, config: KeypressConfig) {
         self.config = config
 
         super.init(
-            contentRect: NSRect(origin: .zero, size: overlayWindowSize),
+            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false)
@@ -60,9 +67,43 @@ final class OverlayWindow: NSPanel {
         self.configureWindow()
         self.setupContentView(
             OverlayContainerView(
-                keysView: AnyView(SingleKeyVisualizationView(keyState: singleKeyState, config: config)),
-                hintState: hintState,
-                config: config))
+                keysView: AnyView(
+                    SingleKeyVisualizationView(
+                        keyState: singleKeyState,
+                        config: config,
+                        appliesSizeScale: false)),
+                config: config,
+                layoutState: self.layoutState,
+                onContentSizeChange: { [weak self] size in
+                    self?.updateContentSize(size)
+                }))
+        self.updatePosition()
+    }
+
+    // MARK: - Initialization (Stacked History)
+
+    init(stackedHistoryState: StackedHistoryState, config: KeypressConfig) {
+        self.config = config
+
+        super.init(
+            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false)
+
+        self.configureWindow()
+        self.setupContentView(
+            OverlayContainerView(
+                keysView: AnyView(
+                    StackedHistoryVisualizationView(
+                        keyState: stackedHistoryState,
+                        config: config,
+                        appliesSizeScale: false)),
+                config: config,
+                layoutState: self.layoutState,
+                onContentSizeChange: { [weak self] size in
+                    self?.updateContentSize(size)
+                }))
         self.updatePosition()
     }
 
@@ -79,7 +120,13 @@ final class OverlayWindow: NSPanel {
         self.hasShadow = false
 
         // Don't show in mission control or app switcher
-        self.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        self.collectionBehavior = [
+            .canJoinAllApplications,
+            .canJoinAllSpaces,
+            .stationary,
+            .ignoresCycle,
+            .fullScreenAuxiliary,
+        ]
 
         // Don't become key or main window
         self.canBecomeKey = false
@@ -101,52 +148,161 @@ final class OverlayWindow: NSPanel {
     /// - Parameter screen: The screen to position the overlay on. If nil, uses NSScreen.main.
     func updatePosition(on screen: NSScreen? = nil) {
         guard let targetScreen = screen ?? NSScreen.main else { return }
+        self.targetScreen = targetScreen
 
         let screenFrame = targetScreen.visibleFrame
         let windowSize = self.frame.size
-        let hOffset = self.config.horizontalOffset
-        let vOffset = self.config.verticalOffset
+        let placement = self.placement(on: targetScreen)
+        let contentAnchor = OverlayContentAnchor(placement)
+        if self.layoutState.anchor != contentAnchor {
+            self.layoutState.anchor = contentAnchor
+        }
 
         // Offsets are measured from the screen edge to the visible content, so the
         // shadow inset is added back on whichever side the content is anchored to.
         let inset = overlayShadowInset
-        let origin = switch self.config.position {
-        case .topLeft:
-            NSPoint(
-                x: screenFrame.minX + hOffset - inset,
-                y: screenFrame.maxY - windowSize.height - vOffset + inset)
-        case .topCenter:
-            NSPoint(
-                x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.maxY - windowSize.height - vOffset + inset)
-        case .topRight:
-            NSPoint(
-                x: screenFrame.maxX - windowSize.width - hOffset + inset,
-                y: screenFrame.maxY - windowSize.height - vOffset + inset)
-        case .centerLeft:
-            NSPoint(
-                x: screenFrame.minX + hOffset - inset,
-                y: screenFrame.midY - windowSize.height / 2)
-        case .centerRight:
-            NSPoint(
-                x: screenFrame.maxX - windowSize.width - hOffset + inset,
-                y: screenFrame.midY - windowSize.height / 2)
-        case .bottomLeft:
-            NSPoint(
-                x: screenFrame.minX + hOffset - inset,
-                y: screenFrame.minY + vOffset - inset)
-        case .bottomCenter:
-            NSPoint(
-                x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.minY + vOffset - inset)
-        case .bottomRight:
-            NSPoint(
-                x: screenFrame.maxX - windowSize.width - hOffset + inset,
-                y: screenFrame.minY + vOffset - inset)
+        let origin: NSPoint
+        switch placement {
+        case let .anchor(position, horizontalOffset, verticalOffset):
+            let hOffset = CGFloat(horizontalOffset)
+            let vOffset = CGFloat(verticalOffset)
+            origin = switch position {
+            case .topLeft:
+                NSPoint(
+                    x: screenFrame.minX + hOffset - inset,
+                    y: screenFrame.maxY - windowSize.height - vOffset + inset)
+            case .topCenter:
+                NSPoint(
+                    x: screenFrame.midX - windowSize.width / 2,
+                    y: screenFrame.maxY - windowSize.height - vOffset + inset)
+            case .topRight:
+                NSPoint(
+                    x: screenFrame.maxX - windowSize.width - hOffset + inset,
+                    y: screenFrame.maxY - windowSize.height - vOffset + inset)
+            case .centerLeft:
+                NSPoint(
+                    x: screenFrame.minX + hOffset - inset,
+                    y: screenFrame.midY - windowSize.height / 2)
+            case .centerRight:
+                NSPoint(
+                    x: screenFrame.maxX - windowSize.width - hOffset + inset,
+                    y: screenFrame.midY - windowSize.height / 2)
+            case .bottomLeft:
+                NSPoint(
+                    x: screenFrame.minX + hOffset - inset,
+                    y: screenFrame.minY + vOffset - inset)
+            case .bottomCenter:
+                NSPoint(
+                    x: screenFrame.midX - windowSize.width / 2,
+                    y: screenFrame.minY + vOffset - inset)
+            case .bottomRight:
+                NSPoint(
+                    x: screenFrame.maxX - windowSize.width - hOffset + inset,
+                    y: screenFrame.minY + vOffset - inset)
+            }
+        case let .custom(center, _):
+            let centerPoint = NSPoint(
+                x: screenFrame.minX + CGFloat(center.x) * screenFrame.width,
+                y: screenFrame.minY + CGFloat(center.y) * screenFrame.height)
+            origin = NSPoint(
+                x: centerPoint.x - windowSize.width / 2,
+                y: centerPoint.y - windowSize.height / 2)
         }
 
         let finalOrigin = self.clampedOrigin(origin, windowSize: windowSize, screenFrame: screenFrame)
         self.setFrameOrigin(finalOrigin)
+    }
+
+    /// Resizes the panel to the SwiftUI view's ideal size, then reapplies its
+    /// screen-relative placement so anchored content does not drift as it grows.
+    private func updateContentSize(_ measuredSize: CGSize) {
+        guard measuredSize.width.isFinite,
+              measuredSize.height.isFinite,
+              measuredSize.width > 0,
+              measuredSize.height > 0
+        else {
+            return
+        }
+        self.lastMeasuredContentSize = measuredSize
+
+        let screen = self.targetScreen ?? NSScreen.main
+        let maximumSize = screen.map {
+            NSSize(
+                width: $0.visibleFrame.width + overlayShadowInset * 2,
+                height: $0.visibleFrame.height + overlayShadowInset * 2)
+        } ?? measuredSize
+        let availableContentSize = screen.map(self.availableContentSize(on:))
+            ?? CGSize(
+                width: max(1, maximumSize.width - overlayShadowInset * 2),
+                height: max(1, maximumSize.height - overlayShadowInset * 2))
+        let requestedScale = self.config.size.scaleFactor
+        let layoutContentSize = CGSize(
+            width: max(0, measuredSize.width - overlayShadowInset * 2),
+            height: max(0, measuredSize.height - overlayShadowInset * 2))
+        let fittedScale = min(
+            requestedScale,
+            availableContentSize.width > 0 && layoutContentSize.width > 0
+                ? availableContentSize.width / layoutContentSize.width
+                : requestedScale,
+            availableContentSize.height > 0 && layoutContentSize.height > 0
+                ? availableContentSize.height / layoutContentSize.height
+                : requestedScale)
+        if abs(self.layoutState.scale - fittedScale) >= 0.001 {
+            self.layoutState.scale = fittedScale
+        }
+        let scaledSize = CGSize(
+            width: layoutContentSize.width * fittedScale + overlayShadowInset * 2,
+            height: layoutContentSize.height * fittedScale + overlayShadowInset * 2)
+        let newSize = NSSize(
+            width: min(maximumSize.width, max(overlayShadowInset * 2 + 1, ceil(scaledSize.width))),
+            height: min(maximumSize.height, max(overlayShadowInset * 2 + 1, ceil(scaledSize.height))))
+
+        guard abs(self.frame.width - newSize.width) >= 0.5 ||
+            abs(self.frame.height - newSize.height) >= 0.5
+        else {
+            return
+        }
+
+        self.setContentSize(newSize)
+        self.updatePosition(on: screen)
+    }
+
+    private func placement(on screen: NSScreen) -> DisplayPlacement {
+        ConnectedDisplays.id(for: screen).map {
+            self.config.displays.placement(for: $0)
+        } ?? .anchor(
+            position: self.config.position,
+            horizontalOffset: Double(self.config.horizontalOffset),
+            verticalOffset: Double(self.config.verticalOffset))
+    }
+
+    private func availableContentSize(on screen: NSScreen) -> CGSize {
+        let frame = screen.visibleFrame
+        guard case let .anchor(position, horizontalOffset, verticalOffset) = self.placement(on: screen) else {
+            return frame.size
+        }
+
+        let reservesHorizontalEdge = switch position {
+        case .topLeft, .topRight, .centerLeft, .centerRight, .bottomLeft, .bottomRight:
+            true
+        case .topCenter, .bottomCenter:
+            false
+        }
+        let reservesVerticalEdge = switch position {
+        case .topLeft, .topCenter, .topRight, .bottomLeft, .bottomCenter, .bottomRight:
+            true
+        case .centerLeft, .centerRight:
+            false
+        }
+
+        return CGSize(
+            width: max(1, frame.width - (reservesHorizontalEdge ? CGFloat(horizontalOffset) : 0)),
+            height: max(1, frame.height - (reservesVerticalEdge ? CGFloat(verticalOffset) : 0)))
+    }
+
+    func refreshContentSize() {
+        guard self.lastMeasuredContentSize != .zero else { return }
+        self.updateContentSize(self.lastMeasuredContentSize)
     }
 
     /// Clamps origin so the visible content stays within screen bounds.
@@ -167,6 +323,10 @@ final class OverlayWindow: NSPanel {
 
     /// Shows the overlay window.
     func showOverlay() {
+        if let contentHostingView {
+            contentHostingView.needsLayout = true
+            contentHostingView.layoutSubtreeIfNeeded()
+        }
         self.alphaValue = self.config.opacity
         self.orderFrontRegardless()
     }
@@ -191,67 +351,108 @@ final class OverlayWindow: NSPanel {
 
 // MARK: - Container View
 
-/// Container that holds both keys overlay and hint overlay.
+private enum OverlayContentAnchor: Equatable {
+    case topLeading
+    case top
+    case topTrailing
+    case leading
+    case center
+    case trailing
+    case bottomLeading
+    case bottom
+    case bottomTrailing
+
+    init(_ placement: DisplayPlacement) {
+        switch placement {
+        case let .anchor(position, _, _):
+            self = switch position {
+            case .topLeft: .topLeading
+            case .topCenter: .top
+            case .topRight: .topTrailing
+            case .centerLeft: .leading
+            case .centerRight: .trailing
+            case .bottomLeft: .bottomLeading
+            case .bottomCenter: .bottom
+            case .bottomRight: .bottomTrailing
+            }
+        case .custom:
+            self = .center
+        }
+    }
+
+    var alignment: Alignment {
+        switch self {
+        case .topLeading: .topLeading
+        case .top: .top
+        case .topTrailing: .topTrailing
+        case .leading: .leading
+        case .center: .center
+        case .trailing: .trailing
+        case .bottomLeading: .bottomLeading
+        case .bottom: .bottom
+        case .bottomTrailing: .bottomTrailing
+        }
+    }
+
+    var unitPoint: UnitPoint {
+        switch self {
+        case .topLeading: .topLeading
+        case .top: .top
+        case .topTrailing: .topTrailing
+        case .leading: .leading
+        case .center: .center
+        case .trailing: .trailing
+        case .bottomLeading: .bottomLeading
+        case .bottom: .bottom
+        case .bottomTrailing: .bottomTrailing
+        }
+    }
+}
+
+@MainActor
+private final class OverlayLayoutState: ObservableObject {
+    @Published var anchor = OverlayContentAnchor.center
+    @Published var scale: CGFloat = 1
+}
+
+/// Adds the shadow-safe inset around the keyboard visualization.
+@MainActor
 private struct OverlayContainerView: View {
     let keysView: AnyView
-    @Bindable var hintState: HintState
-    @Bindable var config: KeypressConfig
-
-    private var hintPosition: HintPosition {
-        HintPosition.from(overlayPosition: self.config.position)
-    }
-
-    private var isHorizontalLayout: Bool {
-        self.hintPosition == .leading || self.hintPosition == .trailing
-    }
-
-    /// Alignment based on overlay position (so content sticks to the correct edge).
-    private var contentAlignment: Alignment {
-        switch self.config.position {
-        case .topLeft: .topLeading
-        case .topCenter: .top
-        case .topRight: .topTrailing
-        case .centerLeft: .leading
-        case .centerRight: .trailing
-        case .bottomLeft: .bottomLeading
-        case .bottomCenter: .bottom
-        case .bottomRight: .bottomTrailing
-        }
-    }
+    let config: KeypressConfig
+    @ObservedObject var layoutState: OverlayLayoutState
+    let onContentSizeChange: @MainActor (CGSize) -> Void
 
     var body: some View {
-        Group {
-            if self.isHorizontalLayout {
-                HStack(spacing: 12) {
-                    if self.hintPosition == .leading {
-                        self.hintView
-                    }
-                    self.keysView
-                    if self.hintPosition == .trailing {
-                        self.hintView
-                    }
-                }
-            } else {
-                VStack(spacing: 12) {
-                    if self.hintPosition == .top {
-                        self.hintView
-                    }
-                    self.keysView
-                    if self.hintPosition == .bottom {
-                        self.hintView
-                    }
+        self.keysView
+            .fixedSize()
+            .scaleEffect(
+                self.layoutState.scale,
+                anchor: self.layoutState.anchor.unitPoint)
+            .padding(overlayShadowInset)
+            .background {
+                GeometryReader { geometry in
+                    Color.clear.preference(
+                        key: OverlayContentSizePreferenceKey.self,
+                        value: geometry.size)
                 }
             }
-        }
-        .padding(overlayShadowInset)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: self.contentAlignment)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: self.layoutState.anchor.alignment)
+            .onPreferenceChange(OverlayContentSizePreferenceKey.self) { size in
+                self.onContentSizeChange(size)
+            }
     }
+}
 
-    @ViewBuilder
-    private var hintView: some View {
-        if let hint = self.hintState.currentHint {
-            ToggleHintView(hint: hint, config: self.config)
-                .transition(.opacity.combined(with: .scale(scale: 0.9)))
-        }
+// MARK: - Dynamic Content Measurement
+
+private struct OverlayContentSizePreferenceKey: PreferenceKey {
+    static let defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
     }
 }
