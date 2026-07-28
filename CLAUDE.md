@@ -78,7 +78,23 @@ bun run start
 
 Version is managed in `version.env`:
 - `MARKETING_VERSION` — User-facing version (e.g., 0.1.0)
-- `BUILD_NUMBER` — Incremental build number
+- `BUILD_NUMBER` — Incremental build number, grows across the whole project and
+  never resets when `MARKETING_VERSION` changes
+
+Two ways a build reaches App Store Connect:
+
+- **New user-facing version** — `bun run release <x.y.z>` from a clean `main`.
+  It finalizes `## [Unreleased]` into `## [x.y.z] - <today>`, bumps both fields,
+  tags `vx.y.z`, pushes, and watches the workflow.
+- **Another build of a version that is already tagged** (review rejection, or a
+  fix after the tag) — the release script refuses this on purpose. Keep
+  `MARKETING_VERSION`, bump only `BUILD_NUMBER`, fold the new changelog entries
+  **into the existing version section** (an `## [Unreleased]` heading on top
+  fails CI's changelog validation), then tag `v<x.y.z>-build.<n>` and push.
+
+**Never** re-point an existing tag with `git tag -f` / `git push -f`.
+
+Full procedure: [docs/technical/release.md](./docs/technical/release.md).
 
 ## Project Structure
 

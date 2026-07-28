@@ -103,6 +103,32 @@ When the workflow finishes, the build appears in App Store Connect (processing
 takes a few minutes). There: select the build for the version, fill in "What's
 New" from the changelog, and submit for review.
 
+## Re-uploading a build under an already-tagged version
+
+When the store version has to stay put — App Review rejected the build, or a fix
+landed after the tag was cut — only `BUILD_NUMBER` moves. `bun run release`
+refuses this case by design (its tag already exists), so the steps are manual:
+
+1. Land the fix on `main`.
+2. Fold the new entries into the existing `## [X.Y.Z] - <date>` section. Do
+   **not** add an `## [Unreleased]` heading above it: CI runs
+   `Scripts/validate_changelog.sh`, which fails when the top section is labeled
+   Unreleased or does not match `MARKETING_VERSION`.
+3. Bump `BUILD_NUMBER` in `version.env`, leave `MARKETING_VERSION` alone.
+4. Push `main`, then tag and push:
+
+```bash
+git tag v1.1.0-build.9 && git push origin v1.1.0-build.9
+```
+
+The workflow accepts both `v<version>` and `v<version>-build.<n>`. Build numbers
+never reset when the marketing version changes — they grow across the whole
+project, so a re-upload and a new version both just take the next one.
+
+Never move an existing tag with `git tag -f`: it burns App Store build numbers
+and makes the history untraceable. `workflow_dispatch` on release.yml does the
+same job without any tag, reusing whatever `version.env` holds on `main`.
+
 ## What CI does (`.github/workflows/release.yml`)
 
 1. Verifies the tag matches `MARKETING_VERSION` and sits on `origin/main`;
@@ -138,8 +164,9 @@ Xcode project, so the local app and the store artifact cannot drift apart.
 
 - **`altool` validation errors** — the output lists concrete issues (missing
   icon, bundle ID mismatch with the profile, non-incremented build number).
-- **Workflow failed after the tag was pushed** — fix on `main`, then re-tag:
-  `git tag -f v0.2.0 && git push -f origin v0.2.0`.
+- **Workflow failed after the tag was pushed** — fix on `main`, bump
+  `BUILD_NUMBER`, and push a build-suffixed tag (see
+  [Re-uploading a build](#re-uploading-a-build-under-an-already-tagged-version)).
 - **Upload succeeded but the build never appears** — check the email from App
   Store Connect: processing rejections (e.g. entitlement/profile mismatch)
   arrive as mail to the account holder.
