@@ -1,4 +1,4 @@
-# Keypress
+# Show KeyPress
 
 [![Mac App Store](https://img.shields.io/badge/Mac%20App%20Store-Show%20KeyPress-0D96F6?logo=apple&logoColor=white)](https://apps.apple.com/app/id6792384936)
 [![CI](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml/badge.svg)](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml)
@@ -8,6 +8,8 @@
 [![macOS 14+](https://img.shields.io/badge/macOS-14+-blue)](https://www.apple.com/macos/)
 
 A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 3D mechanical key aesthetics.
+
+<sub>Mac App Store name **Show KeyPress** · repository `keypress-macos` · bundle `Keypress.app`</sub>
 
 <p align="center">
   <img src="assets/images/preview-light.png" width="49%" alt="Light mode">
@@ -40,8 +42,8 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 
 ### From Source
 
-Building Keypress yourself for personal, noncommercial use is permitted — see
-[License](#license).
+Building Show KeyPress yourself is permitted for the purposes the license
+allows — see [License](#license).
 
 ```bash
 brew install xcodegen
@@ -108,20 +110,29 @@ the contributor terms — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
-**Source-available, not open source.** Keypress is licensed under the
-[PolyForm Strict License 1.0.0](./LICENSE).
+> **Bought the app? This does not apply to you.** The terms below cover only
+> the source code in this repository. Show KeyPress places no restriction on
+> using the app you bought commercially — paid screencasts, streams, courses,
+> and client work are all fine. Your copy from the Mac App Store is licensed
+> under Apple's standard Licensed Application End User License Agreement.
 
-The source is public so that anyone can audit what an app holding Input
-Monitoring permission actually does with keystrokes. It is not free to
-redistribute — Keypress is a paid app on the Mac App Store.
+**Source-available, not open source.** The source of Show KeyPress is licensed
+under the [PolyForm Strict License 1.0.0](./LICENSE), plus the Additional
+Permissions stated in that file.
 
-|                                            |     |
-| ------------------------------------------ | --- |
-| Read and audit the source                   | ✅  |
-| Build it for your own personal use          | ✅  |
-| Use it commercially or inside a company     | ❌  |
-| Redistribute it, source or binary           | ❌  |
-| Publish modified versions or derived works  | ❌  |
+It is public so that anyone can audit what an app holding Input Monitoring
+permission actually does with keystrokes. It is not free to redistribute —
+Show KeyPress is a paid app on the Mac App Store.
+
+| Source code                                        |     |
+| -------------------------------------------------- | --- |
+| Read and audit it, business or not                  | ✅  |
+| Build and run it for personal or hobby use          | ✅  |
+| Use it in a charity, school, or government body     | ✅  |
+| Modify it and fork it to prepare a pull request     | ✅  |
+| Use it commercially, or as a work tool in a company  | ❌  |
+| Redistribute it, source or binary                   | ❌  |
+| Publish modified versions or derived works, outside a pull-request fork | ❌  |
 
 Releases up to and including `v1.1.0-build.9` were published under the MIT
 License and remain available under those terms — see [NOTICE.md](./NOTICE.md),

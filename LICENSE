@@ -1,20 +1,121 @@
+Show KeyPress
 Copyright 2025–2026 Ilya Zhidkov
 
-Keypress is source-available software, not open source. It is licensed under the
-PolyForm Strict License 1.0.0, reproduced in full below.
+Show KeyPress is source-available software, not open source. It is licensed
+under the PolyForm Strict License 1.0.0, reproduced in full below, together
+with the Additional Permissions granted in the next section.
 
-You may read this source code and build it for your own personal, noncommercial
-use. You may not distribute it, publish modified versions, or use it for any
-commercial purpose.
+SCOPE
 
-Keypress up to and including commit 039d042 (2026-07-28) was released under the
-MIT License, and those versions remain available under those terms. See
-[NOTICE.md](./NOTICE.md).
+These terms cover the source code in this repository. They do not govern the
+Show KeyPress application you obtain from the Mac App Store. The licensor
+places no restriction on
+commercial use of a purchased copy: paid screencasts, streams, courses, and
+client work are all fine. A copy from the Mac App Store is licensed under
+Apple's standard Licensed Application End User License Agreement.
 
-Contributions are accepted only under the terms in
-[CONTRIBUTING.md](./CONTRIBUTING.md).
+IN SHORT
 
----
+You may read this source code, build it, and run it for the purposes the
+license permits, which include personal use, hobby projects, and use by
+charitable, educational, public research, public safety, health, environmental
+and government organizations. You may not distribute it, publish modified
+versions, or use it for commercial purposes, except as the Additional
+Permissions below allow.
+
+SCOPE is part of these terms: for the purposes of the license below, "the
+software" means the source code in this repository, and these terms do not
+apply to the Show KeyPress application obtained from the Mac App Store.
+
+The IN SHORT section above is a summary. It is not part of the license, it
+does not modify it, and it does not limit the Additional Permissions granted
+below. Where the summary conflicts with the license text, the license text
+controls.
+
+HISTORY
+
+Show KeyPress up to and including commit 039d042 (2026-07-28) was released
+under the MIT License, and those versions remain available under those terms.
+See NOTICE.md in this repository.
+
+Contributions are accepted only under the terms in CONTRIBUTING.md.
+
+===============================================================================
+
+ADDITIONAL PERMISSIONS
+
+The following permissions are granted by the licensor in addition to the
+license reproduced below. They only add to that license; they do not modify it.
+
+These permissions are conditioned on your agreeing to, and complying with, the
+license below. If your licenses under it end for any reason, these permissions
+end at the same time.
+
+PERMITTED PURPOSES
+
+For each of the purposes below, you may do with the software everything that
+purpose reasonably requires, including reproducing it, changing it, creating
+works based on it, compiling, installing, running, and testing it and any
+changed version, and making whatever local adjustments building or running it
+on your own machine requires, such as substituting your own code-signing
+identity. The purposes are:
+
+(a) Personal use — using the software yourself, for any purpose the license
+    below permits.
+
+(b) Auditing — examining, reviewing, testing, and verifying the behavior,
+    security, and privacy properties of the software. This purpose applies
+    whether you are an individual, a business, or any other commercial
+    organization, and whether or not you are paid to perform the audit.
+
+(c) Contributing — preparing and submitting a contribution to the official
+    Show KeyPress repository at https://github.com/xkelxmc/keypress-macos.
+    For this purpose only, you may also publish the software and your changed
+    version of it on the code-hosting service where the official repository is
+    hosted, using that service's own contribution functionality: forking the
+    repository, pushing branches to your fork, and opening a pull request.
+
+WHAT THESE PERMISSIONS DO NOT ALLOW
+
+None of them lets you:
+
+  - distribute the software, or a changed version of it, anywhere other than
+    a fork published under purpose (c);
+
+  - publish or make available a changed version for anyone else to use as
+    software;
+
+  - except as an audit under purpose (b) reasonably requires, deploy or use
+    the software, or a changed version, as a working tool in a business, or
+    for any other commercial purpose. Auditing under purpose (b) is not such a
+    use, even when you are a business and even when you are paid to do it;
+    running the software to do a business's actual work is such a use, however
+    it is described;
+
+  - offer the software or a changed version under any other license terms; or
+
+  - remove or alter this file, the copyright notice, or NOTICE.md in any copy
+    you publish, except as part of a contribution you are submitting.
+
+Any copy or changed version you publish under purpose (c) remains subject to
+these same terms, including these limitations. Submitting a contribution is
+additionally subject to CONTRIBUTING.md.
+
+DURATION
+
+A fork or branch published under purpose (c) is permitted only while it serves
+that purpose. Once your contribution is merged, closed, or rejected, once you
+stop working on it, or if you do not open a pull request within 90 days of
+publishing the fork, you must delete it within 30 days of that happening;
+permission to keep it published continues until you delete it or those 30 days
+pass, whichever comes first.
+
+The licensor may end these permissions for you by written notice. For copies
+already published under them, permission continues until you take them down or
+32 days pass, whichever comes first, and you must take them down within those
+32 days.
+
+===============================================================================
 
 # PolyForm Strict License 1.0.0
 

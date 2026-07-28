@@ -3,10 +3,15 @@
 Show KeyPress
 Copyright 2025–2026 Ilya Zhidkov
 
-Licensed under the PolyForm Strict License 1.0.0.
-<https://polyformproject.org/licenses/strict/1.0.0>
+A copy of Show KeyPress obtained from the Mac App Store is licensed under
+Apple's standard Licensed Application End User License Agreement.
 
-Source code: <https://github.com/xkelxmc/keypress-macos>
+The source code is published for auditing at
+<https://github.com/xkelxmc/keypress-macos> under the PolyForm Strict License
+1.0.0 (<https://polyformproject.org/licenses/strict/1.0.0>), together with
+Additional Permissions that allow anyone — including a business or a paid
+auditor — to build and audit it. Those source terms do not restrict your use
+of this app.
 
 ---
 
