@@ -789,7 +789,11 @@ struct KeyStateRegressionTests {
             KeyEvent(type: .keyDown, keyCode: 0, modifiers: []),
             symbol: symbol)
 
-        try? await Task.sleep(for: .milliseconds(30))
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: .seconds(1))
+        while !state.pressedKeys.isEmpty, clock.now < deadline {
+            try? await clock.sleep(for: .milliseconds(10))
+        }
         #expect(state.pressedKeys.isEmpty)
     }
 
