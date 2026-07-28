@@ -2,6 +2,22 @@ import AppKit
 import KeypressCore
 import SwiftUI
 
+// MARK: - Metrics
+
+/// Slack reserved on every side of the content inside the window. SwiftUI draws
+/// shadows outside a view's layout bounds and the window edge clips them, so the
+/// content is inset and the window origin compensates for it — the visible
+/// content ends up exactly where it would be without the inset.
+/// Sized for the frame drop shadow (28pt) at the largest overlay scale (1.25).
+private let overlayShadowInset: CGFloat = 48
+
+/// Space available to the content itself, excluding the shadow inset.
+private let overlayContentSize = NSSize(width: 600, height: 120)
+
+private let overlayWindowSize = NSSize(
+    width: overlayContentSize.width + overlayShadowInset * 2,
+    height: overlayContentSize.height + overlayShadowInset * 2)
+
 /// Transparent, click-through window for displaying key visualization.
 @MainActor
 final class OverlayWindow: NSPanel {
@@ -16,7 +32,7 @@ final class OverlayWindow: NSPanel {
         self.config = config
 
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 120),
+            contentRect: NSRect(origin: .zero, size: overlayWindowSize),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false)
@@ -36,7 +52,7 @@ final class OverlayWindow: NSPanel {
         self.config = config
 
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 120),
+            contentRect: NSRect(origin: .zero, size: overlayWindowSize),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false)
@@ -91,51 +107,56 @@ final class OverlayWindow: NSPanel {
         let hOffset = self.config.horizontalOffset
         let vOffset = self.config.verticalOffset
 
+        // Offsets are measured from the screen edge to the visible content, so the
+        // shadow inset is added back on whichever side the content is anchored to.
+        let inset = overlayShadowInset
         let origin = switch self.config.position {
         case .topLeft:
             NSPoint(
-                x: screenFrame.minX + hOffset,
-                y: screenFrame.maxY - windowSize.height - vOffset)
+                x: screenFrame.minX + hOffset - inset,
+                y: screenFrame.maxY - windowSize.height - vOffset + inset)
         case .topCenter:
             NSPoint(
                 x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.maxY - windowSize.height - vOffset)
+                y: screenFrame.maxY - windowSize.height - vOffset + inset)
         case .topRight:
             NSPoint(
-                x: screenFrame.maxX - windowSize.width - hOffset,
-                y: screenFrame.maxY - windowSize.height - vOffset)
+                x: screenFrame.maxX - windowSize.width - hOffset + inset,
+                y: screenFrame.maxY - windowSize.height - vOffset + inset)
         case .centerLeft:
             NSPoint(
-                x: screenFrame.minX + hOffset,
+                x: screenFrame.minX + hOffset - inset,
                 y: screenFrame.midY - windowSize.height / 2)
         case .centerRight:
             NSPoint(
-                x: screenFrame.maxX - windowSize.width - hOffset,
+                x: screenFrame.maxX - windowSize.width - hOffset + inset,
                 y: screenFrame.midY - windowSize.height / 2)
         case .bottomLeft:
             NSPoint(
-                x: screenFrame.minX + hOffset,
-                y: screenFrame.minY + vOffset)
+                x: screenFrame.minX + hOffset - inset,
+                y: screenFrame.minY + vOffset - inset)
         case .bottomCenter:
             NSPoint(
                 x: screenFrame.midX - windowSize.width / 2,
-                y: screenFrame.minY + vOffset)
+                y: screenFrame.minY + vOffset - inset)
         case .bottomRight:
             NSPoint(
-                x: screenFrame.maxX - windowSize.width - hOffset,
-                y: screenFrame.minY + vOffset)
+                x: screenFrame.maxX - windowSize.width - hOffset + inset,
+                y: screenFrame.minY + vOffset - inset)
         }
 
         let finalOrigin = self.clampedOrigin(origin, windowSize: windowSize, screenFrame: screenFrame)
         self.setFrameOrigin(finalOrigin)
     }
 
-    /// Clamps origin so window stays fully within screen bounds.
+    /// Clamps origin so the visible content stays within screen bounds.
+    /// The window itself is larger by the shadow inset on every side and is
+    /// allowed to hang over the edge by exactly that much.
     private func clampedOrigin(_ origin: NSPoint, windowSize: NSSize, screenFrame: NSRect) -> NSPoint {
-        let minX = screenFrame.minX
-        let maxX = screenFrame.maxX - windowSize.width
-        let minY = screenFrame.minY
-        let maxY = screenFrame.maxY - windowSize.height
+        let minX = screenFrame.minX - overlayShadowInset
+        let maxX = screenFrame.maxX - windowSize.width + overlayShadowInset
+        let minY = screenFrame.minY - overlayShadowInset
+        let maxY = screenFrame.maxY - windowSize.height + overlayShadowInset
 
         return NSPoint(
             x: min(max(origin.x, minX), maxX),
@@ -222,6 +243,7 @@ private struct OverlayContainerView: View {
                 }
             }
         }
+        .padding(overlayShadowInset)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: self.contentAlignment)
     }
 

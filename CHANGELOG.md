@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Keys no longer stick on screen** — key monitoring is back on a dedicated listen-only CGEvent tap running off the main run loop, so key releases are never dropped behind UI work
+- **Key shadows are no longer cut off at the anchored corner** — the overlay window reserves room for them instead of clipping whatever falls outside its bounds; the keys themselves stay in exactly the same spot on screen
 
 ## [1.0.0] - 2026-07-25
 
