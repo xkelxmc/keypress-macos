@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint-build-test:
-    runs-on: blacksmith-6vcpu-macos-15
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
