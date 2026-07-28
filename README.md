@@ -1,8 +1,9 @@
 # Keypress
 
+[![Mac App Store](https://img.shields.io/badge/Mac%20App%20Store-Show%20KeyPress-0D96F6?logo=apple&logoColor=white)](https://apps.apple.com/app/id6792384936)
 [![CI](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml/badge.svg)](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml)
 [![GitHub last commit](https://img.shields.io/github/last-commit/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/commits/main)
-[![License: MIT](https://img.shields.io/github/license/xkelxmc/keypress-macos)](./LICENSE)
+[![License: PolyForm Strict 1.0.0](https://img.shields.io/badge/license-PolyForm%20Strict%201.0.0-orange)](./LICENSE)
 [![Swift](https://img.shields.io/github/languages/top/xkelxmc/keypress-macos)](https://swift.org/)
 [![macOS 14+](https://img.shields.io/badge/macOS-14+-blue)](https://www.apple.com/macos/)
 
@@ -35,9 +36,12 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 
 ### Mac App Store
 
-Coming soon to the Mac App Store.
+[**Show KeyPress on the Mac App Store**](https://apps.apple.com/app/id6792384936)
 
 ### From Source
+
+Building Keypress yourself for personal, noncommercial use is permitted — see
+[License](#license).
 
 ```bash
 brew install xcodegen
@@ -97,6 +101,28 @@ bun run check          # Both
 - Swift Package Manager
 - KeyboardShortcuts for global hotkeys
 
+## Contributing
+
+Bug reports and feature requests are welcome. Pull requests require agreeing to
+the contributor terms — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## License
 
-MIT — see [LICENSE](./LICENSE)
+**Source-available, not open source.** Keypress is licensed under the
+[PolyForm Strict License 1.0.0](./LICENSE).
+
+The source is public so that anyone can audit what an app holding Input
+Monitoring permission actually does with keystrokes. It is not free to
+redistribute — Keypress is a paid app on the Mac App Store.
+
+|                                            |     |
+| ------------------------------------------ | --- |
+| Read and audit the source                   | ✅  |
+| Build it for your own personal use          | ✅  |
+| Use it commercially or inside a company     | ❌  |
+| Redistribute it, source or binary           | ❌  |
+| Publish modified versions or derived works  | ❌  |
+
+Releases up to and including `v1.1.0-build.9` were published under the MIT
+License and remain available under those terms — see [NOTICE.md](./NOTICE.md),
+which also lists third-party attributions.
