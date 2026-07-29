@@ -97,6 +97,30 @@ struct AboutSettingsPane: View {
                 .padding(.vertical, 8)
             }
 
+            StudioCard("about.onboarding.title", systemImage: "play.circle.fill", tint: .purple) {
+                HStack(spacing: 18) {
+                    Text(self.strings["about.onboarding.body"])
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer(minLength: 12)
+
+                    Button {
+                        OnboardingController.shared.replay()
+                    } label: {
+                        Label(
+                            self.strings["about.onboarding.action"],
+                            systemImage: "sparkles")
+                            .font(.callout.weight(.semibold))
+                            .padding(.horizontal, 14)
+                            .frame(height: 38)
+                            .background(Color.accentColor.gradient, in: Capsule())
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(StudioHoverButtonStyle(showsHoverSurface: false))
+                }
+            }
+
             StudioCard("about.release.title", systemImage: "sparkles", tint: .indigo) {
                 LazyVGrid(
                     columns: [

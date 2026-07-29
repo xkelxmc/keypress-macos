@@ -7,10 +7,21 @@ final class SettingsWindowController {
     static let shared = SettingsWindowController()
 
     private var window: NSWindow?
+    private let navigation = SettingsNavigationState()
 
     private init() {}
 
-    func showSettings() {
+    func showSettings(destination: SettingsDestination? = nil) {
+        let progress = OnboardingProgressStore.shared
+        progress.reconcileReadyState(
+            config: KeypressConfig.shared,
+            onboardingIsPresenting: OnboardingController.shared.isPresenting)
+        if let destination {
+            self.navigation.selectedDestination = destination
+        } else if progress.deferred, progress.needsSetup(config: KeypressConfig.shared) {
+            self.navigation.selectedDestination = .setup
+        }
+
         if let window = self.window {
             self.updateWindowAccessibility()
             window.makeKeyAndOrderFront(nil)
@@ -18,7 +29,9 @@ final class SettingsWindowController {
             return
         }
 
-        let settingsView = SettingsView(config: KeypressConfig.shared)
+        let settingsView = SettingsView(
+            config: KeypressConfig.shared,
+            navigation: self.navigation)
         let hostingController = NSHostingController(rootView: settingsView)
 
         let window = NSWindow(contentViewController: hostingController)

@@ -100,7 +100,12 @@ public final class KeyState: KeyStateProtocol {
     }
 
     /// Timeout duration for regular keys (from Settings).
-    public var keyTimeout: TimeInterval = 1.5
+    public var keyTimeout: TimeInterval = 1.5 {
+        didSet {
+            guard self.keyTimeout != oldValue else { return }
+            self.rearmTimeouts()
+        }
+    }
 
     /// Maximum number of keys to display. Range: 3-12.
     public var maxDisplayedKeys: Int = 6 {
@@ -108,6 +113,7 @@ public final class KeyState: KeyStateProtocol {
             let clamped = max(3, min(12, self.maxDisplayedKeys))
             guard clamped == self.maxDisplayedKeys else {
                 self.maxDisplayedKeys = clamped
+                self.sortAndLimit()
                 return
             }
             self.sortAndLimit()
@@ -120,12 +126,29 @@ public final class KeyState: KeyStateProtocol {
 
     /// Whether modifiers count towards the max keys limit.
     /// When true, limit is total keys. When false, limit is only for non-modifiers.
-    public var limitIncludesModifiers: Bool = true
+    public var limitIncludesModifiers: Bool = true {
+        didSet {
+            guard self.limitIncludesModifiers != oldValue else { return }
+            self.sortAndLimit()
+        }
+    }
 
-    public var contentMode: KeyboardContentMode = .allKeys
-    public var filters = KeyboardFilterSettings()
+    public var contentMode: KeyboardContentMode = .allKeys {
+        didSet {
+            guard self.contentMode != oldValue else { return }
+            self.reconcileDisplaySettings()
+        }
+    }
+
+    public var filters = KeyboardFilterSettings() {
+        didSet {
+            guard self.filters != oldValue else { return }
+            self.reconcileDisplaySettings()
+        }
+    }
 
     private var timeoutTasks: [String: Task<Void, Never>] = [:]
+    private var timeoutStartedAt: [String: TimeInterval] = [:]
     private var hiddenModifiers: [String: PressedKey] = [:]
 
     /// Modifiers that were released but are kept visible because they're associated with a key
@@ -177,6 +200,7 @@ public final class KeyState: KeyStateProtocol {
             task.cancel()
         }
         self.timeoutTasks.removeAll()
+        self.timeoutStartedAt.removeAll()
         self.hiddenModifiers.removeAll()
         self.releasedModifiers.removeAll()
         self.keyModifierAssociations.removeAll()
@@ -207,6 +231,13 @@ public final class KeyState: KeyStateProtocol {
         self.physicallyPressedKeys.insert(symbol.id)
 
         if symbol.isModifier {
+            guard self.filters.includes(symbol) else {
+                self.hiddenModifiers[symbol.id] = PressedKey(symbol: symbol)
+                self.pressedKeys.removeAll { $0.symbol.id == symbol.id }
+                self.releasedModifiers.remove(symbol.id)
+                return
+            }
+
             // Modifiers: only add if not already present, no timeout
             if self.filters.showStandaloneModifiers,
                !self.pressedKeys.contains(where: { $0.symbol.id == symbol.id })
@@ -224,9 +255,12 @@ public final class KeyState: KeyStateProtocol {
             if !self.pressedKeys.contains(where: { $0.symbol.id == symbol.id }) {
                 let key = PressedKey(symbol: symbol)
                 self.addKey(key)
-                // Associate with current modifiers
-                self.associateKeyWithModifiers(keyId: key.id)
             }
+            guard self.pressedKeys.contains(where: { $0.id == symbol.id }) else {
+                self.reconcileDisplaySettings()
+                return
+            }
+            self.associateKeyWithModifiers(keyId: symbol.id)
             self.scheduleTimeout(for: symbol.id)
         } else {
             // Regular keys
@@ -234,6 +268,10 @@ public final class KeyState: KeyStateProtocol {
                 // Allow duplicates: each press is unique (typing "hello" → h e l l o)
                 let key = PressedKey(symbol: symbol)
                 self.addKey(key)
+                guard self.pressedKeys.contains(where: { $0.id == key.id }) else {
+                    self.reconcileDisplaySettings()
+                    return
+                }
                 // Associate with current modifiers
                 self.associateKeyWithModifiers(keyId: key.id)
                 self.scheduleTimeout(for: key.id)
@@ -243,13 +281,16 @@ public final class KeyState: KeyStateProtocol {
                 if let existingKey = self.pressedKeys.first(where: { $0.symbol.id == symbol.id }) {
                     keyId = existingKey.id
                     self.cancelTimeout(for: keyId)
-                    self.associateKeyWithModifiers(keyId: keyId)
                 } else {
                     let key = PressedKey(symbol: symbol)
                     self.addKey(key)
-                    self.associateKeyWithModifiers(keyId: key.id)
                     keyId = key.id
                 }
+                guard self.pressedKeys.contains(where: { $0.id == keyId }) else {
+                    self.reconcileDisplaySettings()
+                    return
+                }
+                self.associateKeyWithModifiers(keyId: keyId)
                 self.scheduleTimeout(for: keyId)
             }
         }
@@ -257,6 +298,9 @@ public final class KeyState: KeyStateProtocol {
 
     /// Associates a key with currently active modifiers
     private func associateKeyWithModifiers(keyId: String) {
+        self.keyModifierAssociations.removeValue(forKey: keyId)
+        self.removeUnassociatedReleasedModifiers()
+
         let modifierIds = Set(
             self.pressedKeys
                 .filter { $0.symbol.isModifier && !self.releasedModifiers.contains($0.symbol.id) }
@@ -264,6 +308,63 @@ public final class KeyState: KeyStateProtocol {
         if !modifierIds.isEmpty {
             self.keyModifierAssociations[keyId] = modifierIds
         }
+    }
+
+    private func reconcileDisplaySettings() {
+        let filteredModifierIDs = Set(
+            self.pressedKeys
+                .filter { $0.symbol.isModifier && !self.filters.includes($0.symbol) }
+                .map(\.symbol.id))
+        for modifier in self.pressedKeys
+            where filteredModifierIDs.contains(modifier.symbol.id)
+            && self.physicallyPressedKeys.contains(modifier.symbol.id)
+        {
+            self.hiddenModifiers[modifier.symbol.id] = modifier
+        }
+        self.pressedKeys.removeAll { filteredModifierIDs.contains($0.symbol.id) }
+        self.releasedModifiers.subtract(filteredModifierIDs)
+        for keyID in Array(self.keyModifierAssociations.keys) {
+            self.keyModifierAssociations[keyID]?.subtract(filteredModifierIDs)
+            if self.keyModifierAssociations[keyID]?.isEmpty == true {
+                self.keyModifierAssociations.removeValue(forKey: keyID)
+            }
+        }
+
+        let invalidKeyIDs = self.pressedKeys
+            .filter { key in
+                guard !key.symbol.isModifier else { return false }
+                guard self.filters.includes(key.symbol) else { return true }
+                return self.contentMode == .shortcutsOnly
+                    && !key.symbol.isSpecial
+                    && self.keyModifierAssociations[key.id, default: []].isEmpty
+            }
+            .map(\.id)
+
+        for keyID in invalidKeyIDs {
+            self.removeKey(id: keyID)
+        }
+
+        if self.filters.showStandaloneModifiers {
+            self.promoteHiddenModifiers()
+        } else {
+            let associatedModifierIDs = self.keyModifierAssociations.values.reduce(into: Set<String>()) {
+                $0.formUnion($1)
+            }
+            let standaloneModifiers = self.pressedKeys.filter {
+                $0.symbol.isModifier && !associatedModifierIDs.contains($0.symbol.id)
+            }
+            for modifier in standaloneModifiers
+                where self.physicallyPressedKeys.contains(modifier.symbol.id)
+            {
+                self.hiddenModifiers[modifier.symbol.id] = modifier
+            }
+
+            let standaloneModifierIDs = Set(standaloneModifiers.map(\.symbol.id))
+            self.pressedKeys.removeAll { standaloneModifierIDs.contains($0.symbol.id) }
+            self.releasedModifiers.subtract(standaloneModifierIDs)
+        }
+
+        self.sortAndLimit()
     }
 
     private func handleKeyUp(symbol: KeySymbol) {
@@ -292,6 +393,13 @@ public final class KeyState: KeyStateProtocol {
         }
 
         if isPressed {
+            guard self.filters.includes(symbol) else {
+                self.hiddenModifiers[symbol.id] = PressedKey(symbol: symbol)
+                self.pressedKeys.removeAll { $0.symbol.id == symbol.id }
+                self.releasedModifiers.remove(symbol.id)
+                return
+            }
+
             if self.filters.showStandaloneModifiers,
                !self.pressedKeys.contains(where: { $0.symbol.id == symbol.id })
             {
@@ -307,8 +415,12 @@ public final class KeyState: KeyStateProtocol {
     }
 
     private func promoteHiddenModifiers() {
-        let modifiers = self.hiddenModifiers.values.sorted { $0.pressedAt < $1.pressedAt }
-        self.hiddenModifiers.removeAll()
+        let modifiers = self.hiddenModifiers.values
+            .filter { self.filters.includes($0.symbol) }
+            .sorted { $0.pressedAt < $1.pressedAt }
+        for modifier in modifiers {
+            self.hiddenModifiers.removeValue(forKey: modifier.symbol.id)
+        }
         for modifier in modifiers where !self.pressedKeys.contains(where: { $0.id == modifier.id }) {
             self.addKey(modifier)
         }
@@ -387,9 +499,9 @@ public final class KeyState: KeyStateProtocol {
                 result.append(contentsOf: keptRegular)
 
                 let keptIds = Set(result.map(\.id))
-                let evictedIds = Set(self.pressedKeys.map(\.id)).subtracting(keptIds)
+                let evictedKeys = self.pressedKeys.filter { !keptIds.contains($0.id) }
                 self.pressedKeys = result
-                self.cleanUpEvictedKeys(evictedIds)
+                self.cleanUpEvictedKeys(evictedKeys)
             }
         } else {
             // Limit applies only to non-modifiers (regular + special)
@@ -410,19 +522,28 @@ public final class KeyState: KeyStateProtocol {
                 result.append(contentsOf: keptRegular)
 
                 let keptIds = Set(result.map(\.id))
-                let evictedIds = Set(self.pressedKeys.map(\.id)).subtracting(keptIds)
+                let evictedKeys = self.pressedKeys.filter { !keptIds.contains($0.id) }
                 self.pressedKeys = result
-                self.cleanUpEvictedKeys(evictedIds)
+                self.cleanUpEvictedKeys(evictedKeys)
             }
         }
     }
 
-    private func cleanUpEvictedKeys(_ evictedIds: Set<String>) {
-        for keyId in evictedIds {
-            self.cancelTimeout(for: keyId)
-            self.keyModifierAssociations.removeValue(forKey: keyId)
+    private func cleanUpEvictedKeys(_ evictedKeys: [PressedKey]) {
+        for key in evictedKeys {
+            self.cancelTimeout(for: key.id)
+            self.keyModifierAssociations.removeValue(forKey: key.id)
+            if key.symbol.isModifier,
+               self.physicallyPressedKeys.contains(key.symbol.id)
+            {
+                self.hiddenModifiers[key.symbol.id] = key
+            }
         }
 
+        self.removeUnassociatedReleasedModifiers()
+    }
+
+    private func removeUnassociatedReleasedModifiers() {
         let unassociatedReleasedModifiers = self.releasedModifiers.filter { modifierId in
             !self.keyModifierAssociations.values.contains { $0.contains(modifierId) }
         }
@@ -437,22 +558,36 @@ public final class KeyState: KeyStateProtocol {
     }
 
     private func scheduleTimeout(for keyId: String) {
-        let task = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(self?.keyTimeout ?? 1.5))
+        self.timeoutStartedAt[keyId] = ProcessInfo.processInfo.systemUptime
+        self.rearmTimeout(for: keyId)
+    }
 
+    private func rearmTimeouts() {
+        for keyId in self.timeoutStartedAt.keys {
+            self.rearmTimeout(for: keyId)
+        }
+    }
+
+    private func rearmTimeout(for keyId: String) {
+        guard let timeoutStartedAt = self.timeoutStartedAt[keyId] else { return }
+
+        self.timeoutTasks[keyId]?.cancel()
+        let elapsed = ProcessInfo.processInfo.systemUptime - timeoutStartedAt
+        let remaining = max(0, self.keyTimeout - elapsed)
+        self.timeoutTasks[keyId] = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(remaining))
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
                 self?.removeKey(id: keyId)
             }
         }
-
-        self.timeoutTasks[keyId] = task
     }
 
     private func cancelTimeout(for keyId: String) {
         self.timeoutTasks[keyId]?.cancel()
         self.timeoutTasks.removeValue(forKey: keyId)
+        self.timeoutStartedAt.removeValue(forKey: keyId)
     }
 }
 
@@ -491,10 +626,26 @@ public final class SingleKeyState: KeyStateProtocol {
     }
 
     /// Timeout duration before keys disappear.
-    public var keyTimeout: TimeInterval = 1.5
+    public var keyTimeout: TimeInterval = 1.5 {
+        didSet {
+            guard self.keyTimeout != oldValue else { return }
+            self.rearmTimeout()
+        }
+    }
 
-    public var contentMode: KeyboardContentMode = .allKeys
-    public var filters = KeyboardFilterSettings()
+    public var contentMode: KeyboardContentMode = .allKeys {
+        didSet {
+            guard self.contentMode != oldValue else { return }
+            self.reconcileDisplaySettings()
+        }
+    }
+
+    public var filters = KeyboardFilterSettings() {
+        didSet {
+            guard self.filters != oldValue else { return }
+            self.reconcileDisplaySettings()
+        }
+    }
 
     /// Compatibility accessor for the former single-mode setting.
     public var showModifiersOnly: Bool {
@@ -518,6 +669,7 @@ public final class SingleKeyState: KeyStateProtocol {
     private var releasedModifiers: Set<String> = []
 
     private var timeoutTask: Task<Void, Never>?
+    private var timeoutStartedAt: TimeInterval?
 
     private let isKeyDown: KeyDownProbe
 
@@ -528,6 +680,11 @@ public final class SingleKeyState: KeyStateProtocol {
     /// Whether a combination is on screen (held or waiting for the timeout).
     private var hasComboKeys: Bool {
         !self.heldKeys.isEmpty || !self.lingeringKeys.isEmpty
+    }
+
+    /// Whether the displayed combination still has a physically held non-modifier key.
+    var hasHeldCombination: Bool {
+        !self.heldKeys.isEmpty
     }
 
     // MARK: - Initialization
@@ -542,6 +699,17 @@ public final class SingleKeyState: KeyStateProtocol {
     public func processEvent(_ event: KeyEvent, symbol: KeySymbol?) {
         guard let symbol else { return }
 
+        if event.type == .keyDown, !symbol.isModifier {
+            self.reconcileHeldKeys()
+        }
+        self.processReconciledEvent(event, symbol: symbol)
+    }
+
+    func reconcileHeldKeys() {
+        self.dropStaleHeldKeys()
+    }
+
+    func processReconciledEvent(_ event: KeyEvent, symbol: KeySymbol) {
         switch event.type {
         case .keyDown:
             self.handleKeyDown(event: event, symbol: symbol)
@@ -556,6 +724,7 @@ public final class SingleKeyState: KeyStateProtocol {
     public func clear() {
         self.timeoutTask?.cancel()
         self.timeoutTask = nil
+        self.timeoutStartedAt = nil
         self.pressedKeys.removeAll()
         self.activeModifiers.removeAll()
         self.releasedModifiers.removeAll()
@@ -568,13 +737,18 @@ public final class SingleKeyState: KeyStateProtocol {
     /// Returns true if the modifier is physically pressed (not just visible).
     public func isModifierPressed(_ symbolId: String) -> Bool {
         // Modifier is pressed if it's in activeModifiers AND not in releasedModifiers
-        let isActive = self.activeModifiers.contains { $0.symbol.id == symbolId }
+        let isActive = self.activeModifiers.contains {
+            $0.symbol.id == symbolId && self.filters.includes($0.symbol)
+        }
         return isActive && !self.releasedModifiers.contains(symbolId)
     }
 
     /// Set of symbol IDs for modifiers that are physically pressed.
     public var pressedModifierIds: Set<String> {
-        let activeIds = Set(self.activeModifiers.map(\.symbol.id))
+        let activeIds = Set(
+            self.activeModifiers
+                .filter { self.filters.includes($0.symbol) }
+                .map(\.symbol.id))
         return activeIds.subtracting(self.releasedModifiers)
     }
 
@@ -607,8 +781,6 @@ public final class SingleKeyState: KeyStateProtocol {
         else {
             return
         }
-
-        self.dropStaleHeldKeys()
 
         if self.heldKeys.isEmpty {
             // Nothing is held — this key starts a new combination
@@ -672,8 +844,8 @@ public final class SingleKeyState: KeyStateProtocol {
         guard !staleIds.isEmpty else { return }
 
         self.heldKeys.removeAll { staleIds.contains($0.key.symbol.id) }
-        self.currentCombinationKeys.removeAll { staleIds.contains($0.symbol.id) }
         self.physicallyPressedKeys.subtract(staleIds)
+        self.updateDisplay()
     }
 
     private func forgetReleasedModifiers() {
@@ -681,6 +853,31 @@ public final class SingleKeyState: KeyStateProtocol {
             self.activeModifiers.removeAll { $0.symbol.id == modifierId }
         }
         self.releasedModifiers.removeAll()
+    }
+
+    private func reconcileDisplaySettings() {
+        self.heldKeys.removeAll { !self.filters.includes($0.key.symbol) }
+        self.currentCombinationKeys.removeAll { !self.filters.includes($0.symbol) }
+        self.lingeringKeys.removeAll { !self.filters.includes($0.symbol) }
+
+        let comboKeys = self.heldKeys.isEmpty ? self.lingeringKeys : self.heldKeys.map(\.key)
+        if self.contentMode == .shortcutsOnly,
+           self.activeModifiers.isEmpty,
+           !comboKeys.contains(where: \.symbol.isSpecial)
+        {
+            self.heldKeys.removeAll()
+            self.currentCombinationKeys.removeAll()
+            self.lingeringKeys.removeAll()
+        }
+
+        if !self.hasComboKeys {
+            self.timeoutTask?.cancel()
+            self.timeoutTask = nil
+            self.timeoutStartedAt = nil
+            self.currentCombinationKeys.removeAll()
+            self.forgetReleasedModifiers()
+        }
+        self.updateDisplay()
     }
 
     private func handleFlagsChanged(event: KeyEvent, symbol: KeySymbol) {
@@ -736,18 +933,29 @@ public final class SingleKeyState: KeyStateProtocol {
             return
         }
 
-        var newKeys = self.activeModifiers.sorted { lhs, rhs in
-            lhs.pressedAt < rhs.pressedAt
-        }
+        var newKeys = self.activeModifiers
+            .filter { self.filters.includes($0.symbol) }
+            .sorted { lhs, rhs in
+                lhs.pressedAt < rhs.pressedAt
+            }
         newKeys.append(contentsOf: comboKeys)
 
         self.pressedKeys = newKeys
     }
 
     private func scheduleTimeout() {
+        self.timeoutStartedAt = ProcessInfo.processInfo.systemUptime
+        self.rearmTimeout()
+    }
+
+    private func rearmTimeout() {
+        guard let timeoutStartedAt = self.timeoutStartedAt else { return }
+
         self.timeoutTask?.cancel()
+        let elapsed = ProcessInfo.processInfo.systemUptime - timeoutStartedAt
+        let remaining = max(0, self.keyTimeout - elapsed)
         self.timeoutTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(self?.keyTimeout ?? 1.5))
+            try? await Task.sleep(for: .seconds(remaining))
 
             guard !Task.isCancelled else { return }
 
@@ -758,6 +966,8 @@ public final class SingleKeyState: KeyStateProtocol {
     }
 
     private func handleTimeout() {
+        self.timeoutTask = nil
+        self.timeoutStartedAt = nil
         self.dropStaleHeldKeys()
 
         // Keys still held stay on screen; re-arming means a missed key up is
@@ -776,52 +986,41 @@ public final class SingleKeyState: KeyStateProtocol {
 
 // MARK: - StackedHistoryState
 
-public enum StackedHistoryContent: Equatable, Sendable {
-    case text([PressedKey])
-    case chord([PressedKey])
-
-    public var keys: [PressedKey] {
-        switch self {
-        case let .text(keys), let .chord(keys): keys
-        }
-    }
-
-    public var text: String? {
-        guard case let .text(keys) = self else { return nil }
-        return keys.map { key in
-            key.symbol.id == "space" ? " " : key.symbol.display
-        }.joined()
-    }
-}
-
 public struct StackedHistoryEntry: Identifiable, Equatable, Sendable {
+    public enum Kind: Sendable, Equatable {
+        case text
+        case shortcut
+    }
+
     public let id: String
-    public var content: StackedHistoryContent
+    public var keys: [PressedKey]
+    public let kind: Kind
     public let createdAt: Date
     public var updatedAt: Date
 
-    public var keys: [PressedKey] {
-        self.content.keys
-    }
-
-    public var text: String? {
-        self.content.text
+    public var text: String {
+        self.keys.map { key in
+            key.symbol.id == "space" ? " " : key.symbol.display
+        }.joined()
     }
 
     public init(
         id: String = UUID().uuidString,
-        content: StackedHistoryContent,
+        keys: [PressedKey],
+        kind: Kind = .text,
         createdAt: Date = Date(),
         updatedAt: Date? = nil)
     {
         self.id = id
-        self.content = content
+        self.keys = keys
+        self.kind = kind
         self.createdAt = createdAt
         self.updatedAt = updatedAt ?? createdAt
     }
 }
 
-/// Tracks recent keystrokes as independent rows for the stacked history layout.
+/// Keeps the latest key combination at the normal overlay anchor and stores
+/// completed text and shortcut history separately.
 @MainActor
 @Observable
 public final class StackedHistoryState: KeyStateProtocol {
@@ -829,16 +1028,62 @@ public final class StackedHistoryState: KeyStateProtocol {
     public static let maxTextCharacters = 24
 
     public private(set) var entries: [StackedHistoryEntry] = []
-    public private(set) var pressedKeys: [PressedKey] = []
-    public private(set) var physicallyPressedKeys: Set<String> = []
 
-    public var hasKeys: Bool {
-        !self.entries.isEmpty
+    public var pressedKeys: [PressedKey] {
+        self.anchorState.pressedKeys
     }
 
-    public var keyTimeout: TimeInterval = 1.5
-    public var contentMode: KeyboardContentMode = .allKeys
-    public var filters = KeyboardFilterSettings()
+    public var physicallyPressedKeys: Set<String> {
+        self.anchorState.physicallyPressedKeys
+    }
+
+    public var hasKeys: Bool {
+        self.anchorState.hasKeys || !self.entries.isEmpty
+    }
+
+    public var hasAnchorKeys: Bool {
+        self.anchorState.hasKeys
+    }
+
+    public var keyTimeout: TimeInterval {
+        get { self.anchorState.keyTimeout }
+        set {
+            let oldValue = self.anchorState.keyTimeout
+            self.anchorState.keyTimeout = newValue
+            guard newValue != oldValue else { return }
+            self.rearmEntryTimeouts()
+        }
+    }
+
+    public var contentMode: KeyboardContentMode {
+        get { self.anchorState.contentMode }
+        set {
+            let changed = self.anchorState.contentMode != newValue
+            self.anchorState.contentMode = newValue
+            guard changed else { return }
+
+            self.pendingShortcut = nil
+            self.currentCombinationIsShortcut = false
+            self.currentTextContributions.removeAll()
+            if newValue == .shortcutsOnly {
+                self.clearTextEntries()
+            }
+        }
+    }
+
+    public var filters: KeyboardFilterSettings {
+        get { self.anchorState.filters }
+        set {
+            let changed = self.anchorState.filters != newValue
+            self.anchorState.filters = newValue
+            guard changed else { return }
+
+            self.pendingShortcut = nil
+            self.currentCombinationIsShortcut = false
+            self.reconcileShortcutEntries()
+        }
+    }
+
     public var duplicateLetters = true
 
     public var maxItems = 6 {
@@ -846,6 +1091,7 @@ public final class StackedHistoryState: KeyStateProtocol {
             let clamped = max(3, min(12, self.maxItems))
             guard clamped == self.maxItems else {
                 self.maxItems = clamped
+                self.enforceLimit()
                 return
             }
             self.enforceLimit()
@@ -853,15 +1099,24 @@ public final class StackedHistoryState: KeyStateProtocol {
     }
 
     public var pressedModifierIds: Set<String> {
-        Set(self.activeModifiers.keys)
+        self.anchorState.pressedModifierIds
     }
 
-    private var activeModifiers: [String: PressedKey] = [:]
-    private var standaloneEntryIDs: [String: String] = [:]
+    private let anchorState: SingleKeyState
     private var timeoutTasks: [String: Task<Void, Never>] = [:]
+    private var timeoutStartedAt: [String: TimeInterval] = [:]
     private var textFragmentIsOpen = false
+    private var currentCombinationIsShortcut = false
+    private var currentTextContributions: [String: Int] = [:]
+    private var pendingShortcut: StackedHistoryEntry?
 
-    public init(settings: KeyboardSettings = KeyboardSettings()) {
+    public init(
+        settings: KeyboardSettings = KeyboardSettings(),
+        isKeyDown: @escaping SingleKeyState.KeyDownProbe = {
+            CGEventSource.keyState(.combinedSessionState, key: $0)
+        })
+    {
+        self.anchorState = SingleKeyState(isKeyDown: isKeyDown)
         self.apply(settings)
     }
 
@@ -876,123 +1131,176 @@ public final class StackedHistoryState: KeyStateProtocol {
     public func processEvent(_ event: KeyEvent, symbol: KeySymbol?) {
         guard let symbol else { return }
 
-        switch event.type {
-        case .keyDown:
-            if symbol.isModifier {
-                self.updateModifier(symbol: symbol, isPressed: true, timestamp: event.timestamp)
+        if event.type == .keyDown, !symbol.isModifier {
+            self.anchorState.reconcileHeldKeys()
+        }
+
+        let wasPhysicallyPressed = self.anchorState.physicallyPressedKeys.contains(symbol.id)
+        let hadHeldCombination = self.anchorState.hasHeldCombination
+        let settings = KeyboardSettings(
+            contentMode: self.contentMode,
+            filters: self.filters)
+        let disposition = KeyboardEventFilter.disposition(
+            for: event,
+            symbol: symbol,
+            settings: settings)
+        let isNewDisplayableKeyDown = event.type == .keyDown
+            && !symbol.isModifier
+            && !wasPhysicallyPressed
+            && disposition == .display
+
+        if isNewDisplayableKeyDown {
+            if !hadHeldCombination {
+                self.archivePendingShortcut()
+                self.currentCombinationIsShortcut = !self.isTextInput(event: event, symbol: symbol)
+                self.currentTextContributions.removeAll()
+            } else if !self.isTextInput(event: event, symbol: symbol) {
+                self.currentCombinationIsShortcut = true
+                self.retractCurrentTextContributions()
+            }
+        }
+
+        self.anchorState.processReconciledEvent(event, symbol: symbol)
+
+        if event.type == .keyUp,
+           !symbol.isModifier,
+           hadHeldCombination,
+           !self.anchorState.hasHeldCombination
+        {
+            if self.currentCombinationIsShortcut, self.anchorState.hasKeys {
+                self.pendingShortcut = StackedHistoryEntry(
+                    keys: self.anchorState.pressedKeys,
+                    kind: .shortcut,
+                    createdAt: event.timestamp)
             } else {
-                self.physicallyPressedKeys.insert(symbol.id)
-                self.addEntry(for: event, symbol: symbol)
+                self.pendingShortcut = nil
             }
-        case .keyUp:
-            self.physicallyPressedKeys.remove(symbol.id)
-            if symbol.isModifier {
-                self.updateModifier(symbol: symbol, isPressed: false, timestamp: event.timestamp)
+            self.currentCombinationIsShortcut = false
+            self.currentTextContributions.removeAll()
+        }
+
+        guard event.type == .keyDown, !symbol.isModifier else {
+            if symbol.isModifier, !self.modifierKeepsTextOpen(symbol) {
+                self.textFragmentIsOpen = false
             }
-        case .flagsChanged:
-            let isPressed = modifierIsPressed(
-                event: event,
-                symbolID: symbol.id,
-                physicallyPressedKeys: self.physicallyPressedKeys)
-            self.updateModifier(symbol: symbol, isPressed: isPressed, timestamp: event.timestamp)
+            return
+        }
+
+        guard !wasPhysicallyPressed else { return }
+
+        if disposition == .display, self.isTextInput(event: event, symbol: symbol) {
+            if let entryID = self.appendText(symbol: symbol, timestamp: event.timestamp) {
+                self.currentTextContributions[entryID, default: 0] += 1
+            }
+        } else {
+            self.textFragmentIsOpen = false
         }
     }
 
     public func clear() {
-        for task in self.timeoutTasks.values {
-            task.cancel()
-        }
-        self.timeoutTasks.removeAll()
-        self.activeModifiers.removeAll()
-        self.standaloneEntryIDs.removeAll()
-        self.entries.removeAll()
-        self.pressedKeys.removeAll()
-        self.physicallyPressedKeys.removeAll()
-        self.textFragmentIsOpen = false
+        self.anchorState.clear()
+        self.clearEntries()
+        self.pendingShortcut = nil
+        self.currentCombinationIsShortcut = false
+        self.currentTextContributions.removeAll()
     }
 
     public func isModifierPressed(_ symbolId: String) -> Bool {
-        self.activeModifiers[symbolId] != nil
+        self.anchorState.isModifierPressed(symbolId)
     }
 
-    private func addEntry(for event: KeyEvent, symbol: KeySymbol) {
+    private func isTextInput(event: KeyEvent, symbol: KeySymbol) -> Bool {
+        guard self.contentMode == .allKeys else { return false }
         let shortcutFlags: CGEventFlags = [
             .maskCommand,
             .maskAlternate,
             .maskControl,
-            .maskShift,
+            .maskSecondaryFn,
         ]
-        let isUnmodified = event.modifiers.isDisjoint(with: shortcutFlags)
         let isTextSymbol = !symbol.isSpecial || symbol.id == "space"
-
-        if isUnmodified, isTextSymbol, self.contentMode == .allKeys {
-            self.appendText(symbol: symbol, timestamp: event.timestamp)
-            return
-        }
-
-        self.textFragmentIsOpen = false
-
-        let settings = KeyboardSettings(
-            contentMode: self.contentMode,
-            filters: self.filters)
-        guard KeyboardEventFilter.disposition(
-            for: event,
-            symbol: symbol,
-            settings: settings) == .display
-        else {
-            return
-        }
-
-        for modifierID in self.activeModifiers.keys {
-            if let entryID = self.standaloneEntryIDs.removeValue(forKey: modifierID) {
-                self.removeEntry(id: entryID)
-            }
-        }
-
-        if symbol.isSpecial || !self.duplicateLetters {
-            let duplicateIDs = self.entries
-                .filter { $0.keys.last?.symbol.id == symbol.id }
-                .map(\.id)
-            for entryID in duplicateIDs {
-                self.removeEntry(id: entryID)
-            }
-        }
-
-        var keys = self.activeModifiers.values.sorted { $0.pressedAt < $1.pressedAt }
-        keys.append(PressedKey(symbol: symbol, pressedAt: event.timestamp))
-        let entry = StackedHistoryEntry(content: .chord(keys), createdAt: event.timestamp)
-        self.entries.append(entry)
-        self.scheduleTimeout(for: entry.id)
-        self.enforceLimit()
-        self.rebuildPressedKeys()
+        return isTextSymbol && event.modifiers.isDisjoint(with: shortcutFlags)
     }
 
-    private func appendText(symbol: KeySymbol, timestamp: Date) {
+    private func modifierKeepsTextOpen(_ symbol: KeySymbol) -> Bool {
+        switch KeyCodeMapper.category(for: symbol) {
+        case .shift, .capsLock:
+            true
+        case .letter, .command, .option, .control, .escape, .function, .navigation, .editing:
+            false
+        }
+    }
+
+    private func appendText(symbol: KeySymbol, timestamp: Date) -> String? {
         if !self.duplicateLetters,
-           self.entries.last?.keys.contains(where: { $0.symbol.id == symbol.id }) == true
+           let lastIndex = self.entries.indices.last,
+           self.entries[lastIndex].kind == .text,
+           self.entries[lastIndex].keys.contains(where: { $0.symbol.id == symbol.id })
         {
-            return
+            self.entries[lastIndex].updatedAt = timestamp
+            self.scheduleTimeout(for: self.entries[lastIndex].id)
+            return nil
         }
 
         let key = PressedKey(symbol: symbol, pressedAt: timestamp)
         if self.textFragmentIsOpen,
            let lastIndex = self.entries.indices.last,
-           case let .text(existingKeys) = self.entries[lastIndex].content,
+           self.entries[lastIndex].kind == .text,
            timestamp >= self.entries[lastIndex].updatedAt,
            timestamp.timeIntervalSince(self.entries[lastIndex].updatedAt) <= Self.textGroupingInterval,
-           Self.textLength(existingKeys + [key]) <= Self.maxTextCharacters
+           Self.textLength(self.entries[lastIndex].keys + [key]) <= Self.maxTextCharacters
         {
-            self.entries[lastIndex].content = .text(existingKeys + [key])
+            self.entries[lastIndex].keys.append(key)
             self.entries[lastIndex].updatedAt = timestamp
             self.scheduleTimeout(for: self.entries[lastIndex].id)
         } else {
-            let entry = StackedHistoryEntry(content: .text([key]), createdAt: timestamp)
+            let entry = StackedHistoryEntry(keys: [key], createdAt: timestamp)
             self.entries.append(entry)
             self.scheduleTimeout(for: entry.id)
             self.enforceLimit()
         }
         self.textFragmentIsOpen = true
-        self.rebuildPressedKeys()
+        return self.entries.last?.id
+    }
+
+    private func retractCurrentTextContributions() {
+        guard !self.currentTextContributions.isEmpty else { return }
+
+        var emptyEntryIDs: Set<String> = []
+        for (entryID, contributionCount) in self.currentTextContributions {
+            guard let index = self.entries.firstIndex(where: { $0.id == entryID }) else { continue }
+
+            self.entries[index].keys.removeLast(min(contributionCount, self.entries[index].keys.count))
+
+            if let lastKey = self.entries[index].keys.last {
+                self.entries[index].updatedAt = lastKey.pressedAt
+            } else {
+                emptyEntryIDs.insert(self.entries[index].id)
+            }
+        }
+        for entryID in emptyEntryIDs {
+            self.cancelTimeout(for: entryID)
+        }
+        self.entries.removeAll { emptyEntryIDs.contains($0.id) }
+        self.currentTextContributions.removeAll()
+    }
+
+    private func archivePendingShortcut() {
+        guard let pendingShortcut = self.pendingShortcut else { return }
+        self.pendingShortcut = nil
+
+        let displayedKeyIDs = Set(self.anchorState.pressedKeys.map(\.id))
+        let shortcutKeyIDs = pendingShortcut.keys
+            .filter { !$0.symbol.isModifier }
+            .map(\.id)
+        guard self.anchorState.hasKeys,
+              shortcutKeyIDs.allSatisfy(displayedKeyIDs.contains)
+        else {
+            return
+        }
+
+        self.entries.append(pendingShortcut)
+        self.scheduleTimeout(for: pendingShortcut.id)
+        self.enforceLimit()
     }
 
     private static func textLength(_ keys: [PressedKey]) -> Int {
@@ -1001,59 +1309,75 @@ public final class StackedHistoryState: KeyStateProtocol {
         }
     }
 
-    private func updateModifier(symbol: KeySymbol, isPressed: Bool, timestamp: Date) {
-        if isPressed {
-            self.textFragmentIsOpen = false
-            self.physicallyPressedKeys.insert(symbol.id)
-            if self.activeModifiers[symbol.id] == nil {
-                self.activeModifiers[symbol.id] = PressedKey(symbol: symbol, pressedAt: timestamp)
-            }
-            self.addStandaloneModifierEntryIfNeeded(symbol: symbol, timestamp: timestamp)
-        } else {
-            self.physicallyPressedKeys.remove(symbol.id)
-            self.activeModifiers.removeValue(forKey: symbol.id)
-            if let entryID = self.standaloneEntryIDs.removeValue(forKey: symbol.id) {
-                self.removeEntry(id: entryID)
-            }
-        }
-    }
-
-    private func addStandaloneModifierEntryIfNeeded(symbol: KeySymbol, timestamp: Date) {
-        guard self.filters.showStandaloneModifiers,
-              self.standaloneEntryIDs[symbol.id] == nil
-        else {
-            return
-        }
-
-        let entry = StackedHistoryEntry(
-            content: .chord([PressedKey(symbol: symbol, pressedAt: timestamp)]),
-            createdAt: timestamp)
-        self.standaloneEntryIDs[symbol.id] = entry.id
-        self.entries.append(entry)
-        self.enforceLimit()
-        self.rebuildPressedKeys()
-    }
-
     private func enforceLimit() {
         guard self.entries.count > self.maxItems else { return }
 
         let removed = self.entries.prefix(self.entries.count - self.maxItems)
         for entry in removed {
+            self.currentTextContributions.removeValue(forKey: entry.id)
+        }
+        for entry in removed {
             self.cancelTimeout(for: entry.id)
-            self.standaloneEntryIDs = self.standaloneEntryIDs.filter { $0.value != entry.id }
         }
         self.entries.removeFirst(self.entries.count - self.maxItems)
-        self.rebuildPressedKeys()
     }
 
-    private func rebuildPressedKeys() {
-        self.pressedKeys = self.entries.flatMap(\.keys)
+    private func clearTextEntries() {
+        let textEntryIDs = self.entries
+            .filter { $0.kind == .text }
+            .map(\.id)
+        for entryID in textEntryIDs {
+            self.cancelTimeout(for: entryID)
+        }
+        self.entries.removeAll { $0.kind == .text }
+        self.textFragmentIsOpen = false
+        self.currentTextContributions.removeAll()
+    }
+
+    private func reconcileShortcutEntries() {
+        let invalidEntryIDs = Set(
+            self.entries
+                .filter { entry in
+                    entry.kind == .shortcut
+                        && entry.keys.contains { !self.filters.includes($0.symbol) }
+                }
+                .map(\.id))
+        for entryID in invalidEntryIDs {
+            self.cancelTimeout(for: entryID)
+        }
+        self.entries.removeAll { invalidEntryIDs.contains($0.id) }
+    }
+
+    private func clearEntries() {
+        for task in self.timeoutTasks.values {
+            task.cancel()
+        }
+        self.timeoutTasks.removeAll()
+        self.timeoutStartedAt.removeAll()
+        self.entries.removeAll()
+        self.textFragmentIsOpen = false
+        self.currentTextContributions.removeAll()
     }
 
     private func scheduleTimeout(for entryID: String) {
-        self.cancelTimeout(for: entryID)
+        self.timeoutStartedAt[entryID] = ProcessInfo.processInfo.systemUptime
+        self.rearmTimeout(for: entryID)
+    }
+
+    private func rearmEntryTimeouts() {
+        for entryID in self.entries.map(\.id) {
+            self.rearmTimeout(for: entryID)
+        }
+    }
+
+    private func rearmTimeout(for entryID: String) {
+        guard let timeoutStartedAt = self.timeoutStartedAt[entryID] else { return }
+
+        self.timeoutTasks[entryID]?.cancel()
+        let elapsed = ProcessInfo.processInfo.systemUptime - timeoutStartedAt
+        let remaining = max(0, self.keyTimeout - elapsed)
         self.timeoutTasks[entryID] = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(self?.keyTimeout ?? 1.5))
+            try? await Task.sleep(for: .seconds(remaining))
             guard !Task.isCancelled else { return }
             self?.removeEntry(id: entryID)
         }
@@ -1062,12 +1386,12 @@ public final class StackedHistoryState: KeyStateProtocol {
     private func cancelTimeout(for entryID: String) {
         self.timeoutTasks[entryID]?.cancel()
         self.timeoutTasks.removeValue(forKey: entryID)
+        self.timeoutStartedAt.removeValue(forKey: entryID)
     }
 
     private func removeEntry(id: String) {
         self.cancelTimeout(for: id)
+        self.currentTextContributions.removeValue(forKey: id)
         self.entries.removeAll { $0.id == id }
-        self.standaloneEntryIDs = self.standaloneEntryIDs.filter { $0.value != id }
-        self.rebuildPressedKeys()
     }
 }

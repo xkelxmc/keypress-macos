@@ -60,13 +60,13 @@ final class OverlayController {
 
     /// Current key state protocol reference for common operations.
     private var currentKeyState: (any KeyStateProtocol)? {
-        switch self.config.displayMode {
-        case .single: self.singleKeyState
-        case .history:
-            switch self.config.keyboard.historyLayout {
-            case .horizontal: self.historyKeyState
-            case .stacked: self.stackedHistoryState
-            }
+        switch self.config.keyboard.presentation {
+        case .latest:
+            self.singleKeyState
+        case .horizontalHistory:
+            self.historyKeyState
+        case .stackedHistory:
+            self.stackedHistoryState
         }
     }
 
@@ -121,18 +121,13 @@ final class OverlayController {
             self.keyMonitor?.emitCurrentModifiers()
             self.startObservingKeyState()
         } else {
-            // Check if it's actually a permission issue vs. system resource issue
             if KeyMonitor.hasInputMonitoringPermission() {
                 print(
                     "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
             } else {
-                print("[Keypress] KeyMonitor.start() failed, requesting permissions...")
+                print("[Keypress] KeyMonitor.start() waiting for explicit Input Monitoring access")
             }
 
-            // Request permission (shows system dialog if app not in list)
-            InputMonitoringPermission.request()
-
-            // Subscribe to permission changes
             self.permission.onPermissionChange { [weak self] granted in
                 print("[Keypress] Permission changed: \(granted)")
                 if granted {
@@ -141,7 +136,6 @@ final class OverlayController {
                 }
             }
 
-            // Start polling as fallback
             self.permission.startPolling()
         }
 
@@ -424,8 +418,8 @@ final class OverlayController {
     }
 
     private func makeOverlayWindow() -> OverlayWindow? {
-        switch self.config.displayMode {
-        case .single:
+        switch self.config.keyboard.presentation {
+        case .latest:
             guard let singleState = self.singleKeyState else {
                 print("[Keypress] ERROR: SingleKeyState not created - cannot create overlay")
                 return nil
@@ -433,25 +427,22 @@ final class OverlayController {
             return OverlayWindow(
                 singleKeyState: singleState,
                 config: self.config)
-        case .history:
-            switch self.config.keyboard.historyLayout {
-            case .horizontal:
-                guard let historyState = self.historyKeyState else {
-                    print("[Keypress] ERROR: KeyState not created - cannot create overlay")
-                    return nil
-                }
-                return OverlayWindow(
-                    keyState: historyState,
-                    config: self.config)
-            case .stacked:
-                guard let stackedHistoryState = self.stackedHistoryState else {
-                    print("[Keypress] ERROR: StackedHistoryState not created - cannot create overlay")
-                    return nil
-                }
-                return OverlayWindow(
-                    stackedHistoryState: stackedHistoryState,
-                    config: self.config)
+        case .horizontalHistory:
+            guard let historyState = self.historyKeyState else {
+                print("[Keypress] ERROR: KeyState not created - cannot create overlay")
+                return nil
             }
+            return OverlayWindow(
+                keyState: historyState,
+                config: self.config)
+        case .stackedHistory:
+            guard let stackedHistoryState = self.stackedHistoryState else {
+                print("[Keypress] ERROR: StackedHistoryState not created - cannot create overlay")
+                return nil
+            }
+            return OverlayWindow(
+                stackedHistoryState: stackedHistoryState,
+                config: self.config)
         }
     }
 
@@ -481,27 +472,24 @@ final class OverlayController {
         self.singleKeyState = nil
         self.stackedHistoryState = nil
 
-        switch self.config.displayMode {
-        case .single:
+        switch self.config.keyboard.presentation {
+        case .latest:
             let state = SingleKeyState()
             state.keyTimeout = self.config.keyTimeout
             state.contentMode = self.config.keyboard.contentMode
             state.filters = self.config.keyboard.filters
             self.singleKeyState = state
-        case .history:
-            switch self.config.keyboard.historyLayout {
-            case .horizontal:
-                let state = KeyState()
-                state.keyTimeout = self.config.keyTimeout
-                state.maxDisplayedKeys = self.config.maxKeys
-                state.duplicateLetters = self.config.duplicateLetters
-                state.limitIncludesModifiers = self.config.limitIncludesModifiers
-                state.contentMode = self.config.keyboard.contentMode
-                state.filters = self.config.keyboard.filters
-                self.historyKeyState = state
-            case .stacked:
-                self.stackedHistoryState = StackedHistoryState(settings: self.config.keyboard)
-            }
+        case .horizontalHistory:
+            let state = KeyState()
+            state.keyTimeout = self.config.keyTimeout
+            state.maxDisplayedKeys = self.config.maxKeys
+            state.duplicateLetters = self.config.duplicateLetters
+            state.limitIncludesModifiers = self.config.limitIncludesModifiers
+            state.contentMode = self.config.keyboard.contentMode
+            state.filters = self.config.keyboard.filters
+            self.historyKeyState = state
+        case .stackedHistory:
+            self.stackedHistoryState = StackedHistoryState(settings: self.config.keyboard)
         }
     }
 
@@ -598,8 +586,7 @@ final class OverlayController {
         guard let previous = self.lastAppliedSettings, previous != settings else { return }
         self.lastAppliedSettings = settings
 
-        let presentationChanged = previous.keyboard.displayMode != settings.keyboard.displayMode
-            || previous.keyboard.historyLayout != settings.keyboard.historyLayout
+        let presentationChanged = previous.keyboard.presentation != settings.keyboard.presentation
         let keyboardAppearanceChanged =
             previous.appearance.keyboardThemeSelection
                 != settings.appearance.keyboardThemeSelection
@@ -684,7 +671,11 @@ final class OverlayController {
                 }
                 if self.keyMonitor?.isRunning != true {
                     self.resetTransientInputState()
-                    if InputMonitoringPermission.functionalTest() {
+                    let permissionReady = await Task.detached(priority: .utility) {
+                        InputMonitoringPermission.isReady()
+                    }.value
+                    guard !Task.isCancelled else { return }
+                    if permissionReady {
                         self.keyMonitor?.stop()
                         self.keyMonitor = self.makeKeyMonitor()
                         self.startMonitoring()

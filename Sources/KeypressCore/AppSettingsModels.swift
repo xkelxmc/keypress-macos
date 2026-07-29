@@ -50,6 +50,12 @@ public enum HistoryLayout: String, CaseIterable, Codable, Sendable {
     case stacked
 }
 
+public enum KeyboardPresentation: String, CaseIterable, Codable, Sendable {
+    case latest
+    case horizontalHistory
+    case stackedHistory
+}
+
 public struct KeyboardFilterSettings: Codable, Sendable, Equatable {
     public var showStandaloneModifiers: Bool
     public var showFunctionKeys: Bool
@@ -137,6 +143,32 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
             limitIncludesModifiers: self.limitIncludesModifiers,
             pressAnimationModifiers: self.pressAnimationModifiers,
             pressAnimationRegularKeys: self.pressAnimationRegularKeys)
+    }
+
+    public var presentation: KeyboardPresentation {
+        get {
+            switch (self.displayMode, self.historyLayout) {
+            case (.single, _):
+                .latest
+            case (.history, .horizontal):
+                .horizontalHistory
+            case (.history, .stacked):
+                .stackedHistory
+            }
+        }
+        set {
+            switch newValue {
+            case .latest:
+                self.displayMode = .single
+                self.historyLayout = .horizontal
+            case .horizontalHistory:
+                self.displayMode = .history
+                self.historyLayout = .horizontal
+            case .stackedHistory:
+                self.displayMode = .history
+                self.historyLayout = .stacked
+            }
+        }
     }
 }
 
@@ -854,6 +886,61 @@ public enum DisplayPlacement: Codable, Sendable, Equatable {
         position: .bottomRight,
         horizontalOffset: 20,
         verticalOffset: 20)
+}
+
+public enum StackedHistoryHorizontalAnchor: Sendable, Equatable {
+    case leading
+    case center
+    case trailing
+}
+
+public enum StackedHistoryVerticalAnchor: Sendable, Equatable {
+    case top
+    case center
+    case bottom
+}
+
+public struct StackedHistoryLayout: Sendable, Equatable {
+    public let horizontalAnchor: StackedHistoryHorizontalAnchor
+    public let verticalAnchor: StackedHistoryVerticalAnchor
+
+    public init(_ placement: DisplayPlacement) {
+        switch placement {
+        case let .anchor(position, _, _):
+            self.init(position)
+        case .custom:
+            self.init(
+                horizontalAnchor: .center,
+                verticalAnchor: .center)
+        }
+    }
+
+    public init(
+        horizontalAnchor: StackedHistoryHorizontalAnchor,
+        verticalAnchor: StackedHistoryVerticalAnchor)
+    {
+        self.horizontalAnchor = horizontalAnchor
+        self.verticalAnchor = verticalAnchor
+    }
+
+    public init(_ position: OverlayPosition) {
+        self.horizontalAnchor = switch position {
+        case .topLeft, .centerLeft, .bottomLeft:
+            .leading
+        case .topCenter, .bottomCenter:
+            .center
+        case .topRight, .centerRight, .bottomRight:
+            .trailing
+        }
+        self.verticalAnchor = switch position {
+        case .topLeft, .topCenter, .topRight:
+            .top
+        case .centerLeft, .centerRight:
+            .center
+        case .bottomLeft, .bottomCenter, .bottomRight:
+            .bottom
+        }
+    }
 }
 
 public enum DisplayTarget: Codable, Sendable, Equatable {

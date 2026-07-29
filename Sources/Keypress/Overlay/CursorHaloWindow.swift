@@ -37,8 +37,12 @@ struct CursorHaloStyle: Equatable, Sendable {
     var glowRadius: CGFloat
     var glowIntensity: Double
     var motionIntensity: Double
-    var staysVisible: Bool
+    var visibility: PointerVisibility
     var idleDelay: TimeInterval
+
+    var staysVisible: Bool {
+        self.visibility == .always
+    }
 
     static let system = CursorHaloStyle(
         settings: PointerSettings(),
@@ -63,7 +67,7 @@ struct CursorHaloStyle: Equatable, Sendable {
         self.glowRadius = CGFloat(theme.glowRadius)
         self.glowIntensity = theme.glowIntensity
         self.motionIntensity = settings.motionIntensity
-        self.staysVisible = settings.visibility == .always
+        self.visibility = settings.visibility
         self.idleDelay = settings.visibility == .actionsOnly
             ? settings.idleDelay / 2
             : settings.idleDelay
@@ -171,20 +175,62 @@ final class CursorHaloWindow: NSPanel {
     }
 
     func update(style: CursorHaloStyle, location: NSPoint) {
-        let wasAlwaysVisible = self.presentationState.style.staysVisible
+        let previousStyle = self.presentationState.style
         if self.presentationState.style != style {
             self.presentationState.style = style
         }
         self.updatePosition(around: location)
-        if style.staysVisible {
-            self.idleTask?.cancel()
-            self.idleTask = nil
+
+        guard previousStyle.visibility != style.visibility
+            || previousStyle.idleDelay != style.idleDelay
+        else {
+            if style.staysVisible, !self.isVisible {
+                self.orderFrontRegardless()
+            }
+            return
+        }
+
+        self.idleTask?.cancel()
+        self.idleTask = nil
+
+        switch style.visibility {
+        case .always:
             if !self.isVisible {
                 self.orderFrontRegardless()
             }
-        } else if wasAlwaysVisible {
-            self.scheduleIdleIfNeeded()
+        case .actionsOnly:
+            if previousStyle.visibility != .actionsOnly {
+                if self.pressedButtons.isEmpty {
+                    self.hideImmediately()
+                } else if !self.isVisible {
+                    self.orderFrontRegardless()
+                }
+            } else if self.isVisible {
+                let elapsed = ProcessInfo.processInfo.systemUptime - self.lastActivityAt
+                if self.pressedButtons.isEmpty, elapsed >= style.idleDelay {
+                    self.hideImmediately()
+                } else {
+                    self.scheduleIdleIfNeeded(recordsActivity: false)
+                }
+            }
+        case .onActivity:
+            guard self.isVisible else { return }
+            let elapsed = ProcessInfo.processInfo.systemUptime - self.lastActivityAt
+            if self.pressedButtons.isEmpty, elapsed >= style.idleDelay {
+                self.hideImmediately()
+            } else {
+                self.scheduleIdleIfNeeded(recordsActivity: false)
+            }
         }
+    }
+
+    private func hideImmediately() {
+        self.idleTask?.cancel()
+        self.idleTask = nil
+        if self.pressedButtons.isEmpty {
+            self.presentationState.reaction = .idle
+        }
+        self.orderOut(nil)
     }
 
     func clear() {
@@ -283,8 +329,10 @@ final class CursorHaloWindow: NSPanel {
         }
     }
 
-    private func scheduleIdleIfNeeded() {
-        self.lastActivityAt = ProcessInfo.processInfo.systemUptime
+    private func scheduleIdleIfNeeded(recordsActivity: Bool = true) {
+        if recordsActivity {
+            self.lastActivityAt = ProcessInfo.processInfo.systemUptime
+        }
         guard !self.presentationState.style.staysVisible else { return }
         guard self.idleTask == nil else { return }
 

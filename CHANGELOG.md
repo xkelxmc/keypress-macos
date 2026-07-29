@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2026-07-29
 
 ### Added
+- **Premium first-run onboarding** — a cinematic introduction with original sound, an interactive local preview, explicit Input Monitoring setup, and guided keyboard and Cursor Halo configuration
+- **Replayable setup tour** — unfinished onboarding can be resumed from Settings, while the complete experience can be replayed later without resetting saved preferences
 - **Cursor Halo** — customizable shapes, colors, glow, and responsive motion for movement, clicks, dragging, and scrolling
 - **On-screen positioning editor** — drag the real keyboard overlay directly on any connected display with snapping, reset, and cancel support
 - **Native Studio settings** — a resizable sidebar interface with pinned live previews, grouped controls, and separate keyboard and pointer theme galleries
@@ -18,12 +20,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Selected Displays mode** — mirror the keyboard overlay across multiple displays with a separate saved position for each one
 
 ### Changed
+- **Keyboard presentation is now an explicit three-mode choice** — Latest, Horizontal History, and Stacked History use the same illustrated selector and animated preview in onboarding and Settings
+- **Stacked History keeps the active shortcut anchored** — typed text and completed shortcuts grow around a stable key combination according to its screen position instead of shifting the overlay
+- **Input Monitoring is requested only after a deliberate action** — onboarding explains why access is needed before opening System Settings, and the app remains disabled until setup is complete
+- **Onboarding uses a consistent dark presentation** — the full-screen experience also respects Reduce Motion and Reduce Transparency accessibility preferences
 - **Display preferences now use stable identifiers** — monitor reordering and reconnecting no longer point the overlay at the wrong screen
 - **Status feedback now uses an independent HUD** — mode changes no longer move the keyboard overlay or use the old indicator-light style
 - **Settings persistence is versioned** — existing preferences migrate into grouped, validated settings without changing the default keyboard behavior
 - **Settings interactions stay immediate** — rapid slider and color changes are saved as one coalesced snapshot instead of blocking the UI on every step
 
 ### Fixed
+- **Onboarding interactions stay responsive** — full-card hit targets, hover feedback, reliable ceremony skipping, and immediate Cursor Halo mode switching remove missed clicks and delayed controls
+- **Keyboard previews match the selected behavior** — All Keys demonstrates ⇧⌘K, Shortcuts Only demonstrates ⇧⌘V, and replay animates each key sequentially from an unpressed state
+- **Stacked History remains stable at every screen anchor** — mixed text and shortcut rows no longer drift, overflow their previews, duplicate the current chord, or align toward the wrong edge
+- **Runtime input changes reconcile immediately** — content filters, timeouts, held modifiers, Fn shortcuts, missed releases, and display limits no longer leave stale or duplicated keys
+- **Setup navigation no longer leaves empty sidebar space** — the temporary Setup destination disappears cleanly once permission and enablement are complete
 - **Modifier and duplicate-key state is resilient** — evicted keys, missed releases, and permission transitions no longer leave stale keys visible
 - **Cursor Halo stays attached to the pointer** — its dedicated listen-only event tap removes global-monitor lag, restores missed mouse releases, and resynchronizes after Space changes
 - **Cursor Halo reaches every screen edge** — the transparent glow canvas is no longer constrained away from the menu bar edge

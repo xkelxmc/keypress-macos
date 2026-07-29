@@ -34,7 +34,7 @@ struct SingleKeyVisualizationView: View {
 }
 
 /// Shared visualization content (used by both modes).
-private struct KeyVisualizationContent: View {
+struct KeyVisualizationContent: View {
     let pressedKeys: [PressedKey]
     let physicallyPressedKeys: Set<String>
     let hasKeys: Bool

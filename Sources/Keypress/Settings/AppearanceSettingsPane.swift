@@ -135,7 +135,7 @@ struct KeyboardAppearanceSettingsPane: View {
     }
 }
 
-private struct ThemeCard: View {
+struct ThemeCard: View {
     let selection: ThemeSelection
     let customTheme: ThemeDefinition
     let isSelected: Bool
@@ -179,8 +179,65 @@ private struct ThemeCard: View {
                         lineWidth: self.isSelected ? 2 : 1)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(StudioHoverButtonStyle())
         .accessibilityAddTraits(self.isSelected ? .isSelected : [])
+    }
+}
+
+struct StudioHoverButtonStyle: ButtonStyle {
+    var showsHoverSurface = true
+
+    func makeBody(configuration: Configuration) -> some View {
+        StudioHoverButtonBody(
+            configuration: configuration,
+            showsHoverSurface: self.showsHoverSurface)
+    }
+}
+
+private struct StudioHoverButtonBody: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isEnabled) private var isEnabled
+    let configuration: ButtonStyleConfiguration
+    let showsHoverSurface: Bool
+    @State private var isHovered = false
+
+    var body: some View {
+        self.configuration.label
+            .contentShape(Rectangle())
+            .brightness(self.hasHover ? 0.085 : 0)
+            .background {
+                if self.showsHoverSurface {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(Color.primary.opacity(self.hasHover ? 0.045 : 0))
+                }
+            }
+            .overlay {
+                if self.showsHoverSurface {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .strokeBorder(Color.primary.opacity(self.hasHover ? 0.12 : 0))
+                }
+            }
+            .opacity(self.isEnabled && self.configuration.isPressed ? 0.72 : 1)
+            .scaleEffect(
+                !self.isEnabled || self.reduceMotion || !self.configuration.isPressed
+                    ? 1
+                    : 0.985)
+            .animation(
+                .easeOut(duration: self.reduceMotion ? 0.08 : 0.14),
+                value: self.isHovered)
+            .animation(
+                .easeOut(duration: self.reduceMotion ? 0.08 : 0.1),
+                value: self.configuration.isPressed)
+            .onHover { self.isHovered = self.isEnabled && $0 }
+            .onChange(of: self.isEnabled) { _, isEnabled in
+                if !isEnabled {
+                    self.isHovered = false
+                }
+            }
+    }
+
+    private var hasHover: Bool {
+        self.isEnabled && self.isHovered
     }
 }
 
@@ -871,18 +928,12 @@ struct KeyPreview: View {
     }
 
     private var previewSymbols: [KeySymbol] {
-        if self.config.keyboard.contentMode == .shortcutsOnly {
-            return [
-                KeySymbol(id: "command-left", display: "⌘", isModifier: true),
-                KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
-                KeySymbol(id: "k", display: "K"),
-            ]
-        }
-
-        return [
+        [
+            KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
             KeySymbol(id: "command-left", display: "⌘", isModifier: true),
-            KeySymbol(id: "h", display: "H"),
-            KeySymbol(id: "i", display: "I"),
+            self.config.keyboard.contentMode == .allKeys
+                ? KeySymbol(id: "key-40", display: "K")
+                : KeySymbol(id: "key-9", display: "V"),
         ]
     }
 

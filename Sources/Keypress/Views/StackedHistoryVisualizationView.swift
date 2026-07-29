@@ -5,6 +5,7 @@ import SwiftUI
 struct StackedHistoryVisualizationView: View {
     var keyState: StackedHistoryState
     let config: KeypressConfig
+    @ObservedObject var layoutState: OverlayLayoutState
     var appliesSizeScale = true
 
     private var keyboardTheme: KeyboardTheme {
@@ -12,18 +13,111 @@ struct StackedHistoryVisualizationView: View {
     }
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 8) {
-            ForEach(self.keyState.entries) { entry in
-                StackedHistoryRow(
-                    entry: entry,
-                    physicallyPressedKeys: self.keyState.physicallyPressedKeys,
-                    config: self.config,
-                    keyboardTheme: self.keyboardTheme)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+        self.content
+            .scaleEffect(self.appliesSizeScale ? self.config.size.scaleFactor : 1)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if self.keyState.entries.isEmpty {
+            self.anchorKeys
+        } else {
+            switch self.layoutState.stackedHistoryLayout.verticalAnchor {
+            case .top:
+                VStack(alignment: self.horizontalAlignment, spacing: 8) {
+                    self.anchorKeys
+                    self.historyRows(Array(self.keyState.entries.reversed()))
+                }
+            case .bottom:
+                VStack(alignment: self.horizontalAlignment, spacing: 8) {
+                    self.historyRows(self.keyState.entries)
+                    self.anchorKeys
+                }
+            case .center:
+                switch self.layoutState.stackedHistoryLayout.horizontalAnchor {
+                case .leading:
+                    HStack(alignment: .center, spacing: 10) {
+                        self.anchorKeys
+                        self.historyRows(self.keyState.entries)
+                    }
+                case .trailing:
+                    HStack(alignment: .center, spacing: 10) {
+                        self.historyRows(self.keyState.entries)
+                        self.anchorKeys
+                    }
+                case .center:
+                    self.centeredHistory
+                }
             }
         }
-        .scaleEffect(self.appliesSizeScale ? self.config.size.scaleFactor : 1)
-        .animation(.spring(response: 0.3, dampingFraction: 0.82), value: self.keyState.entries)
+    }
+
+    private var anchorKeys: some View {
+        KeyVisualizationContent(
+            pressedKeys: self.keyState.pressedKeys,
+            physicallyPressedKeys: self.keyState.physicallyPressedKeys,
+            hasKeys: self.keyState.hasAnchorKeys,
+            config: self.config,
+            appliesSizeScale: false)
+    }
+
+    private func historyRows(_ entries: [StackedHistoryEntry]) -> some View {
+        VStack(alignment: self.horizontalAlignment, spacing: 8) {
+            ForEach(entries) { entry in
+                self.historyRow(entry)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func historyRow(_ entry: StackedHistoryEntry) -> some View {
+        switch entry.kind {
+        case .text:
+            StackedHistoryTextRow(
+                text: entry.text,
+                theme: self.keyboardTheme)
+        case .shortcut:
+            KeyVisualizationContent(
+                pressedKeys: entry.keys,
+                physicallyPressedKeys: [],
+                hasKeys: true,
+                config: self.config,
+                appliesSizeScale: false)
+        }
+    }
+
+    private var centeredHistory: some View {
+        let newestFirst = Array(self.keyState.entries.reversed())
+        let above = newestFirst.enumerated().compactMap { index, entry in
+            index.isMultiple(of: 2) ? entry : nil
+        }
+        let below = newestFirst.enumerated().compactMap { index, entry in
+            index.isMultiple(of: 2) ? nil : entry
+        }
+        let orderedAbove = Array(above.reversed())
+
+        return VStack(alignment: self.horizontalAlignment, spacing: 8) {
+            ZStack(alignment: Alignment(horizontal: self.horizontalAlignment, vertical: .bottom)) {
+                self.historyRows(orderedAbove)
+                self.historyRows(below)
+                    .hidden()
+            }
+            self.anchorKeys
+            ZStack(alignment: Alignment(horizontal: self.horizontalAlignment, vertical: .top)) {
+                self.historyRows(below)
+                self.historyRows(orderedAbove)
+                    .hidden()
+            }
+        }
+    }
+
+    private var horizontalAlignment: HorizontalAlignment {
+        switch self.layoutState.stackedHistoryLayout.horizontalAnchor {
+        case .leading: .leading
+        case .center: .center
+        case .trailing: .trailing
+        }
     }
 
     private var systemIsDark: Bool {
@@ -32,55 +126,24 @@ struct StackedHistoryVisualizationView: View {
     }
 }
 
-private struct StackedHistoryRow: View {
-    let entry: StackedHistoryEntry
-    let physicallyPressedKeys: Set<String>
-    let config: KeypressConfig
-    let keyboardTheme: KeyboardTheme
+struct StackedHistoryTextRow: View {
+    let text: String
+    let theme: KeyboardTheme
 
     var body: some View {
-        switch self.entry.content {
-        case let .text(keys):
-            Text(self.displayText(keys))
-                .font(self.textFont)
-                .foregroundStyle(self.keyboardTheme.textColor.color)
-                .lineLimit(1)
-                .frame(minWidth: 48, minHeight: self.textRowHeight, alignment: .leading)
-                .padding(.horizontal, 16)
-                .background {
-                    HistoryTextSurface(theme: self.keyboardTheme)
-                }
-        case let .chord(keys):
-            self.chord(keys)
-        }
-    }
-
-    @ViewBuilder
-    private func chord(_ keys: [PressedKey]) -> some View {
-        let keycaps = HStack(spacing: CGFloat(self.keyboardTheme.keySpacing)) {
-            ForEach(keys) { key in
-                KeyCapView(
-                    symbol: key.symbol,
-                    config: self.config,
-                    isPressed: self.isPressed(key))
+        Text(self.text)
+            .font(self.textFont)
+            .foregroundStyle(self.theme.textColor.color)
+            .lineLimit(1)
+            .frame(minWidth: 48, minHeight: Self.height(for: self.theme), alignment: .leading)
+            .padding(.horizontal, 16)
+            .background {
+                HistoryTextSurface(theme: self.theme)
             }
-        }
-
-        KeyboardThemeContainer(config: self.config) {
-            keycaps
-        }
     }
 
-    private func isPressed(_ key: PressedKey) -> Bool {
-        let isPhysicallyPressed = self.physicallyPressedKeys.contains(key.symbol.id)
-        if key.symbol.isModifier {
-            return isPhysicallyPressed && self.config.keyboard.pressAnimationModifiers
-        }
-        return isPhysicallyPressed && self.config.keyboard.pressAnimationRegularKeys
-    }
-
-    private var textRowHeight: CGFloat {
-        switch self.keyboardTheme.material {
+    static func height(for theme: KeyboardTheme) -> CGFloat {
+        switch theme.material {
         case .minimal: 34
         case .monochrome: 42
         case .classic: 52
@@ -89,17 +152,11 @@ private struct StackedHistoryRow: View {
     }
 
     private var textFont: Font {
-        let size = 22 * self.keyboardTheme.fontScale
+        let size = 22 * self.theme.fontScale
         return ThemeFont.font(
-            family: self.keyboardTheme.fontFamily,
+            family: self.theme.fontFamily,
             size: size,
-            weight: self.keyboardTheme.fontWeight)
-    }
-
-    private func displayText(_ keys: [PressedKey]) -> String {
-        keys.map { key in
-            key.symbol.id == "space" ? " " : key.symbol.display
-        }.joined()
+            weight: self.theme.fontWeight)
     }
 }
 

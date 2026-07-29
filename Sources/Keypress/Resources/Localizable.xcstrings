@@ -1059,6 +1059,27 @@
       "fr" : { "stringUnit" : { "state" : "translated", "value" : "Liens et assistance" } },
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ссылки и поддержка" } }
     } },
+    "about.onboarding.action" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Onboarding wiederholen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Replay Onboarding" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Repetir introducción" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Revoir l’introduction" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Пройти онбординг снова" } }
+    } },
+    "about.onboarding.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Vor dem Start wird nichts zurückgesetzt. Ihre Auswahl wird sofort angewendet." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Nothing is reset before you begin. Any choices you make are applied live." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "No se restablece nada antes de empezar. Tus cambios se aplican al instante." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rien n’est réinitialisé avant de commencer. Vos choix s’appliquent immédiatement." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Перед запуском ничего не сбрасывается. Новые варианты применяются сразу." } }
+    } },
+    "about.onboarding.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Willkommenstour" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Welcome Tour" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tour de bienvenida" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Visite de bienvenue" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Приветственный тур" } }
+    } },
     "about.privacy.body" : { "localizations" : {
       "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatureingaben werden lokal verarbeitet und niemals aufgezeichnet, gespeichert oder übertragen." } },
       "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard input is processed locally and is never recorded, stored, or transmitted." } },
@@ -2353,6 +2374,356 @@
       "es" : { "stringUnit" : { "state" : "translated", "value" : "Reposo" } },
       "fr" : { "stringUnit" : { "state" : "translated", "value" : "Au repos" } },
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Покой" } }
+    } },
+    "onboarding.back" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zurück" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Back" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Atrás" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Retour" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Назад" } }
+    } },
+    "onboarding.ceremony.skip" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Klicken oder Leertaste drücken, um fortzufahren" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Click or press Space to continue" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Haz clic o pulsa Espacio para continuar" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cliquez ou appuyez sur Espace pour continuer" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нажмите мышью или пробел, чтобы продолжить" } }
+    } },
+    "onboarding.ceremony.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Deine Eingabe. Sichtbar gemacht." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Your input, made visible." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tus acciones, ahora visibles." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vos actions deviennent visibles." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ваши действия становятся видимыми." } }
+    } },
+    "onboarding.ceremony.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Lerne Keypress kennen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Meet Keypress" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Descubre Keypress" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Découvrez Keypress" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Знакомьтесь: Keypress" } }
+    } },
+    "onboarding.keyboard.horizontal" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Horizontaler Verlauf" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Horizontal History" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial horizontal" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Historique horizontal" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "История в строку" } }
+    } },
+    "onboarding.keyboard.latest" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zuletzt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Última" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Dernière" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Последняя" } }
+    } },
+    "onboarding.keyboard.replay" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastendruck wiederholen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Replay key press" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Repetir pulsación" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rejouer l’appui" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторить нажатие" } }
+    } },
+    "onboarding.keyboard.stacked" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Gestapelter Verlauf" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stacked History" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial apilado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Historique empilé" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "История стопкой" } }
+    } },
+    "onboarding.keyboard.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wähle, wie deine Tastatureingaben auf dem Bildschirm erscheinen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose how your keyboard story appears on screen." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige cómo se muestra tu teclado en pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez comment votre clavier apparaît à l’écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выберите, как история нажатий выглядит на экране." } }
+    } },
+    "onboarding.keyboard.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Jedes Kürzel auf einen Blick" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Make every shortcut unmistakable" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Haz que cada atajo sea inconfundible" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Rendez chaque raccourci évident" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сделайте каждое сочетание понятным" } }
+    } },
+    "onboarding.later" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Später einrichten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Set Up Later" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Configurar más tarde" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Configurer plus tard" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настроить позже" } }
+    } },
+    "onboarding.next" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Weiter" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Continuar" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Continuer" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Продолжить" } }
+    } },
+    "onboarding.permission.grant" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zugriff erlauben" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Grant Access" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Conceder acceso" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Autoriser l’accès" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выдать доступ" } }
+    } },
+    "onboarding.permission.local" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastaturereignisse werden nur auf diesem Mac verarbeitet." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard events are processed only on this Mac." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Los eventos del teclado se procesan solo en este Mac." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les événements clavier sont traités uniquement sur ce Mac." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "События клавиатуры обрабатываются только на этом Mac." } }
+    } },
+    "onboarding.permission.retry" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Erneut versuchen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Try Again" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Volver a intentar" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réessayer" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Попробовать снова" } }
+    } },
+    "onboarding.permission.secure" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Secure Input blendet das Tastatur-Overlay automatisch aus." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Secure Input automatically hides the keyboard overlay." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Secure Input oculta automáticamente la superposición del teclado." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Secure Input masque automatiquement la surcouche clavier." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Secure Input автоматически скрывает оверлей клавиатуры." } }
+    } },
+    "onboarding.permission.storage" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastenanschläge werden nie aufgezeichnet, gespeichert oder übertragen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keystrokes are never recorded, stored, or transmitted." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Las pulsaciones nunca se graban, almacenan ni transmiten." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les frappes ne sont jamais enregistrées, stockées ni transmises." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нажатия никогда не записываются, не хранятся и не передаются." } }
+    } },
+    "onboarding.permission.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress benötigt eine macOS-Berechtigung, um Tasten außerhalb der App anzuzeigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress needs one macOS permission to visualize keys outside the app." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Keypress necesita un permiso de macOS para mostrar teclas fuera de la app." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Keypress a besoin d’une autorisation macOS pour afficher les touches hors de l’app." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Keypress нужен один доступ macOS, чтобы показывать клавиши вне приложения." } }
+    } },
+    "onboarding.permission.success" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eingabemonitoring ist bereit" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Input Monitoring is ready" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La monitorización de entrada está lista" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "La surveillance des entrées est prête" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мониторинг ввода готов" } }
+    } },
+    "onboarding.permission.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Privatsphäre als Grundprinzip" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Private by design" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Privacidad desde el diseño" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Confidentiel par conception" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Приватность заложена в основу" } }
+    } },
+    "onboarding.permission.waiting" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Warten auf Zugriff in den Systemeinstellungen …" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Waiting for access in System Settings…" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Esperando acceso en Ajustes del Sistema…" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "En attente de l’accès dans Réglages Système…" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ожидаем доступ в Системных настройках…" } }
+    } },
+    "onboarding.pointer.disabled" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Halo ist aus — die Einrichtung kann trotzdem abgeschlossen werden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Halo is disabled — you can still finish setup" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Halo está desactivado; aun así puedes terminar la configuración" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Halo est désactivé — vous pouvez terminer la configuration" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Halo выключен — настройку всё равно можно завершить" } }
+    } },
+    "onboarding.pointer.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Gib Bewegungen und Aktionen einen eigenen visuellen Rhythmus." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Give movement and actions their own visual rhythm." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Da a los movimientos y acciones su propio ritmo visual." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Donnez aux mouvements et actions leur propre rythme visuel." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Добавьте движению и действиям собственный визуальный ритм." } }
+    } },
+    "onboarding.pointer.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Der Zeiger führt dein Publikum" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Let the pointer carry the audience" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Deja que el puntero guíe a tu audiencia" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Laissez le pointeur guider votre public" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Пусть курсор ведёт внимание зрителя" } }
+    } },
+    "onboarding.preview.clicks" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Klicks" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Clicks" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Clics" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clics" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клики" } }
+    } },
+    "onboarding.preview.hint" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tippe, bewege den Zeiger und klicke" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Try typing, moving the pointer, and clicking" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Prueba a escribir, mover el puntero y hacer clic" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Essayez de taper, déplacer le pointeur et cliquer" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Попробуйте печатать, двигать курсор и кликать" } }
+    } },
+    "onboarding.preview.keyboard" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clavier" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиатура" } }
+    } },
+    "onboarding.preview.pointer" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pointer" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Курсор" } }
+    } },
+    "onboarding.preview.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Alles hier ist lokal. Für diese Vorschau ist keine Berechtigung nötig." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Everything here is local. No permission is needed for this preview." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Todo ocurre de forma local. Esta vista previa no necesita permisos." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Tout se passe localement. Cet aperçu ne nécessite aucune autorisation." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Всё работает локально. Для этого превью доступ не нужен." } }
+    } },
+    "onboarding.preview.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Sieh, was dein Publikum sieht" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "See what your audience will see" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mira lo que verá tu audiencia" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Voyez ce que votre public verra" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Посмотрите глазами вашей аудитории" } }
+    } },
+    "onboarding.product" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress 2.0" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress 2.0" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Keypress 2.0" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Keypress 2.0" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Keypress 2.0" } }
+    } },
+    "onboarding.progress" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Schritt %d von %d" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Step %d of %d" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Paso %d de %d" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Étape %d sur %d" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Шаг %d из %d" } }
+    } },
+    "onboarding.settings.card.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Schließe die kurze Einrichtung ab, um Keypress zu aktivieren und seine Overlays anzupassen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Finish the short guided setup to enable Keypress and tailor its overlays." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Completa la breve configuración guiada para activar Keypress y personalizar sus superposiciones." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Terminez la configuration guidée pour activer Keypress et personnaliser ses surcouches." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Завершите короткую настройку, чтобы включить Keypress и подобрать вид оверлеев." } }
+    } },
+    "onboarding.settings.card.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Deine Einrichtung wartet" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Your setup is waiting" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tu configuración está pendiente" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Votre configuration vous attend" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройка ждёт вас" } }
+    } },
+    "onboarding.settings.continue" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einrichtung fortsetzen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue Setup" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Continuar configuración" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Continuer la configuration" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Продолжить настройку" } }
+    } },
+    "onboarding.settings.continue.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum gespeicherten Schritt zurückkehren" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Return to the saved step" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Volver al paso guardado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Reprendre à l’étape enregistrée" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вернуться к сохранённому шагу" } }
+    } },
+    "onboarding.settings.privacy" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Privat ab der ersten Taste" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Private from the first key" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Privado desde la primera tecla" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Confidentiel dès la première touche" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Приватно с первого нажатия" } }
+    } },
+    "onboarding.settings.privacy.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eingaben werden lokal verarbeitet und nie aufgezeichnet, gespeichert oder übertragen. Keypress benötigt nur Eingabemonitoring." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Input is processed locally and never recorded, stored, or transmitted. Keypress requests only Input Monitoring." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La entrada se procesa localmente y nunca se graba, almacena ni transmite. Keypress solo solicita Monitorización de entrada." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les entrées sont traitées localement et ne sont jamais enregistrées, stockées ni transmises. Keypress demande uniquement la surveillance des entrées." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ввод обрабатывается локально и никогда не записывается, не хранится и не передаётся. Keypress запрашивает только Мониторинг ввода." } }
+    } },
+    "onboarding.settings.progress" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Gespeicherter Fortschritt" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved progress" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Progreso guardado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Progression enregistrée" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сохранённый прогресс" } }
+    } },
+    "onboarding.settings.status" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einrichtungsstatus" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Setup Status" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Estado de configuración" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "État de la configuration" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Состояние настройки" } }
+    } },
+    "onboarding.settings.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Schließe die geführte Einrichtung ab, wenn du bereit bist." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Complete the guided setup when you are ready." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Completa la configuración guiada cuando quieras." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Terminez la configuration guidée quand vous le souhaitez." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Завершите пошаговую настройку, когда будете готовы." } }
+    } },
+    "onboarding.settings.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einrichtung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Setup" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Configuration" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройка" } }
+    } },
+    "onboarding.sound.off" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeremonie stummschalten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Mute ceremony sound" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Silenciar el sonido de bienvenida" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Couper le son d’accueil" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выключить звук приветствия" } }
+    } },
+    "onboarding.sound.on" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeremonie-Ton einschalten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Turn ceremony sound on" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar el sonido de bienvenida" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Activer le son d’accueil" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Включить звук приветствия" } }
+    } },
+    "onboarding.start" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress verwenden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Start Using Keypress" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Empezar a usar Keypress" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Commencer à utiliser Keypress" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Начать работу с Keypress" } }
+    } },
+    "onboarding.step.1" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Interaktive Vorschau" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Interactive Preview" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Vista previa interactiva" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aperçu interactif" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Интерактивное превью" } }
+    } },
+    "onboarding.step.2" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Eingabemonitoring" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Input Monitoring" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Monitorización de entrada" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Surveillance des entrées" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мониторинг ввода" } }
+    } },
+    "onboarding.step.3" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatur" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyboard" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Clavier" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиатура" } }
+    } },
+    "onboarding.step.4" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Cursor Halo" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Cursor Halo" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Halo del cursor" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Halo du curseur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Подсветка курсора" } }
+    } },
+    "sidebar.setup" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einrichtung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Setup" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Configuration" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройка" } }
     } },
     "window.settings.title" : {
       "localizations" : {

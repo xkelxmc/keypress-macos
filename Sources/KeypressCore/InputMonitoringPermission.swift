@@ -32,9 +32,9 @@ public final class InputMonitoringPermission {
     // MARK: - Initialization
 
     private init() {
-        self.isGranted = Self.check()
+        self.isGranted = Self.isReady()
         self.lastKnownState = self.isGranted
-        logger.info("Init: IOHIDCheckAccess=\(self.isGranted), functionalTest=\(Self.functionalTest())")
+        logger.info("Init: ready=\(self.isGranted)")
     }
 
     // Note: No deinit cleanup needed - this is a singleton that lives for app lifetime.
@@ -42,8 +42,12 @@ public final class InputMonitoringPermission {
     // MARK: - Public Methods
 
     /// Checks if Input Monitoring permission is granted (fresh check, not cached).
-    public static func check() -> Bool {
+    public nonisolated static func check() -> Bool {
         IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
+    }
+
+    public nonisolated static func isReady() -> Bool {
+        self.check() || self.functionalTest()
     }
 
     /// Requests Input Monitoring permission, showing the system prompt if not already granted.
@@ -91,23 +95,28 @@ public final class InputMonitoringPermission {
                 guard let self else { return }
 
                 pollCount += 1
-                let granted = Self.check()
-                let functional = Self.functionalTest()
+                let ready = await Task.detached(priority: .userInitiated) {
+                    Self.isReady()
+                }.value
+                guard !Task.isCancelled,
+                      self.pollingGeneration == generation
+                else {
+                    return
+                }
 
                 // Log every 10th poll or when state changes
                 if pollCount % 10 == 0 {
-                    print("[InputMonitoringPermission] Poll #\(pollCount): granted=\(granted), func=\(functional)")
+                    print("[InputMonitoringPermission] Poll #\(pollCount): ready=\(ready)")
                 }
 
-                // Use functional test as the source of truth
-                if functional != self.lastKnownState {
-                    print("[InputMonitoringPermission] Permission changed! functional=\(functional)")
-                    self.lastKnownState = functional
-                    self.isGranted = functional
-                    self.changeHandler?(functional)
+                if ready != self.lastKnownState {
+                    print("[InputMonitoringPermission] Permission changed! ready=\(ready)")
+                    self.lastKnownState = ready
+                    self.isGranted = ready
+                    self.changeHandler?(ready)
                 }
 
-                if functional {
+                if ready {
                     print("[InputMonitoringPermission] Granted, stopping polling")
                     return
                 }
@@ -124,7 +133,7 @@ public final class InputMonitoringPermission {
 
     /// Performs a functional test by attempting to create an event tap.
     /// This is more reliable than IOHIDCheckAccess() in some edge cases.
-    public static func functionalTest() -> Bool {
+    public nonisolated static func functionalTest() -> Bool {
         let eventMask: CGEventMask = 1 << CGEventType.keyDown.rawValue
 
         guard let tap = CGEvent.tapCreate(

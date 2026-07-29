@@ -14,8 +14,10 @@ struct KeyboardSettingsPane: View {
                     titleKey: "keyboard.title",
                     subtitleKey: "keyboard.subtitle",
                     preview: {
-                        StudioPreviewSurface(height: 150) {
-                            KeyboardSettingsPreview(config: self.config)
+                        StudioPreviewSurface(height: 166) {
+                            KeyboardPresentationDemo(
+                                config: self.config,
+                                replayLabel: self.strings["onboarding.keyboard.replay"])
                         }
                     },
                     content: { self.settingsControls })
@@ -37,14 +39,20 @@ struct KeyboardSettingsPane: View {
         InputPermissionBanner()
 
         StudioCard("keyboard.behavior", systemImage: "slider.horizontal.3", tint: .blue) {
-            SettingsRow("keyboard.mode", subtitleKey: "keyboard.mode.subtitle") {
-                Picker("", selection: self.$config.keyboard.displayMode) {
-                    Text(self.strings["keyboard.mode.single"]).tag(DisplayMode.single)
-                    Text(self.strings["keyboard.mode.history"]).tag(DisplayMode.history)
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(self.strings["keyboard.mode"])
+                        .font(.body)
+                    Text(self.strings["keyboard.mode.subtitle"])
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                 }
-                .labelsHidden()
-                .pickerStyle(.segmented)
-                .frame(width: 210)
+
+                HStack(spacing: 10) {
+                    ForEach(KeyboardPresentation.allCases, id: \.self) { presentation in
+                        self.presentationCard(presentation)
+                    }
+                }
             }
 
             StudioDivider()
@@ -94,24 +102,12 @@ struct KeyboardSettingsPane: View {
                 binding: self.$config.keyboard.filters.showSpecialKeys)
         }
 
-        if self.config.keyboard.displayMode == .history {
+        if self.config.keyboard.presentation != .latest {
             StudioCard(
                 "keyboard.history",
                 systemImage: "text.line.last.and.arrowtriangle.forward",
                 tint: .teal)
             {
-                SettingsRow("keyboard.historyLayout") {
-                    Picker("", selection: self.$config.keyboard.historyLayout) {
-                        Text(self.strings["keyboard.layout.horizontal"]).tag(HistoryLayout.horizontal)
-                        Text(self.strings["keyboard.layout.stacked"]).tag(HistoryLayout.stacked)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .frame(width: 210)
-                }
-
-                StudioDivider()
-
                 SettingsRow("keyboard.maxKeys", subtitleKey: "keyboard.maxKeys.subtitle") {
                     Stepper(
                         value: self.$config.keyboard.maxItems,
@@ -130,7 +126,7 @@ struct KeyboardSettingsPane: View {
                     subtitleKey: "keyboard.duplicates.subtitle",
                     binding: self.$config.keyboard.duplicateLetters)
 
-                if self.config.keyboard.historyLayout == .horizontal {
+                if self.config.keyboard.presentation == .horizontalHistory {
                     StudioDivider()
 
                     self.switchRow(
@@ -165,6 +161,51 @@ struct KeyboardSettingsPane: View {
             isOn: self.$config.keyboard.enabled)
     }
 
+    private func presentationCard(_ presentation: KeyboardPresentation) -> some View {
+        let selected = self.config.keyboard.presentation == presentation
+
+        return Button {
+            self.presentationBinding.wrappedValue = presentation
+        } label: {
+            VStack(spacing: 9) {
+                OnboardingPresentationArtwork(
+                    presentation: presentation,
+                    contentMode: self.config.keyboard.contentMode)
+                    .frame(height: 54)
+                    .accessibilityHidden(true)
+
+                Text(self.strings[presentation.onboardingTitleKey])
+                    .font(.caption.weight(selected ? .bold : .medium))
+                    .foregroundStyle(selected ? .primary : .secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .padding(11)
+            .frame(maxWidth: .infinity)
+            .background(
+                selected ? Color.accentColor.opacity(0.13) : Color.primary.opacity(0.045),
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(
+                        selected ? Color.accentColor : Color.primary.opacity(0.08),
+                        lineWidth: selected ? 2 : 1)
+            }
+        }
+        .buttonStyle(StudioHoverButtonStyle())
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private var presentationBinding: Binding<KeyboardPresentation> {
+        Binding(
+            get: { self.config.keyboard.presentation },
+            set: { presentation in
+                var keyboard = self.config.keyboard
+                keyboard.presentation = presentation
+                self.config.keyboard = keyboard
+            })
+    }
+
     private func filterRow(
         _ titleKey: String,
         subtitleKey: String? = nil,
@@ -184,88 +225,5 @@ struct KeyboardSettingsPane: View {
                 .toggleStyle(.switch)
                 .accessibilityLabel(self.strings[titleKey])
         }
-    }
-}
-
-private struct KeyboardSettingsPreview: View {
-    let config: KeypressConfig
-
-    private var keyboardTheme: KeyboardTheme {
-        self.config.effectiveTheme(isSystemDark: self.isSystemDark).keyboard
-    }
-
-    private var symbols: [KeySymbol] {
-        if self.config.keyboard.contentMode == .shortcutsOnly {
-            [
-                KeySymbol(id: "command-left", display: "⌘", isModifier: true),
-                KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
-                KeySymbol(id: "k", display: "K"),
-            ]
-        } else if self.config.keyboard.displayMode == .single {
-            [
-                KeySymbol(id: "a", display: "A"),
-            ]
-        } else {
-            ["H", "E", "L", "L", "O"].enumerated().map { index, letter in
-                KeySymbol(id: "\(letter.lowercased())-\(index)", display: letter)
-            }
-        }
-    }
-
-    var body: some View {
-        Group {
-            if self.config.keyboard.contentMode == .allKeys,
-               self.config.keyboard.displayMode == .history,
-               self.config.keyboard.historyLayout == .stacked
-            {
-                VStack(alignment: .trailing, spacing: 8) {
-                    self.previewContainer {
-                        self.keys([
-                            KeySymbol(id: "command-left", display: "⌘", isModifier: true),
-                            KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
-                            KeySymbol(id: "k", display: "K"),
-                        ])
-                    }
-                    self.previewContainer {
-                        self.keys(
-                            ["H", "E", "L", "L", "O"].enumerated().map { index, letter in
-                                KeySymbol(id: "\(letter.lowercased())-\(index)", display: letter)
-                            })
-                    }
-                }
-            } else {
-                self.previewContainer {
-                    self.keys(self.symbols)
-                }
-            }
-        }
-        .scaleEffect(self.config.keyboard.size.scaleFactor)
-        .opacity(self.config.keyboard.opacity)
-    }
-
-    private func previewContainer(
-        @ViewBuilder keys: @escaping () -> some View) -> some View
-    {
-        KeyboardThemeContainer(config: self.config, disableOuterShadow: true) {
-            keys()
-        }
-    }
-
-    private func keys(_ symbols: [KeySymbol]) -> some View {
-        HStack(spacing: CGFloat(self.keyboardTheme.keySpacing)) {
-            ForEach(symbols) { symbol in
-                KeyCapView(
-                    symbol: symbol,
-                    config: self.config,
-                    isPressed: symbol.isModifier
-                        ? self.config.keyboard.pressAnimationModifiers
-                        : self.config.keyboard.pressAnimationRegularKeys)
-            }
-        }
-    }
-
-    private var isSystemDark: Bool {
-        guard let appearance = NSApp?.effectiveAppearance else { return true }
-        return appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
     }
 }

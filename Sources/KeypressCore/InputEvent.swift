@@ -88,12 +88,19 @@ public enum KeyboardEventFilter {
         symbol: KeySymbol,
         settings: KeyboardSettings) -> KeyboardEventDisposition
     {
-        guard settings.enabled, settings.filters.includes(symbol) else {
+        guard settings.enabled else {
             return .ignore
         }
 
         if symbol.isModifier {
-            return settings.filters.showStandaloneModifiers ? .display : .trackOnly
+            return settings.filters.includes(symbol)
+                && settings.filters.showStandaloneModifiers
+                ? .display
+                : .trackOnly
+        }
+
+        guard settings.filters.includes(symbol) else {
+            return .ignore
         }
 
         guard settings.contentMode == .shortcutsOnly else {
@@ -109,6 +116,7 @@ public enum KeyboardEventFilter {
             .maskAlternate,
             .maskControl,
             .maskShift,
+            .maskSecondaryFn,
         ]
         return event.modifiers.isDisjoint(with: shortcutFlags) ? .ignore : .display
     }

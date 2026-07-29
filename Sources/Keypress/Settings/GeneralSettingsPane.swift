@@ -99,12 +99,22 @@ struct GeneralSettingsPane: View {
 
                     if !self.permissionGranted {
                         Button(self.strings["general.permission.open"]) {
-                            InputMonitoringPermission.openSettings()
+                            let alreadyGranted = InputMonitoringPermission.request()
+                            if alreadyGranted {
+                                self.permissionGranted = true
+                                OnboardingProgressStore.shared.updatePermission(true)
+                            } else {
+                                Task {
+                                    await self.openPermissionSettingsIfNeeded()
+                                }
+                            }
                         }
                     }
 
                     Button {
-                        self.permissionGranted = InputMonitoringPermission.check()
+                        Task {
+                            await self.refreshPermission()
+                        }
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
@@ -144,11 +154,15 @@ struct GeneralSettingsPane: View {
         }
         .onAppear {
             self.synchronizeLaunchAtLogin()
-            self.permissionGranted = InputMonitoringPermission.check()
+            Task {
+                await self.refreshPermission()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             self.synchronizeLaunchAtLogin()
-            self.permissionGranted = InputMonitoringPermission.check()
+            Task {
+                await self.refreshPermission()
+            }
         }
     }
 
@@ -160,6 +174,21 @@ struct GeneralSettingsPane: View {
         Binding(
             get: { self.config.general.launchAtLogin },
             set: { self.updateLaunchAtLogin($0) })
+    }
+
+    private func refreshPermission() async {
+        let permissionGranted = await Task.detached(priority: .userInitiated) {
+            InputMonitoringPermission.isReady()
+        }.value
+        self.permissionGranted = permissionGranted
+        OnboardingProgressStore.shared.updatePermission(permissionGranted)
+    }
+
+    private func openPermissionSettingsIfNeeded() async {
+        await self.refreshPermission()
+        if !self.permissionGranted {
+            InputMonitoringPermission.openSettings()
+        }
     }
 
     private func updateLaunchAtLogin(_ enabled: Bool) {

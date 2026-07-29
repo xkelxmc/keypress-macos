@@ -39,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         self.setupOverlay()
         self.setupGlobalShortcuts()
         self.startObservingConfig()
+        self.setupOnboarding()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -117,7 +118,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func setupOverlay() {
         self.overlayController = OverlayController(config: self.config)
-        self.applyEnabledState(source: .launch)
+    }
+
+    private func setupOnboarding() {
+        let progress = OnboardingProgressStore.shared
+        progress.refreshPermission()
+        OnboardingController.shared.configure(
+            onPresent: { [weak self] in
+                self?.suspendOverlayForOnboarding()
+            },
+            onComplete: { [weak self] in
+                self?.applyEnabledState(source: .settings)
+            },
+            onDeferred: { [weak self] in
+                self?.applyEnabledState(source: .settings)
+            })
+
+        if progress.shouldPresentAutomatically {
+            OnboardingController.shared.show(playCeremony: true)
+        } else {
+            self.applyEnabledState(source: .launch)
+        }
+    }
+
+    private func suspendOverlayForOnboarding() {
+        self.startupTask?.cancel()
+        self.startupTask = nil
+        self.delayedStopTask?.cancel()
+        self.delayedStopTask = nil
+        self.overlayController?.stop()
+        self.appliedEnabledState = nil
     }
 
     private func setupGlobalShortcuts() {
@@ -141,7 +171,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         KeyboardShortcuts.onKeyUp(for: .editPosition) { [weak self] in
             Task { @MainActor [weak self] in
-                self?.overlayController?.openPositionEditor()
+                self?.editPosition()
             }
         }
 
@@ -198,6 +228,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         self.enabledMenuItem?.state = isEnabled ? .on : .off
         self.updateStatusIcon()
 
+        guard !(isEnabled && OnboardingController.shared.isPresenting) else {
+            self.appliedEnabledState = nil
+            return
+        }
+
         guard self.appliedEnabledState != isEnabled else { return }
         self.appliedEnabledState = isEnabled
         self.startupTask?.cancel()
@@ -245,11 +280,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: - Actions
 
     private func performToggle(source: EnabledChangeSource) {
+        guard !OnboardingController.shared.isPresenting else { return }
         self.config.general.enabled.toggle()
         self.applyEnabledState(source: source)
     }
 
     private func togglePointer() {
+        guard !OnboardingController.shared.isPresenting else { return }
         self.config.pointer.enabled.toggle()
         self.overlayController?.refreshPointer()
         self.showHUD(
@@ -259,6 +296,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func switchContentMode() {
+        guard !OnboardingController.shared.isPresenting else { return }
         self.config.keyboard.contentMode = switch self.config.keyboard.contentMode {
         case .allKeys: .shortcutsOnly
         case .shortcutsOnly: .allKeys
@@ -273,6 +311,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func changeOverlaySize(by offset: Int, shortcut: KeyboardShortcuts.Name) {
+        guard !OnboardingController.shared.isPresenting else { return }
         let sizes = OverlaySize.allCases
         guard let currentIndex = sizes.firstIndex(of: self.config.keyboard.size) else { return }
         let nextIndex = min(max(currentIndex + offset, sizes.startIndex), sizes.index(before: sizes.endIndex))
@@ -301,11 +340,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             kind: kind)
     }
 
+    private func editPosition() {
+        guard !OnboardingController.shared.isPresenting else { return }
+        self.overlayController?.openPositionEditor()
+    }
+
     @objc private func toggleEnabled(_ sender: NSMenuItem) {
         self.performToggle(source: .menu)
     }
 
     @objc private func openSettings() {
+        guard !OnboardingController.shared.isPresenting else { return }
         SettingsWindowController.shared.showSettings()
     }
 

@@ -449,7 +449,7 @@ private struct PointerShapePicker: View {
     }
 }
 
-private struct PointerThemeCard: View {
+struct PointerThemeCard: View {
     let selection: ThemeSelection
     let customTheme: ThemeDefinition
     let isSelected: Bool
@@ -501,7 +501,7 @@ private struct PointerThemeCard: View {
                         lineWidth: self.isSelected ? 2 : 1)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(StudioHoverButtonStyle())
         .help(self.title)
         .accessibilityLabel(self.title)
         .accessibilityAddTraits(self.isSelected ? .isSelected : [])
@@ -534,7 +534,7 @@ private struct PointerContrastBackdrop: View {
     }
 }
 
-private struct PointerThemeArtwork: View {
+struct PointerThemeArtwork: View {
     let theme: PointerTheme
     let size: CGFloat
     var primaryColor: Color?

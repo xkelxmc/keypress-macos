@@ -1,8 +1,10 @@
 import AppKit
 import KeypressCore
+import Observation
 import SwiftUI
 
 enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
+    case setup
     case general
     case pointerAppearance = "pointer.appearance"
     case pointerSettings = "pointer.settings"
@@ -18,6 +20,7 @@ enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
 
     var titleKey: String {
         switch self {
+        case .setup: "sidebar.setup"
         case .general: "sidebar.general"
         case .pointerAppearance, .keyboardAppearance: "sidebar.appearance"
         case .pointerSettings, .keyboardSettings: "sidebar.settings"
@@ -29,6 +32,7 @@ enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
 
     var systemImage: String {
         switch self {
+        case .setup: "sparkles"
         case .general: "gearshape.fill"
         case .pointerAppearance, .keyboardAppearance: "paintpalette.fill"
         case .pointerSettings: "cursorarrow.motionlines"
@@ -41,6 +45,7 @@ enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
 
     var tint: Color {
         switch self {
+        case .setup: .purple
         case .general: .gray
         case .pointerAppearance, .pointerSettings: .orange
         case .keyboardAppearance, .keyboardSettings: .blue
@@ -52,12 +57,25 @@ enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
 }
 
 @MainActor
+@Observable
+final class SettingsNavigationState {
+    var selectedDestination: SettingsDestination? = .general
+}
+
+@MainActor
 struct SettingsView: View {
     @Bindable var config: KeypressConfig
-    @State private var selectedDestination: SettingsDestination? = .general
+    @Bindable var navigation: SettingsNavigationState
+    @Bindable var onboardingProgress: OnboardingProgressStore
 
-    init(config: KeypressConfig) {
+    init(
+        config: KeypressConfig,
+        navigation: SettingsNavigationState,
+        onboardingProgress: OnboardingProgressStore = .shared)
+    {
         self.config = config
+        self.navigation = navigation
+        self.onboardingProgress = onboardingProgress
     }
 
     private var strings: StudioStrings {
@@ -66,7 +84,13 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: self.$selectedDestination) {
+            List(selection: self.$navigation.selectedDestination) {
+                if self.showsSetup {
+                    Section {
+                        self.sidebarDestination(.setup)
+                    }
+                }
+
                 Section {
                     self.sidebarDestination(.general)
                 }
@@ -98,7 +122,7 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .safeAreaInset(edge: .top, spacing: 0) {
                 Color.clear
-                    .frame(height: 42)
+                    .frame(height: self.showsSetup ? 42 : 8)
                     .accessibilityHidden(true)
             }
             .background {
@@ -118,6 +142,19 @@ struct SettingsView: View {
         .ignoresSafeArea(.container, edges: .top)
         .environment(\.studioStrings, self.strings)
         .environment(\.locale, self.strings.locale)
+        .onReceive(NotificationCenter.default.publisher(
+            for: NSApplication.didBecomeActiveNotification))
+        { _ in
+            self.refreshSetupState()
+        }
+        .onChange(of: self.config.general.enabled) {
+                self.refreshSetupState()
+            }
+            .onChange(of: self.showsSetup) {
+                if !self.showsSetup, self.navigation.selectedDestination == .setup {
+                    self.navigation.selectedDestination = .general
+                }
+            }
     }
 
     private func sidebarDestination(_ destination: SettingsDestination) -> some View {
@@ -127,7 +164,11 @@ struct SettingsView: View {
 
     @ViewBuilder
     private var detail: some View {
-        switch self.selectedDestination ?? .general {
+        switch self.navigation.selectedDestination ?? .general {
+        case .setup:
+            SetupSettingsPane(
+                config: self.config,
+                progress: self.onboardingProgress)
         case .general:
             GeneralSettingsPane(config: self.config)
         case .keyboardSettings:
@@ -137,19 +178,32 @@ struct SettingsView: View {
         case .pointerAppearance:
             PointerAppearanceSettingsPane(
                 config: self.config,
-                openSettings: { self.selectedDestination = .pointerSettings })
+                openSettings: { self.navigation.selectedDestination = .pointerSettings })
         case .keyboardAppearance:
             KeyboardAppearanceSettingsPane(
                 config: self.config,
-                openSettings: { self.selectedDestination = .keyboardSettings })
+                openSettings: { self.navigation.selectedDestination = .keyboardSettings })
         case .keyboardDisplays:
             PositionSettingsPane(
                 config: self.config,
-                openSettings: { self.selectedDestination = .keyboardSettings })
+                openSettings: { self.navigation.selectedDestination = .keyboardSettings })
         case .shortcuts:
             ShortcutsSettingsPane()
         case .about:
             AboutSettingsPane()
+        }
+    }
+
+    private var showsSetup: Bool {
+        self.onboardingProgress.needsSetup(config: self.config)
+    }
+
+    private func refreshSetupState() {
+        self.onboardingProgress.reconcileReadyState(
+            config: self.config,
+            onboardingIsPresenting: OnboardingController.shared.isPresenting)
+        if !self.showsSetup, self.navigation.selectedDestination == .setup {
+            self.navigation.selectedDestination = .general
         }
     }
 }
@@ -176,12 +230,24 @@ private struct StudioSidebarLabel: View {
         Label {
             Text(self.strings[self.destination.titleKey])
         } icon: {
-            Image(systemName: self.destination.systemImage)
-                .symbolRenderingMode(.monochrome)
-                .foregroundStyle(.white)
-                .font(.system(size: 11, weight: .semibold))
-                .frame(width: 22, height: 22)
-                .background(self.destination.tint.gradient, in: RoundedRectangle(cornerRadius: 5))
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: self.destination.systemImage)
+                    .symbolRenderingMode(.monochrome)
+                    .foregroundStyle(.white)
+                    .font(.system(size: 11, weight: .semibold))
+                    .frame(width: 22, height: 22)
+                    .background(self.destination.tint.gradient, in: RoundedRectangle(cornerRadius: 5))
+
+                if self.destination == .setup {
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 6, height: 6)
+                        .overlay {
+                            Circle().stroke(self.destination.tint, lineWidth: 1)
+                        }
+                        .offset(x: 2, y: -2)
+                }
+            }
         }
         .padding(.vertical, 3)
     }
@@ -217,6 +283,8 @@ struct StudioPage<Content: View>: View {
 
     var identity: (systemImage: String, tint: Color) {
         switch self.titleKey {
+        case "onboarding.settings.title":
+            ("sparkles", .purple)
         case "general.title":
             ("gearshape.fill", .gray)
         case "pointer.appearance.title":
@@ -487,7 +555,7 @@ struct DestructiveSettingsAction: View {
 @MainActor
 struct InputPermissionBanner: View {
     @Environment(\.studioStrings) private var strings
-    @State private var isGranted = InputMonitoringPermission.check()
+    @State private var isGranted = OnboardingProgressStore.shared.permissionGranted
 
     var body: some View {
         Group {
@@ -508,7 +576,15 @@ struct InputPermissionBanner: View {
                     Spacer(minLength: 12)
 
                     Button(self.strings["general.permission.open"]) {
-                        InputMonitoringPermission.openSettings()
+                        let alreadyGranted = InputMonitoringPermission.request()
+                        if alreadyGranted {
+                            self.isGranted = true
+                            OnboardingProgressStore.shared.updatePermission(true)
+                        } else {
+                            Task {
+                                await self.openPermissionSettingsIfNeeded()
+                            }
+                        }
                     }
                 }
                 .padding(14)
@@ -517,10 +593,30 @@ struct InputPermissionBanner: View {
                     in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
+        .task {
+            await self.refreshPermission()
+        }
         .onReceive(NotificationCenter.default.publisher(
             for: NSApplication.didBecomeActiveNotification))
         { _ in
-            self.isGranted = InputMonitoringPermission.check()
+            Task {
+                await self.refreshPermission()
+            }
+        }
+    }
+
+    private func refreshPermission() async {
+        let permissionGranted = await Task.detached(priority: .userInitiated) {
+            InputMonitoringPermission.isReady()
+        }.value
+        OnboardingProgressStore.shared.updatePermission(permissionGranted)
+        self.isGranted = permissionGranted
+    }
+
+    private func openPermissionSettingsIfNeeded() async {
+        await self.refreshPermission()
+        if !self.isGranted {
+            InputMonitoringPermission.openSettings()
         }
     }
 }

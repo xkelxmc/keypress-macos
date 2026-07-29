@@ -98,6 +98,7 @@ final class OverlayWindow: NSPanel {
                     StackedHistoryVisualizationView(
                         keyState: stackedHistoryState,
                         config: config,
+                        layoutState: self.layoutState,
                         appliesSizeScale: false)),
                 config: config,
                 layoutState: self.layoutState,
@@ -156,6 +157,10 @@ final class OverlayWindow: NSPanel {
         let contentAnchor = OverlayContentAnchor(placement)
         if self.layoutState.anchor != contentAnchor {
             self.layoutState.anchor = contentAnchor
+        }
+        let stackedHistoryLayout = StackedHistoryLayout(placement)
+        if self.layoutState.stackedHistoryLayout != stackedHistoryLayout {
+            self.layoutState.stackedHistoryLayout = stackedHistoryLayout
         }
 
         // Offsets are measured from the screen edge to the visible content, so the
@@ -351,7 +356,7 @@ final class OverlayWindow: NSPanel {
 
 // MARK: - Container View
 
-private enum OverlayContentAnchor: Equatable {
+enum OverlayContentAnchor: Equatable {
     case topLeading
     case top
     case topTrailing
@@ -410,9 +415,10 @@ private enum OverlayContentAnchor: Equatable {
 }
 
 @MainActor
-private final class OverlayLayoutState: ObservableObject {
+final class OverlayLayoutState: ObservableObject {
     @Published var anchor = OverlayContentAnchor.center
     @Published var scale: CGFloat = 1
+    @Published var stackedHistoryLayout = StackedHistoryLayout(.defaultPlacement)
 }
 
 /// Adds the shadow-safe inset around the keyboard visualization.
