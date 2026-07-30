@@ -20,6 +20,7 @@ struct AppSettingsTests {
         #expect(settings.general == GeneralSettings())
         #expect(settings.keyboard == KeyboardSettings())
         #expect(settings.pointer == PointerSettings())
+        #expect(settings.pet == PetSettings())
         #expect(settings.appearance == AppearanceSettings())
         #expect(settings.displays == DisplaySettings())
         #expect(settings.hud == HUDSettings())
@@ -34,6 +35,8 @@ struct AppSettingsTests {
         settings.general.language = .german
         settings.keyboard.historyLayout = .stacked
         settings.pointer.motionIntensity = 0.8
+        settings.pet.visibility = .typingOnly
+        settings.pet.activityMode = .random
         settings.appearance.themeSelection = .neon
         settings.displays.fallbackPlacement = .custom(
             center: NormalizedPoint(x: 0.25, y: 0.75),
@@ -46,6 +49,8 @@ struct AppSettingsTests {
         #expect(snapshot.schemaVersion == AppSettings.currentSchemaVersion)
         #expect(snapshot.general.language == .german)
         #expect(snapshot.keyboard.historyLayout == .stacked)
+        #expect(snapshot.pet.visibility == .typingOnly)
+        #expect(snapshot.pet.activityMode == .random)
         #expect(snapshot.appearance.themeSelection == .neon)
         #expect(snapshot.hud.duration == 4)
     }
@@ -57,13 +62,33 @@ struct AppSettingsTests {
         let first = KeypressConfig.makeForTesting(userDefaults: defaults)
         first.keyboard.maxItems = 9
         first.pointer.visibility = .actionsOnly
+        first.pet.size = 172
+        first.pet.placement = PetPlacement(
+            displayID: UUID(),
+            center: NormalizedPoint(x: 0.25, y: 0.75))
         first.general.language = .spanish
 
         let second = KeypressConfig.makeForTesting(userDefaults: defaults)
 
         #expect(second.keyboard.maxItems == 9)
         #expect(second.pointer.visibility == .actionsOnly)
+        #expect(second.pet.size == 172)
+        #expect(second.pet.placement == first.pet.placement)
         #expect(second.general.language == .spanish)
+    }
+
+    @Test("Documents without pet settings receive pet defaults")
+    @MainActor
+    func missingPetDefaults() throws {
+        let defaults = try makeDefaults("test.app-settings.pet-defaults")
+        defaults.set(
+            Data(#"{"schemaVersion":3}"#.utf8),
+            forKey: KeypressConfig.storageKey)
+
+        let settings = KeypressConfig.makeForTesting(userDefaults: defaults)
+
+        #expect(settings.pet == PetSettings())
+        #expect(settings.schemaVersion == AppSettings.currentSchemaVersion)
     }
 
     @Test("Schema one mechanical themes drop the injected outline")
@@ -183,6 +208,12 @@ struct AppSettingsTests {
         settings.keyboard.opacity = -1
         settings.pointer.size = 500
         settings.pointer.motionIntensity = -2
+        settings.pet.size = 500
+        settings.pet.placement = PetPlacement(
+            displayID: UUID(),
+            center: NormalizedPoint(x: 0.5, y: 0.5))
+        settings.pet.placement?.center.x = 2
+        settings.pet.placement?.center.y = -.infinity
         settings.hud.duration = 100
 
         #expect(settings.keyboard.timeout == 5)
@@ -190,6 +221,8 @@ struct AppSettingsTests {
         #expect(settings.keyboard.opacity == 0)
         #expect(settings.pointer.size == 160)
         #expect(settings.pointer.motionIntensity == 0)
+        #expect(settings.pet.size == 180)
+        #expect(settings.pet.placement?.center == NormalizedPoint(x: 1, y: 0.5))
         #expect(settings.hud.duration == 10)
     }
 
@@ -219,6 +252,7 @@ struct AppSettingsTests {
         settings.general.enabled = false
         settings.keyboard.historyLayout = .stacked
         settings.pointer.enabled = false
+        settings.pet.enabled = false
         settings.appearance.themeSelection = .gaming
 
         settings.resetToDefaults()

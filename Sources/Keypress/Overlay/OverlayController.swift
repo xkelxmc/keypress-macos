@@ -13,6 +13,11 @@ final class OverlayController {
     private let permission = InputMonitoringPermission.shared
     private let pointerController: PointerOverlayController
     private let hudWindow = HUDWindow()
+    private lazy var petController = PetController(
+        config: self.config,
+        keyboardFrame: { [weak self] in
+            self?.preferredPetKeyboardFrame
+        })
     private var keyMonitor: KeyMonitor?
     private var pointerInputMonitor: PointerInputMonitor?
     private var overlayWindows: [UUID: OverlayWindow] = [:]
@@ -107,6 +112,7 @@ final class OverlayController {
         if self.config.keyboard.enabled {
             self.reconcileOverlayWindows()
         }
+        self.petController.start()
 
         self.keyMonitor = self.makeKeyMonitor()
 
@@ -115,30 +121,15 @@ final class OverlayController {
         self.startObservingConfig()
         self.startObservingMonitorHealth()
 
-        // Try to start monitoring directly - KeyMonitor.start() returns false if no permissions
-        if self.keyMonitor?.start() == true {
-            print("[Keypress] KeyMonitor started successfully")
-            self.keyMonitor?.emitCurrentModifiers()
-            self.startObservingKeyState()
-        } else {
-            if KeyMonitor.hasInputMonitoringPermission() {
-                print(
-                    "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
-            } else {
-                print("[Keypress] KeyMonitor.start() waiting for explicit Input Monitoring access")
+        self.permission.onPermissionChange { [weak self] granted in
+            print("[Keypress] Permission changed: \(granted)")
+            if granted {
+                self?.ensureKeyboardMonitoring()
+                self?.ensurePointerMonitoring()
             }
-
-            self.permission.onPermissionChange { [weak self] granted in
-                print("[Keypress] Permission changed: \(granted)")
-                if granted {
-                    self?.startMonitoring()
-                    self?.ensurePointerMonitoring()
-                }
-            }
-
-            self.permission.startPolling()
         }
 
+        self.ensureKeyboardMonitoring()
         self.ensurePointerMonitoring()
     }
 
@@ -167,6 +158,7 @@ final class OverlayController {
         self.hideAndRemoveOverlayWindows()
         self.overlayShouldBeVisible = false
         self.pointerController.clear()
+        self.petController.stop()
         self.hudWindow.hide()
 
         self.currentKeyState?.clear()
@@ -200,6 +192,7 @@ final class OverlayController {
         self.overlayShouldBeVisible = false
         self.hideOverlayWindows()
         self.pointerController.clear()
+        self.petController.stop()
     }
 
     /// Updates overlay position based on current settings.
@@ -299,23 +292,38 @@ final class OverlayController {
     }
 
     private func processKeyboard(_ event: KeyEvent, symbol: KeySymbol?) {
-        guard self.config.general.enabled, self.config.keyboard.enabled else { return }
+        guard self.config.general.enabled else { return }
+
+        let secureInputEnabled = IsSecureEventInputEnabled()
+        if secureInputEnabled != self.secureInputEnabled {
+            self.handleSecureInputChanged(secureInputEnabled)
+        }
         guard !self.secureInputEnabled else { return }
 
-        if self.isRegisteredShortcut(event) {
+        let isRegisteredShortcut = self.isRegisteredShortcut(event)
+        if self.config.keyboard.enabled,
+           !isRegisteredShortcut,
+           event.type == .keyDown
+        {
+            self.refreshFollowPointerTarget()
+        }
+        self.petController.processKeyboard(
+            event,
+            isRegisteredShortcut: isRegisteredShortcut)
+
+        guard self.config.keyboard.enabled else { return }
+
+        if isRegisteredShortcut {
             self.currentKeyState?.clear()
             return
         }
 
-        if event.type == .keyDown {
-            self.refreshFollowPointerTarget()
-        }
         self.currentKeyState?.processEvent(event, symbol: symbol)
         self.updateOverlayVisibility()
     }
 
     private func ensurePointerMonitoring() {
-        guard self.config.general.enabled, self.config.pointer.enabled else {
+        guard self.needsPointerMonitoring else {
             self.stopPointerMonitoring()
             return
         }
@@ -323,7 +331,11 @@ final class OverlayController {
 
         self.pointerInputMonitor?.stop()
         let monitor = PointerInputMonitor { [weak self] event in
-            self?.pointerController.process(event)
+            guard let self else { return }
+            if self.config.pointer.enabled {
+                self.pointerController.process(event)
+            }
+            self.petController.processPointer(event)
         }
         self.pointerInputMonitor = monitor
         if !monitor.start() {
@@ -334,6 +346,7 @@ final class OverlayController {
     private func stopPointerMonitoring() {
         self.pointerInputMonitor?.stop()
         self.pointerInputMonitor = nil
+        self.stopPermissionPollingIfUnused()
     }
 
     private func isRegisteredShortcut(_ event: KeyEvent) -> Bool {
@@ -383,6 +396,9 @@ final class OverlayController {
                 window = existingWindow
             } else {
                 guard let newWindow = self.makeOverlayWindow() else { continue }
+                newWindow.visibleContentFrameDidChange = { [weak self] in
+                    self?.petController.refreshInitialPosition()
+                }
                 self.overlayWindows[display.id] = newWindow
                 window = newWindow
             }
@@ -490,15 +506,6 @@ final class OverlayController {
             self.historyKeyState = state
         case .stackedHistory:
             self.stackedHistoryState = StackedHistoryState(settings: self.config.keyboard)
-        }
-    }
-
-    private func startMonitoring() {
-        let started = self.keyMonitor?.start() ?? false
-        print("[Keypress] KeyMonitor.start() returned: \(started)")
-        if started {
-            self.keyMonitor?.emitCurrentModifiers()
-            self.startObservingKeyState()
         }
     }
 
@@ -638,10 +645,25 @@ final class OverlayController {
 
         if previous.pointer != settings.pointer
             || pointerAppearanceChanged
+            || previous.pet != settings.pet
             || previous.general.enabled != settings.general.enabled
         {
             self.ensurePointerMonitoring()
             self.refreshPointer()
+        }
+
+        if previous.keyboard.enabled != settings.keyboard.enabled
+            || previous.pet.enabled != settings.pet.enabled
+            || previous.general.enabled != settings.general.enabled
+        {
+            self.ensureKeyboardMonitoring()
+        }
+
+        if previous.pet != settings.pet
+            || previous.displays != settings.displays
+            || previous.general.enabled != settings.general.enabled
+        {
+            self.petController.refresh()
         }
     }
 
@@ -669,7 +691,9 @@ final class OverlayController {
                     self.stopPointerMonitoring()
                     continue
                 }
-                if self.keyMonitor?.isRunning != true {
+                if self.needsKeyboardMonitoring,
+                   self.keyMonitor?.isRunning != true
+                {
                     self.resetTransientInputState()
                     let permissionReady = await Task.detached(priority: .utility) {
                         InputMonitoringPermission.isReady()
@@ -678,10 +702,14 @@ final class OverlayController {
                     if permissionReady {
                         self.keyMonitor?.stop()
                         self.keyMonitor = self.makeKeyMonitor()
-                        self.startMonitoring()
+                        self.ensureKeyboardMonitoring()
                     } else {
                         self.permission.startPolling()
                     }
+                } else if !self.needsKeyboardMonitoring,
+                          self.keyMonitor?.isRunning == true
+                {
+                    self.stopKeyboardMonitoring()
                 }
                 self.ensurePointerMonitoring()
             }
@@ -690,6 +718,7 @@ final class OverlayController {
 
     private func handleSecureInputChanged(_ isEnabled: Bool) {
         self.secureInputEnabled = isEnabled
+        self.petController.handleSecureInputChanged(isEnabled)
         guard isEnabled else { return }
 
         self.currentKeyState?.clear()
@@ -857,6 +886,7 @@ final class OverlayController {
 
     private func handleScreensChanged() {
         self.reconcileOverlayWindows()
+        self.petController.refresh()
     }
 
     private func handleNavigationSwipe(_ event: NSEvent) {
@@ -869,7 +899,113 @@ final class OverlayController {
         self.currentKeyState?.clear()
         self.pointerController.clear()
         self.pointerController.refresh()
+        self.petController.resetTransientState()
         self.overlayShouldBeVisible = false
         self.hideOverlayWindows()
+    }
+}
+
+extension OverlayController {
+    private var preferredPetKeyboardFrame: NSRect? {
+        if let pointerDisplay = ConnectedDisplays.display(containing: NSEvent.mouseLocation),
+           let frame = self.overlayWindows[pointerDisplay.id]?.visibleContentFrame
+        {
+            return frame
+        }
+        if let frame = self.activeKeyboardDisplays.lazy
+            .compactMap({ self.overlayWindows[$0.id]?.visibleContentFrame })
+            .first
+        {
+            return frame
+        }
+
+        guard let display = self.targetDisplays().first else { return nil }
+        let visibleFrame = display.screen.visibleFrame
+        let placement = self.config.displays.placement(for: display.id)
+        let point: CGPoint
+        switch placement {
+        case let .custom(center, _):
+            point = CGPoint(
+                x: visibleFrame.minX + CGFloat(center.x) * visibleFrame.width,
+                y: visibleFrame.minY + CGFloat(center.y) * visibleFrame.height)
+        case let .anchor(position, horizontalOffset, verticalOffset):
+            let x = switch position {
+            case .topLeft, .centerLeft, .bottomLeft:
+                visibleFrame.minX + CGFloat(horizontalOffset)
+            case .topCenter, .bottomCenter:
+                visibleFrame.midX
+            case .topRight, .centerRight, .bottomRight:
+                visibleFrame.maxX - CGFloat(horizontalOffset)
+            }
+            let y = switch position {
+            case .bottomLeft, .bottomCenter, .bottomRight:
+                visibleFrame.minY + CGFloat(verticalOffset)
+            case .centerLeft, .centerRight:
+                visibleFrame.midY
+            case .topLeft, .topCenter, .topRight:
+                visibleFrame.maxY - CGFloat(verticalOffset)
+            }
+            point = CGPoint(x: x, y: y)
+        }
+        return NSRect(origin: point, size: .zero)
+    }
+
+    private var needsKeyboardMonitoring: Bool {
+        self.config.general.enabled
+            && (self.config.keyboard.enabled || self.config.pet.enabled)
+    }
+
+    private var needsPointerMonitoring: Bool {
+        let petNeedsPointer = self.config.pet.enabled
+            && self.config.pet.visibility == .always
+            && (self.config.pet.watchCursor || self.config.pet.huntCursor)
+        return self.config.general.enabled
+            && (self.config.pointer.enabled || petNeedsPointer)
+    }
+
+    private func ensureKeyboardMonitoring() {
+        guard self.needsKeyboardMonitoring else {
+            self.stopKeyboardMonitoring()
+            return
+        }
+        guard self.keyMonitor?.isRunning != true else { return }
+
+        if self.keyMonitor == nil {
+            self.keyMonitor = self.makeKeyMonitor()
+        }
+        let started = self.keyMonitor?.start() ?? false
+        if started {
+            print("[Keypress] KeyMonitor started successfully")
+            self.keyMonitor?.emitCurrentModifiers()
+            self.startObservingKeyState()
+            return
+        }
+
+        if KeyMonitor.hasInputMonitoringPermission() {
+            print(
+                "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
+        } else {
+            print("[Keypress] KeyMonitor.start() waiting for explicit Input Monitoring access")
+        }
+        self.permission.startPolling()
+    }
+
+    private func stopKeyboardMonitoring() {
+        self.keyMonitor?.stop()
+        self.isObservingKeyState = false
+        self.keyStateObservationGeneration &+= 1
+        self.secureInputTask?.cancel()
+        self.secureInputTask = nil
+        self.secureInputEnabled = false
+        self.petController.handleSecureInputChanged(false)
+        self.currentKeyState?.clear()
+        self.overlayShouldBeVisible = false
+        self.hideOverlayWindows()
+        self.stopPermissionPollingIfUnused()
+    }
+
+    private func stopPermissionPollingIfUnused() {
+        guard !self.needsKeyboardMonitoring, !self.needsPointerMonitoring else { return }
+        self.permission.stopPolling()
     }
 }

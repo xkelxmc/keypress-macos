@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var overlayController: OverlayController?
     private var enabledMenuItem: NSMenuItem?
+    private var petMenuItem: NSMenuItem?
     private var startupTask: Task<Void, Never>?
     private var delayedStopTask: Task<Void, Never>?
     private var appliedEnabledState: Bool?
@@ -81,6 +82,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         self.enabledMenuItem = enabledItem
         menu.addItem(enabledItem)
 
+        let petItem = NSMenuItem(
+            title: self.strings["pet.title"],
+            action: #selector(self.togglePet),
+            keyEquivalent: "")
+        self.petMenuItem = petItem
+        menu.addItem(petItem)
+        self.updatePetMenuItem()
+
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(NSMenuItem(
@@ -104,6 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func menuWillOpen(_ menu: NSMenu) {
         self.enabledMenuItem?.state = self.config.general.enabled ? .on : .off
         self.updateEnabledMenuItemTitle()
+        self.updatePetMenuItem()
     }
 
     private func updateEnabledMenuItemTitle() {
@@ -114,6 +124,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             item.title = self.strings["menu.enabled"]
         }
+    }
+
+    private func updatePetMenuItem() {
+        self.petMenuItem?.state = self.config.pet.enabled ? .on : .off
+        self.petMenuItem?.isEnabled = self.config.general.enabled
     }
 
     private func setupOverlay() {
@@ -226,6 +241,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func applyEnabledState(source: EnabledChangeSource) {
         let isEnabled = self.config.general.enabled
         self.enabledMenuItem?.state = isEnabled ? .on : .off
+        self.updatePetMenuItem()
         self.updateStatusIcon()
 
         guard !(isEnabled && OnboardingController.shared.isPresenting) else {
@@ -347,6 +363,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func toggleEnabled(_ sender: NSMenuItem) {
         self.performToggle(source: .menu)
+    }
+
+    @objc private func togglePet(_ sender: NSMenuItem) {
+        guard !OnboardingController.shared.isPresenting else { return }
+        self.config.pet.enabled.toggle()
+        self.updatePetMenuItem()
     }
 
     @objc private func openSettings() {

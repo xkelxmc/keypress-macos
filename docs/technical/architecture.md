@@ -13,6 +13,7 @@ Sources/
 ├── Keypress/
 │   ├── AppDelegate        # Menu bar and global actions
 │   ├── Overlay            # Pointer tap plus keyboard, cursor, and HUD windows
+│   ├── Pet                # Pet state machine, sprite renderer, and interactive window
 │   ├── Views              # Keycap and overlay rendering
 │   ├── Settings           # Native Studio settings window
 │   └── ScreenshotGenerator
@@ -37,6 +38,11 @@ Pointer events feed `PointerOverlayController`, which resolves the latest
 physical cursor location and recovers missed button releases. No input history
 is written to disk.
 
+The same primitive keyboard and pointer events also feed `PetController` when
+the enabled pet behaviors need them. It keeps only an approximately 1.5-second
+in-memory list of key-down timestamps and the last pointer sample. It never
+receives or stores typed strings.
+
 ## Presentation
 
 `OverlayController` coordinates:
@@ -44,17 +50,19 @@ is written to disk.
 - one keyboard window for Follow Pointer or One Display;
 - one keyboard window per connected target in Selected Displays;
 - one cursor halo window on the physical pointer display;
+- one interactive, non-activating pet window;
 - one independent HUD window;
 - one temporary full-screen placement editor.
 
-All production overlay windows are transparent, non-activating, click-through
-panels that join every Space. The placement editor is the only interactive
-overlay.
+All production overlay windows are transparent, non-activating panels that join
+every Space. Keyboard, cursor, and HUD windows are click-through. The pet window
+accepts input only inside its compact sprite bounds so it can distinguish a
+click from a direct drag.
 
 ## Settings
 
 `KeypressConfig` is a main-actor observable facade over one versioned
-`AppSettings` snapshot. The snapshot groups general, keyboard, pointer,
+`AppSettings` snapshot. The snapshot groups general, keyboard, pointer, pet,
 appearance, display, and HUD settings. Legacy individual `UserDefaults` keys
 are read once and migrated without deleting the old values.
 
@@ -64,6 +72,12 @@ continuous edits and explicitly flushed when the application terminates.
 Display preferences use stable `CGDisplay` UUID strings. Custom placement stores
 a normalized visual center inside `NSScreen.visibleFrame`, keeping the result
 stable across scaling, resolution, menu bar, and Dock changes.
+
+The pet uses the same normalized-center representation for its one independent
+saved position. Its bundled PNG atlas is described by a validated JSON manifest
+and decoded into reusable AppKit frames once. Every state uses one fixed
+272-by-208 action canvas around a centered 192-pixel content area, so wide
+one-shot motion never resizes or recenters the pet window.
 
 ## Permissions and Concurrency
 

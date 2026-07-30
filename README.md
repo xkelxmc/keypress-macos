@@ -27,7 +27,8 @@ A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 
 - 📍 8 preset positions with edge offset (up to 500×300px)
 - ⌨️ Global hotkey to toggle visibility (default ⇧⌘K)
 - 📺 Two display modes: Single (shortcuts) or History (typing)
-- 🖱️ Click-through overlay — doesn't interfere with your work
+- 🐈 Animated, draggable pet with typing and cursor reactions
+- 🖱️ Click-through keyboard and cursor overlays — only the pet accepts interaction
 - 🎯 Perfect for content creators, demos, and screen sharing
 
 ## Requirements

@@ -210,6 +210,8 @@ private struct OnboardingCard: View {
                     OnboardingKeyboardStep(session: self.session)
                 case .pointer:
                     OnboardingPointerStep(session: self.session)
+                case .pet:
+                    OnboardingPetStep(session: self.session)
                 }
             }
             .id(self.session.step)
@@ -324,7 +326,7 @@ private struct OnboardingCard: View {
             Button {
                 self.session.nextAction()
             } label: {
-                if self.session.step == .pointer {
+                if self.session.step == .pet {
                     HStack(spacing: 9) {
                         Text(
                             self.strings[
@@ -349,11 +351,12 @@ private struct OnboardingCard: View {
                 }
             }
             .buttonStyle(StudioHoverButtonStyle(showsHoverSurface: false))
+            .keyboardShortcut(.defaultAction)
             .disabled(!self.session.canMoveNext)
             .opacity(self.session.canMoveNext ? 1 : 0.36)
             .frame(minWidth: 92, alignment: .trailing)
             .accessibilityLabel(
-                self.session.step == .pointer
+                self.session.step == .pet
                     ? self.strings[
                         self.session.isReplay
                             ? "action.done"
@@ -1146,6 +1149,280 @@ private struct OnboardingPointerLivePreview: View {
 }
 
 @MainActor
+private struct OnboardingPetStep: View {
+    @Environment(\.studioStrings) private var strings
+    @Bindable var session: OnboardingSession
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 18) {
+                OnboardingStepHeading(
+                    title: self.strings["onboarding.pet.title"],
+                    subtitle: self.strings["onboarding.pet.subtitle"])
+
+                OnboardingPetLivePreview(session: self.session)
+                    .frame(height: 220)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(self.strings["pet.enabled"])
+                            .font(.headline)
+                        Text(self.strings["pet.enabled.subtitle"])
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Toggle(
+                        self.strings["pet.enabled"],
+                        isOn: Binding(
+                            get: { self.session.config.pet.enabled },
+                            set: { self.session.config.pet.enabled = $0 }))
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                }
+                .padding(14)
+                .background(
+                    Color.primary.opacity(0.045),
+                    in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+                if self.session.config.pet.enabled {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(self.strings["pet.visibility"])
+                            .font(.callout.weight(.semibold))
+
+                        HStack(spacing: 8) {
+                            self.visibilityButton(.always, "pet.visibility.always")
+                            self.visibilityButton(.typingOnly, "pet.visibility.typing")
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(self.strings["pet.activityMode"])
+                            .font(.callout.weight(.semibold))
+
+                        HStack(spacing: 8) {
+                            self.activityButton(.cycle, "pet.activityMode.cycle")
+                            self.activityButton(.random, "pet.activityMode.random")
+                        }
+
+                        if self.session.config.pet.visibility == .typingOnly {
+                            Text(self.strings["pet.typingOnly.behaviorHint"])
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .disabled(self.session.config.pet.visibility == .typingOnly)
+                    .opacity(self.session.config.pet.visibility == .typingOnly ? 0.45 : 1)
+                }
+            }
+            .padding(.horizontal, 28)
+            .padding(.top, 22)
+            .padding(.bottom, 18)
+            .animation(
+                self.session.reduceMotion
+                    ? .easeOut(duration: 0.16)
+                    : .spring(response: 0.42, dampingFraction: 0.86),
+                value: self.session.config.pet.enabled)
+        }
+    }
+
+    private func visibilityButton(_ value: PetVisibility, _ key: String) -> some View {
+        let selected = self.session.config.pet.visibility == value
+        return self.selectionButton(key: key, selected: selected) {
+            self.session.config.pet.visibility = value
+        }
+    }
+
+    private func activityButton(_ value: PetActivityMode, _ key: String) -> some View {
+        let selected = self.session.config.pet.activityMode == value
+        return self.selectionButton(key: key, selected: selected) {
+            self.session.config.pet.activityMode = value
+        }
+    }
+
+    private func selectionButton(
+        key: String,
+        selected: Bool,
+        action: @escaping () -> Void)
+        -> some View
+    {
+        Button(action: action) {
+            Text(self.strings[key])
+                .font(.caption.weight(selected ? .bold : .medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(
+                    selected ? Color.accentColor.opacity(0.14) : Color.primary.opacity(0.045),
+                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(
+                            selected ? Color.accentColor : Color.primary.opacity(0.08),
+                            lineWidth: selected ? 1.5 : 1)
+                }
+                .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .buttonStyle(StudioHoverButtonStyle())
+    }
+}
+
+@MainActor
+private struct OnboardingPetLivePreview: View {
+    @Environment(\.studioStrings) private var strings
+    @Bindable var session: OnboardingSession
+    @State private var stateStartedAt = Date()
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                OnboardingPreviewSurface()
+
+                if self.petIsVisible {
+                    if self.canReact {
+                        Button {
+                            self.session.playPetReaction()
+                        } label: {
+                            self.sprite
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(self.strings["pet.petReaction"])
+                    } else {
+                        self.sprite
+                    }
+
+                    VStack {
+                        HStack {
+                            Text(
+                                self.strings[self.hintKey])
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.white.opacity(0.72))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                                .background(Color.black.opacity(0.28), in: Capsule())
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    .padding(10)
+                } else if !self.session.config.pet.enabled {
+                    Label(self.strings["onboarding.pet.disabled"], systemImage: "cat")
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.58))
+                } else {
+                    Label(self.strings["onboarding.pet.waiting"], systemImage: "keyboard")
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.58))
+                }
+            }
+            .contentShape(Rectangle())
+            .onContinuousHover(coordinateSpace: .local) { phase in
+                switch phase {
+                case let .active(location):
+                    let delta = CGSize(
+                        width: location.x - proxy.size.width / 2,
+                        height: proxy.size.height / 2 - location.y)
+                    self.session.updatePetLook(direction: self.lookDirection(for: delta))
+                case .ended:
+                    self.session.updatePetLook(direction: nil)
+                }
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .onChange(of: self.session.petPreviewState) {
+            self.stateStartedAt = Date()
+        }
+    }
+
+    private var petIsVisible: Bool {
+        self.session.config.pet.enabled
+            && (self.session.config.pet.visibility == .always
+                || self.session.petPreviewState == .typing)
+    }
+
+    private var canReact: Bool {
+        self.session.config.pet.petReaction
+            && self.session.config.pet.visibility == .always
+            && PetRuntimeState.petting.canInterrupt(self.session.petPreviewState)
+    }
+
+    private var hintKey: String {
+        guard self.session.config.pet.visibility == .always else {
+            return "onboarding.pet.hint.typing"
+        }
+        switch (
+            self.session.config.pet.watchCursor,
+            self.session.config.pet.petReaction)
+        {
+        case (true, true):
+            return "onboarding.pet.hint"
+        case (true, false):
+            return "onboarding.pet.hint.pointer"
+        case (false, true):
+            return "onboarding.pet.hint.click"
+        case (false, false):
+            return "onboarding.pet.hint.typing"
+        }
+    }
+
+    @ViewBuilder
+    private var sprite: some View {
+        if self.session.reduceMotion {
+            if let definition = PetSpriteSheet.shared.definition(
+                for: self.session.petPreviewState),
+                let image = PetSpriteSheet.shared.image(
+                    for: self.session.petPreviewState,
+                    frameIndex: max(0, (definition.count - 1) / 2))
+            {
+                self.spriteImage(image)
+            }
+        } else {
+            TimelineView(.animation(minimumInterval: 1 / 18)) { context in
+                if let image = PetSpriteSheet.shared.image(
+                    for: self.session.petPreviewState,
+                    frameIndex: self.frameIndex(at: context.date))
+                {
+                    self.spriteImage(image)
+                }
+            }
+        }
+    }
+
+    private func spriteImage(_ image: NSImage) -> some View {
+        Image(nsImage: image)
+            .resizable()
+            .interpolation(.high)
+            .aspectRatio(PetSpriteMetrics.aspectRatio, contentMode: .fit)
+            .frame(
+                width: min(CGFloat(self.session.config.pet.size), 150)
+                    * PetSpriteMetrics.canvasToContentWidth)
+            .accessibilityHidden(true)
+    }
+
+    private func frameIndex(at date: Date) -> Int {
+        guard let definition = PetSpriteSheet.shared.definition(
+            for: self.session.petPreviewState)
+        else {
+            return 0
+        }
+        if self.session.reduceMotion {
+            return max(0, (definition.count - 1) / 2)
+        }
+        let fps = self.session.petPreviewState == .typing
+            ? self.session.petTypingFramesPerSecond
+            : definition.fps
+        return Int(max(0, date.timeIntervalSince(self.stateStartedAt)) * fps)
+            % definition.count
+    }
+
+    private func lookDirection(for delta: CGSize) -> Int {
+        let angle = atan2(delta.width, delta.height)
+        let normalized = angle >= 0 ? angle : angle + .pi * 2
+        return Int((normalized / (.pi * 2) * 16).rounded()) % 16
+    }
+}
+
+@MainActor
 private struct OnboardingFinishingView: View {
     @Bindable var session: OnboardingSession
     let availableSize: CGSize
@@ -1182,6 +1459,24 @@ private struct OnboardingFinishingView: View {
                         self.session.reduceMotion
                             ? 1
                             : (self.finished ? 0.42 : 1))
+                    .opacity(self.finished ? 0 : 1)
+            }
+
+            if self.session.config.pet.enabled,
+               let image = PetSpriteSheet.shared.image(for: .idle, frameIndex: 0)
+            {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(PetSpriteMetrics.aspectRatio, contentMode: .fit)
+                    .frame(width: 118 * PetSpriteMetrics.canvasToContentWidth)
+                    .position(
+                        x: self.availableSize.width / 2 + 190,
+                        y: self.availableSize.height / 2)
+                    .scaleEffect(
+                        self.session.reduceMotion
+                            ? 1
+                            : (self.finished ? 0.3 : 1))
                     .opacity(self.finished ? 0 : 1)
             }
         }

@@ -1,0 +1,112 @@
+{
+  "cellWidth": 272,
+  "cellHeight": 208,
+  "columns": 16,
+  "rows": 12,
+  "clips": {
+    "idle": {
+      "row": 0,
+      "start": 0,
+      "count": 8,
+      "fps": 8,
+      "loop": true,
+      "reversible": false
+    },
+    "typing": {
+      "row": 1,
+      "start": 0,
+      "count": 8,
+      "fps": 12,
+      "loop": true,
+      "reversible": false
+    },
+    "sleepTransition": {
+      "row": 2,
+      "start": 0,
+      "count": 8,
+      "fps": 8,
+      "loop": false,
+      "reversible": true
+    },
+    "sleep": {
+      "row": 3,
+      "start": 0,
+      "count": 8,
+      "fps": 4,
+      "loop": true,
+      "reversible": false
+    },
+    "pounceRight": {
+      "row": 4,
+      "start": 0,
+      "count": 16,
+      "fps": 12,
+      "loop": false,
+      "reversible": false
+    },
+    "stretch": {
+      "row": 5,
+      "start": 0,
+      "count": 8,
+      "fps": 7,
+      "loop": false,
+      "reversible": false
+    },
+    "groom": {
+      "row": 6,
+      "start": 0,
+      "count": 8,
+      "fps": 6,
+      "loop": false,
+      "reversible": false
+    },
+    "playTail": {
+      "row": 7,
+      "start": 0,
+      "count": 8,
+      "fps": 8,
+      "loop": false,
+      "reversible": false
+    },
+    "petReaction": {
+      "row": 8,
+      "start": 0,
+      "count": 8,
+      "fps": 9,
+      "loop": false,
+      "reversible": false
+    },
+    "carried": {
+      "row": 9,
+      "start": 0,
+      "count": 8,
+      "fps": 16,
+      "loop": true,
+      "reversible": false
+    },
+    "settle": {
+      "row": 9,
+      "start": 8,
+      "count": 8,
+      "fps": 18,
+      "loop": false,
+      "reversible": false
+    },
+    "lookUpper": {
+      "row": 10,
+      "start": 0,
+      "count": 8,
+      "fps": 1,
+      "loop": false,
+      "reversible": false
+    },
+    "lookLower": {
+      "row": 11,
+      "start": 0,
+      "count": 8,
+      "fps": 1,
+      "loop": false,
+      "reversible": false
+    }
+  }
+}

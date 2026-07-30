@@ -22,6 +22,18 @@
 - Always Visible, On Activity, and Clicks & Actions visibility modes
 - Reduced Motion fallback
 
+## Animated Pet
+
+- Original soft-sticker cat with clean registered idle, typing, sleeping, pouncing, grooming, stretching, tail-play, and click animations
+- Typing animation speed follows the current key-down rate from 6 to 18 frames per second
+- Sixteen cursor-look directions and optional in-place cursor hunting
+- Always Visible and While Typing visibility modes
+- Deterministic Cycle or non-repeating Random idle activities
+- Direct click and drag interaction without activating Keypress
+- One normalized screen position that survives display scaling and reconnects
+- Independent controls for every autonomous behavior
+- Static semantic poses when Reduce Motion is enabled
+
 ## Appearance
 
 - Mechanical, Flat, and Minimal keycaps
@@ -43,7 +55,7 @@
 ## Controls and Feedback
 
 - Menu bar application with no Dock icon
-- Independent keyboard and pointer visualization toggles
+- Independent keyboard, pointer, and pet visualization toggles
 - Global shortcuts for app state, halo, content mode, positioning, and size
 - Separate status HUD that never changes keyboard layout
 - Live English, Russian, German, Spanish, and French localization
@@ -52,6 +64,6 @@
 ## Privacy
 
 - Input events are processed entirely on device
-- Keystrokes, typed fragments, clicks, and pointer coordinates are never persisted
+- Keystrokes, typing-rate samples, typed fragments, clicks, and pointer coordinates are never persisted
 - Input Monitoring is the only requested privacy permission
 - Keyboard visualization is cleared while macOS Secure Input is active

@@ -2,7 +2,7 @@
 
 **Show KeyPress**
 
-Effective date: 19 July 2026
+Effective date: 30 July 2026
 
 ## Summary
 
@@ -14,10 +14,19 @@ your own settings, and they stay on your Mac.
 
 Show KeyPress visualizes the keys you press. To do this, macOS requires the
 **Input Monitoring** permission, which you grant explicitly in System Settings →
-Privacy & Security. macOS asks for it on first launch.
+Privacy & Security. Keypress requests it only after you choose Grant Access
+during setup.
 
 With that permission, the app observes keyboard events through a listen-only
 event tap. Each event is used to draw a keycap on screen and is then discarded.
+When the animated pet is enabled, recent key-down timestamps may also be held in
+memory for approximately 1.5 seconds to adjust its typing animation speed. The
+app does not retain which characters were typed.
+
+When Cursor Halo or the pet's cursor reactions are enabled, the app also
+observes pointer movement, button, drag, and scroll events through a separate
+listen-only event tap. Pointer coordinates are used only for the current
+on-screen reaction and are then discarded.
 
 Specifically, Show KeyPress:
 
@@ -35,10 +44,11 @@ entitlement. It has no ability to make network connections, by design.
 
 ## What is stored on your Mac
 
-Your preferences (position, colors, keycap style, display mode, hotkey, and
-similar settings) are saved locally in macOS `UserDefaults`, on your own machine.
-They never leave your device. macOS may retain these preferences in the app's
-sandbox container after you remove the app.
+Your preferences (overlay and pet position, colors, keycap style, display mode,
+hotkey, pet behavior, and similar settings) are saved locally in macOS
+`UserDefaults`, on your own machine. They never leave your device. macOS may
+retain these preferences in the app's sandbox container after you remove the
+app.
 
 ## Children
 

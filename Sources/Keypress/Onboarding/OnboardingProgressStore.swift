@@ -7,6 +7,7 @@ enum OnboardingStep: Int, CaseIterable {
     case permission
     case keyboard
     case pointer
+    case pet
 }
 
 @MainActor

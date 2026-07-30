@@ -18,6 +18,7 @@ public struct KeyEvent: Sendable, Equatable {
     public let keyCode: Int64
     public let modifiers: CGEventFlags
     public let timestamp: Date
+    public let monotonicTimestamp: TimeInterval
     public let modifierIsPressed: Bool?
 
     public init(
@@ -25,13 +26,25 @@ public struct KeyEvent: Sendable, Equatable {
         keyCode: Int64,
         modifiers: CGEventFlags,
         timestamp: Date = Date(),
+        monotonicTimestamp: TimeInterval? = nil,
         modifierIsPressed: Bool? = nil)
     {
         self.type = type
         self.keyCode = keyCode
         self.modifiers = modifiers
         self.timestamp = timestamp
+        self.monotonicTimestamp =
+            monotonicTimestamp
+                ?? ProcessInfo.processInfo.systemUptime
         self.modifierIsPressed = modifierIsPressed
+    }
+
+    public static func == (lhs: KeyEvent, rhs: KeyEvent) -> Bool {
+        lhs.type == rhs.type
+            && lhs.keyCode == rhs.keyCode
+            && lhs.modifiers == rhs.modifiers
+            && lhs.timestamp == rhs.timestamp
+            && lhs.modifierIsPressed == rhs.modifierIsPressed
     }
 }
 
@@ -294,7 +307,8 @@ public final class KeyMonitor: @unchecked Sendable {
         let keyEvent = KeyEvent(
             type: eventType,
             keyCode: keyCode,
-            modifiers: modifiers)
+            modifiers: modifiers,
+            monotonicTimestamp: TimeInterval(event.timestamp) / 1_000_000_000)
         let symbol = KeyCodeMapper.symbol(for: keyCode, modifiers: modifiers, event: event)
         monitor.eventHandler(keyEvent, symbol)
 

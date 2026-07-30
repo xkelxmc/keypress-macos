@@ -274,6 +274,92 @@ public struct PointerSettings: Codable, Sendable, Equatable {
     }
 }
 
+// MARK: - Pet
+
+public enum PetVisibility: String, CaseIterable, Codable, Sendable {
+    case always
+    case typingOnly
+}
+
+public enum PetActivityMode: String, CaseIterable, Codable, Sendable {
+    case cycle
+    case random
+}
+
+public struct PetPlacement: Codable, Sendable, Equatable {
+    public var displayID: UUID
+    public var center: NormalizedPoint
+
+    public init(displayID: UUID, center: NormalizedPoint) {
+        self.displayID = displayID
+        self.center = center
+    }
+}
+
+public struct PetSettings: Codable, Sendable, Equatable {
+    public var enabled: Bool
+    public var visibility: PetVisibility
+    public var activityMode: PetActivityMode
+    public var size: Double
+    public var sleep: Bool
+    public var watchCursor: Bool
+    public var huntCursor: Bool
+    public var stretch: Bool
+    public var groom: Bool
+    public var playTail: Bool
+    public var petReaction: Bool
+    public var placement: PetPlacement?
+
+    public init(
+        enabled: Bool = true,
+        visibility: PetVisibility = .always,
+        activityMode: PetActivityMode = .cycle,
+        size: Double = 128,
+        sleep: Bool = true,
+        watchCursor: Bool = true,
+        huntCursor: Bool = true,
+        stretch: Bool = true,
+        groom: Bool = true,
+        playTail: Bool = true,
+        petReaction: Bool = true,
+        placement: PetPlacement? = nil)
+    {
+        self.enabled = enabled
+        self.visibility = visibility
+        self.activityMode = activityMode
+        self.size = size.clamped(to: 84...180)
+        self.sleep = sleep
+        self.watchCursor = watchCursor
+        self.huntCursor = huntCursor
+        self.stretch = stretch
+        self.groom = groom
+        self.playTail = playTail
+        self.petReaction = petReaction
+        self.placement = placement
+    }
+
+    func normalized() -> PetSettings {
+        let normalizedPlacement = self.placement.map {
+            PetPlacement(
+                displayID: $0.displayID,
+                center: NormalizedPoint(x: $0.center.x, y: $0.center.y))
+        }
+        return PetSettings(
+            enabled: self.enabled,
+            visibility: self.visibility,
+            activityMode: self.activityMode,
+            size: self.size,
+            sleep: self.sleep,
+            watchCursor: self.watchCursor,
+            huntCursor: self.huntCursor,
+            stretch: self.stretch,
+            groom: self.groom,
+            playTail: self.playTail,
+            petReaction: self.petReaction,
+            placement: normalizedPlacement)
+    }
+}
+
 // MARK: - Appearance
 
 public enum ThemeSelection: String, CaseIterable, Codable, Sendable {
@@ -1059,12 +1145,13 @@ public struct HUDSettings: Codable, Sendable, Equatable {
 // MARK: - Versioned Snapshot
 
 public struct AppSettings: Codable, Sendable, Equatable {
-    public static let currentSchemaVersion = 3
+    public static let currentSchemaVersion = 4
 
     public var schemaVersion: Int
     public var general: GeneralSettings
     public var keyboard: KeyboardSettings
     public var pointer: PointerSettings
+    public var pet: PetSettings
     public var appearance: AppearanceSettings
     public var displays: DisplaySettings
     public var hud: HUDSettings
@@ -1074,6 +1161,7 @@ public struct AppSettings: Codable, Sendable, Equatable {
         general: GeneralSettings = GeneralSettings(),
         keyboard: KeyboardSettings = KeyboardSettings(),
         pointer: PointerSettings = PointerSettings(),
+        pet: PetSettings = PetSettings(),
         appearance: AppearanceSettings = AppearanceSettings(),
         displays: DisplaySettings = DisplaySettings(),
         hud: HUDSettings = HUDSettings())
@@ -1082,6 +1170,7 @@ public struct AppSettings: Codable, Sendable, Equatable {
         self.general = general
         self.keyboard = keyboard.normalized()
         self.pointer = pointer.normalized()
+        self.pet = pet.normalized()
         self.appearance = appearance
         self.displays = displays
         self.hud = hud.normalized()
@@ -1092,6 +1181,7 @@ public struct AppSettings: Codable, Sendable, Equatable {
         case general
         case keyboard
         case pointer
+        case pet
         case appearance
         case displays
         case hud
@@ -1104,6 +1194,7 @@ public struct AppSettings: Codable, Sendable, Equatable {
             general: (try? container.decode(GeneralSettings.self, forKey: .general)) ?? GeneralSettings(),
             keyboard: (try? container.decode(KeyboardSettings.self, forKey: .keyboard)) ?? KeyboardSettings(),
             pointer: (try? container.decode(PointerSettings.self, forKey: .pointer)) ?? PointerSettings(),
+            pet: (try? container.decode(PetSettings.self, forKey: .pet)) ?? PetSettings(),
             appearance: (try? container.decode(AppearanceSettings.self, forKey: .appearance)) ?? AppearanceSettings(),
             displays: (try? container.decode(DisplaySettings.self, forKey: .displays)) ?? DisplaySettings(),
             hud: (try? container.decode(HUDSettings.self, forKey: .hud)) ?? HUDSettings())

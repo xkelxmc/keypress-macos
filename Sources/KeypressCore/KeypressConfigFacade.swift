@@ -36,6 +36,16 @@ public final class KeypressConfig {
         }
     }
 
+    public var pet: PetSettings {
+        didSet {
+            let normalized = self.pet.normalized()
+            if self.pet != normalized {
+                self.pet = normalized
+            }
+            self.persist()
+        }
+    }
+
     public var appearance: AppearanceSettings {
         didSet { self.persist() }
     }
@@ -71,6 +81,7 @@ public final class KeypressConfig {
         self.general = loaded.general
         self.keyboard = loaded.keyboard.normalized()
         self.pointer = loaded.pointer.normalized()
+        self.pet = loaded.pet.normalized()
         self.appearance = loaded.appearance
         self.displays = loaded.displays
         self.hud = loaded.hud.normalized()
@@ -84,6 +95,7 @@ public final class KeypressConfig {
             general: self.general,
             keyboard: self.keyboard,
             pointer: self.pointer,
+            pet: self.pet,
             appearance: self.appearance,
             displays: self.displays,
             hud: self.hud)
@@ -112,6 +124,7 @@ public final class KeypressConfig {
         self.general = defaults.general
         self.keyboard = defaults.keyboard
         self.pointer = defaults.pointer
+        self.pet = defaults.pet
         self.appearance = defaults.appearance
         self.displays = defaults.displays
         self.hud = defaults.hud

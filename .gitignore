@@ -57,6 +57,9 @@ assets/appstore/generated/*
 docs/*-analysis.md
 docs/.astro/
 
+# Local pet asset pipeline
+Scripts/pet/
+
 # Swift Package Manager metadata (leave sources tracked)
 # Packages/
 # Package.resolved

@@ -6,6 +6,7 @@ import SwiftUI
 enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
     case setup
     case general
+    case pet
     case pointerAppearance = "pointer.appearance"
     case pointerSettings = "pointer.settings"
     case keyboardAppearance = "keyboard.appearance"
@@ -22,6 +23,7 @@ enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .setup: "sidebar.setup"
         case .general: "sidebar.general"
+        case .pet: "sidebar.pet"
         case .pointerAppearance, .keyboardAppearance: "sidebar.appearance"
         case .pointerSettings, .keyboardSettings: "sidebar.settings"
         case .keyboardDisplays: "sidebar.displays"
@@ -34,6 +36,7 @@ enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .setup: "sparkles"
         case .general: "gearshape.fill"
+        case .pet: "cat.fill"
         case .pointerAppearance, .keyboardAppearance: "paintpalette.fill"
         case .pointerSettings: "cursorarrow.motionlines"
         case .keyboardSettings: "keyboard.fill"
@@ -47,6 +50,7 @@ enum SettingsDestination: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .setup: .purple
         case .general: .gray
+        case .pet: .orange
         case .pointerAppearance, .pointerSettings: .orange
         case .keyboardAppearance, .keyboardSettings: .blue
         case .keyboardDisplays: .cyan
@@ -93,6 +97,12 @@ struct SettingsView: View {
 
                 Section {
                     self.sidebarDestination(.general)
+                }
+
+                Section {
+                    self.sidebarDestination(.pet)
+                } header: {
+                    StudioSidebarSectionTitle(self.strings["sidebar.section.pet"])
                 }
 
                 Section {
@@ -171,6 +181,8 @@ struct SettingsView: View {
                 progress: self.onboardingProgress)
         case .general:
             GeneralSettingsPane(config: self.config)
+        case .pet:
+            PetSettingsPane(config: self.config)
         case .keyboardSettings:
             KeyboardSettingsPane(config: self.config)
         case .pointerSettings:
@@ -287,6 +299,8 @@ struct StudioPage<Content: View>: View {
             ("sparkles", .purple)
         case "general.title":
             ("gearshape.fill", .gray)
+        case "pet.title":
+            ("cat.fill", .orange)
         case "pointer.appearance.title":
             ("paintpalette.fill", .orange)
         case "pointer.title":
@@ -346,6 +360,8 @@ struct StudioPreviewPage<Preview: View, Content: View>: View {
 
     private var identity: (systemImage: String, tint: Color) {
         switch self.titleKey {
+        case "pet.title":
+            ("cat.fill", .orange)
         case "pointer.appearance.title":
             ("paintpalette.fill", .orange)
         case "keyboard.appearance.title":

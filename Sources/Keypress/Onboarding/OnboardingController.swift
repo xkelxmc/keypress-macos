@@ -33,8 +33,13 @@ final class OnboardingSession {
     ]
     var pressedKeyIDs: Set<String> = []
     var pointerLocation = CGPoint(x: 0.5, y: 0.5)
+    var petPreviewState = PetRuntimeState.idle
+    var petTypingFramesPerSecond = PetTypingRate.minimumFPS
     var reduceMotion = false
     var reduceTransparency = false
+
+    @ObservationIgnored private var petTypingTimestamps: [TimeInterval] = []
+    @ObservationIgnored private var petPreviewResetTask: Task<Void, Never>?
 
     @ObservationIgnored var deferAction: () -> Void = {}
     @ObservationIgnored var skipCeremonyAction: () -> Void = {}
@@ -81,6 +86,14 @@ final class OnboardingSession {
 
         switch event.type {
         case .keyDown:
+            if self.phase == .steps,
+               self.step == .pet,
+               symbol?.isModifier != true,
+               !KeyCodeMapper.isModifier(Int64(event.keyCode))
+            {
+                self.registerPetTyping()
+                return
+            }
             guard self.acceptsPreviewInput, let symbol else { return }
             guard !event.isARepeat else { return }
             self.pressedKeyIDs.insert(symbol.id)
@@ -104,6 +117,55 @@ final class OnboardingSession {
 
     func resetPressedKeys() {
         self.pressedKeyIDs.removeAll()
+        self.petPreviewResetTask?.cancel()
+        self.petPreviewResetTask = nil
+        self.petTypingTimestamps.removeAll()
+        self.petTypingFramesPerSecond = PetTypingRate.minimumFPS
+        self.petPreviewState = .idle
+    }
+
+    func updatePetLook(direction: Int?) {
+        guard self.phase == .steps,
+              self.step == .pet,
+              self.config.pet.enabled,
+              self.config.pet.visibility == .always,
+              self.config.pet.watchCursor
+        else {
+            return
+        }
+        if let direction {
+            let lookingState = PetRuntimeState.looking(direction: direction)
+            guard lookingState.canInterrupt(self.petPreviewState) else { return }
+            self.petPreviewState = lookingState
+        } else if case .looking = self.petPreviewState {
+            self.petPreviewState = .idle
+        }
+    }
+
+    func playPetReaction() {
+        guard self.phase == .steps,
+              self.step == .pet,
+              self.config.pet.enabled,
+              self.config.pet.visibility == .always,
+              self.config.pet.petReaction,
+              PetRuntimeState.petting.canInterrupt(self.petPreviewState)
+        else {
+            return
+        }
+        self.petPreviewResetTask?.cancel()
+        self.petPreviewState = .petting
+        let reactionDuration = if self.reduceMotion {
+            PetAnimationTiming.reducedMotionOneShotDuration
+        } else if let definition = PetSpriteSheet.shared.definition(for: .petting) {
+            Double(definition.count) / definition.fps
+        } else {
+            0.85
+        }
+        self.petPreviewResetTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(reactionDuration))
+            guard !Task.isCancelled else { return }
+            self?.petPreviewState = .idle
+        }
     }
 
     private var acceptsPreviewInput: Bool {
@@ -116,6 +178,28 @@ final class OnboardingSession {
         self.previewSymbols.append(symbol)
         if self.previewSymbols.count > 5 {
             self.previewSymbols.removeFirst(self.previewSymbols.count - 5)
+        }
+    }
+
+    private func registerPetTyping() {
+        guard self.config.pet.enabled else { return }
+        let now = ProcessInfo.processInfo.systemUptime
+        self.petTypingTimestamps.removeAll { now - $0 > PetTypingRate.sampleWindow }
+        self.petTypingTimestamps.append(now)
+        self.petTypingFramesPerSecond = PetTypingRate.framesPerSecond(
+            timestamps: self.petTypingTimestamps,
+            now: now)
+        self.petPreviewState = .typing
+
+        self.petPreviewResetTask?.cancel()
+        self.petPreviewResetTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(PetTypingRate.burstTimeout))
+            guard !Task.isCancelled else { return }
+            guard let self else { return }
+            self.petPreviewState =
+                self.config.pet.visibility == .typingOnly
+                    ? .hidden
+                    : .idle
         }
     }
 
@@ -319,7 +403,7 @@ final class OnboardingController {
     private func moveNext() {
         guard let session = self.session, session.canMoveNext else { return }
 
-        if session.step == .pointer {
+        if session.step == .pet {
             self.complete()
             return
         }
@@ -658,7 +742,7 @@ final class OnboardingController {
 
                 let consumesPreviewInput =
                     session.phase == .steps
-                        && session.step == .preview
+                        && (session.step == .preview || session.step == .pet)
                 session.handleLocalKeyEvent(event)
                 return consumesPreviewInput
                     && !self.isPreviewNavigationEvent(event)

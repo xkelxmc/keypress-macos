@@ -26,6 +26,13 @@ final class OverlayWindow: NSPanel {
     private var targetScreen: NSScreen?
     private var lastMeasuredContentSize = CGSize.zero
 
+    var visibleContentFrameDidChange: (() -> Void)?
+
+    var visibleContentFrame: NSRect? {
+        guard self.lastMeasuredContentSize != .zero else { return nil }
+        return self.frame.insetBy(dx: overlayShadowInset, dy: overlayShadowInset)
+    }
+
     // MARK: - Initialization (History mode)
 
     init(keyState: KeyState, config: KeypressConfig) {
@@ -270,6 +277,7 @@ final class OverlayWindow: NSPanel {
 
         self.setContentSize(newSize)
         self.updatePosition(on: screen)
+        self.visibleContentFrameDidChange?()
     }
 
     private func placement(on screen: NSScreen) -> DisplayPlacement {

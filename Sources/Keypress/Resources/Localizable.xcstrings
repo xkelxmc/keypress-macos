@@ -1564,11 +1564,11 @@
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Приложение" } }
     } },
     "general.enabled.subtitle" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Hauptschalter für Tastatur- und Zeiger-Overlays." } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Master switch for keyboard and pointer overlays." } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Interruptor principal para las superposiciones de teclado y puntero." } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Interrupteur principal des superpositions du clavier et du pointeur." } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Главный переключатель оверлеев клавиатуры и указателя." } }
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Hauptschalter für Tastatur-, Zeiger- und Begleiter-Overlays." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Master switch for keyboard, pointer, and pet overlays." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Interruptor principal para las superposiciones de teclado, puntero y mascota." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Interrupteur principal des superpositions du clavier, du pointeur et du compagnon." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Главный переключатель оверлеев клавиатуры, указателя и питомца." } }
     } },
     "general.hud.duration" : { "localizations" : {
       "de" : { "stringUnit" : { "state" : "translated", "value" : "Dauer" } },
@@ -2724,6 +2724,377 @@
       "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración" } },
       "fr" : { "stringUnit" : { "state" : "translated", "value" : "Configuration" } },
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройка" } }
+    } },
+    "onboarding.pet.disabled" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Der Begleiter ist deaktiviert — die Einrichtung kann trotzdem abgeschlossen werden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pet is disabled — you can still finish setup" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La mascota está desactivada, pero puedes terminar la configuración" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Le compagnon est désactivé — vous pouvez quand même terminer la configuration" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец выключен — настройку всё равно можно завершить" } }
+    } },
+    "onboarding.pet.hint" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tippe, bewege den Zeiger oder klicke auf die Katze" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Type, move the pointer, or click the cat" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Escribe, mueve el puntero o haz clic en el gato" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Tapez, déplacez le pointeur ou cliquez sur le chat" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Печатайте, двигайте курсор или нажмите на кота" } }
+    } },
+    "onboarding.pet.hint.click" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tippe oder klicke auf die Katze" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Type or click the cat" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Escribe o haz clic en el gato" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Tapez ou cliquez sur le chat" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Печатайте или нажмите на кота" } }
+    } },
+    "onboarding.pet.hint.pointer" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tippe oder bewege den Zeiger" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Type or move the pointer" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Escribe o mueve el puntero" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Tapez ou déplacez le pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Печатайте или двигайте курсор" } }
+    } },
+    "onboarding.pet.hint.typing" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tippe weiter, um den Begleiter zu animieren" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep typing to animate the pet" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Sigue escribiendo para animar la mascota" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Continuez à taper pour animer le compagnon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Продолжайте печатать, чтобы оживить питомца" } }
+    } },
+    "onboarding.pet.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ein kleiner Begleiter, der dem Rhythmus deiner Arbeit folgt." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "A small companion that follows the rhythm of your work." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Un pequeño compañero que sigue el ritmo de tu trabajo." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Un petit compagnon qui suit le rythme de votre travail." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Маленький компаньон, который живёт в ритме вашей работы." } }
+    } },
+    "onboarding.pet.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Lerne deinen Tippbegleiter kennen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Meet your typing companion" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Conoce a tu compañero de escritura" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Découvrez votre compagnon de frappe" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Познакомьтесь с компаньоном для печати" } }
+    } },
+    "onboarding.pet.waiting" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Beginne zu tippen, um den Begleiter einzublenden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Start typing to bring the pet on screen" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Empieza a escribir para mostrar la mascota" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Commencez à taper pour afficher le compagnon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Начните печатать, чтобы питомец появился на экране" } }
+    } },
+    "onboarding.step.5" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Begleiter" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pet" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mascota" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compagnon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец" } }
+    } },
+    "pet.activityMode" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Reihenfolge" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Activity Order" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Orden de actividades" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ordre des activités" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Порядок действий" } }
+    } },
+    "pet.activityMode.cycle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zyklus" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Cycle" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Ciclo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cycle" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "По кругу" } }
+    } },
+    "pet.activityMode.random" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zufällig" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Random" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Aleatorio" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aléatoire" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Случайно" } }
+    } },
+    "pet.activityMode.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wähle eine feste Abfolge oder abwechslungsreiche Aktivitäten." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a predictable sequence or varied activities." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige una secuencia predecible o actividades variadas." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez une séquence prévisible ou des activités variées." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выберите предсказуемый цикл или случайные действия." } }
+    } },
+    "pet.cursor" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Cursor" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cursor" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Курсор" } }
+    } },
+    "pet.enabled" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Keypress-Begleiter" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress Pet" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mascota de Keypress" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compagnon Keypress" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец Keypress" } }
+    } },
+    "pet.enabled.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeige einen animierten Begleiter auf dem Bildschirm." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show an animated companion on your screen." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra un compañero animado en la pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Affichez un compagnon animé à l’écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать анимированного компаньона на экране." } }
+    } },
+    "pet.groom" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Putzen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Groom" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Asearse" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Faire sa toilette" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Умываться" } }
+    } },
+    "pet.groom.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Gelegentlich eine kleine Fellpflege einlegen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Occasionally stop to clean up." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Detenerse de vez en cuando para asearse." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "S’arrêter parfois pour faire sa toilette." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Иногда останавливаться, чтобы умыться." } }
+    } },
+    "pet.huntCursor" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger jagen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Hunt Cursor" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cazar el cursor" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Chasser le pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Охотиться за курсором" } }
+    } },
+    "pet.huntCursor.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Auf schnelle Zeigerbewegungen in der Nähe springen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pounce at fast nearby pointer movement." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Saltar hacia movimientos rápidos cercanos del puntero." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Bondir vers les mouvements rapides du pointeur à proximité." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Прыгать на быстро движущийся рядом курсор." } }
+    } },
+    "pet.interaction" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Interaktion" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Interaction" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Interacción" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Interaction" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Взаимодействие" } }
+    } },
+    "pet.petReaction" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Auf Klicks reagieren" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "React to Clicks" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Reaccionar a los clics" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réagir aux clics" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Реагировать на нажатия" } }
+    } },
+    "pet.petReaction.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Reagiere, wenn du auf die Katze klickst." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Respond when you click the cat." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Responder cuando haces clic en el gato." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réagir lorsque vous cliquez sur le chat." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Реагировать, когда вы нажимаете на кота." } }
+    } },
+    "pet.playTail" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Mit dem Schwanz spielen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Play with Tail" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Jugar con la cola" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Jouer avec sa queue" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Играть с хвостом" } }
+    } },
+    "pet.playTail.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Sich gelegentlich vom eigenen Schwanz ablenken lassen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Occasionally get distracted by its own tail." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Distraerse de vez en cuando con su propia cola." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Se laisser parfois distraire par sa propre queue." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Иногда отвлекаться на собственный хвост." } }
+    } },
+    "pet.position" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Bildschirmposition" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Screen Position" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Posición en pantalla" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Position à l’écran" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Положение на экране" } }
+    } },
+    "pet.position.moveDown" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach unten bewegen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Move Down" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mover abajo" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Déplacer vers le bas" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переместить вниз" } }
+    } },
+    "pet.position.moveLeft" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach links bewegen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Move Left" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mover a la izquierda" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Déplacer vers la gauche" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переместить влево" } }
+    } },
+    "pet.position.moveRight" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach rechts bewegen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Move Right" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mover a la derecha" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Déplacer vers la droite" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переместить вправо" } }
+    } },
+    "pet.position.moveUp" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach oben bewegen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Move Up" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mover arriba" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Déplacer vers le haut" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Переместить вверх" } }
+    } },
+    "pet.position.reset" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Position zurücksetzen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset Position" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer posición" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réinitialiser la position" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить положение" } }
+    } },
+    "pet.position.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ziehe die Katze direkt auf dem Bildschirm an die gewünschte Stelle." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Drag the cat directly on screen to move it." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Arrastra el gato directamente en la pantalla para moverlo." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Faites glisser le chat directement à l’écran pour le déplacer." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Перетащите кота прямо на экране, чтобы изменить его положение." } }
+    } },
+    "pet.presentation" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Darstellung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Presentation" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Presentación" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Présentation" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отображение" } }
+    } },
+    "pet.preview.off" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Begleiter aus" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pet Off" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mascota desactivada" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compagnon désactivé" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец выключен" } }
+    } },
+    "pet.preview.typing" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Der Begleiter erscheint hier beim Tippen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "The pet appears here while you type" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La mascota aparece aquí mientras escribes" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Le compagnon apparaît ici pendant la frappe" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец появляется здесь во время печати" } }
+    } },
+    "pet.routine" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tagesablauf" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Daily Routine" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Rutina diaria" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Routine quotidienne" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Распорядок дня" } }
+    } },
+    "pet.size" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Größe" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pet Size" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tamaño" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Taille" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Размер питомца" } }
+    } },
+    "pet.size.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Lege fest, wie groß die Katze auf dem Bildschirm erscheint." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Set how large the cat appears on screen." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Define el tamaño del gato en la pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Définissez la taille du chat à l’écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройте размер кота на экране." } }
+    } },
+    "pet.sleep" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Schlafen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Sleep" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Dormir" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Dormir" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Спать" } }
+    } },
+    "pet.sleep.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach längerer Inaktivität einschlafen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Fall asleep after a longer idle period." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Dormirse tras un periodo largo de inactividad." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "S’endormir après une longue période d’inactivité." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Засыпать после долгого бездействия." } }
+    } },
+    "pet.stretch" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Strecken" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stretch" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Estirarse" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "S’étirer" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Потягиваться" } }
+    } },
+    "pet.stretch.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Sich gelegentlich nach langem Sitzen strecken." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Occasionally stretch after sitting still." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Estirarse de vez en cuando tras estar quieto." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "S’étirer parfois après être resté immobile." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Иногда потягиваться после долгого сидения." } }
+    } },
+    "pet.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Bestimme, wann deine Katze erscheint und welche Gewohnheiten aktiv bleiben." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose when your cat appears and which habits stay active." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige cuándo aparece tu gato y qué hábitos permanecen activos." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez quand votre chat apparaît et quelles habitudes restent actives." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выберите, когда появляется кот и какие привычки остаются активными." } }
+    } },
+    "pet.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Begleiter" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pet" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mascota" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compagnon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец" } }
+    } },
+    "pet.typingOnly.behaviorHint" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Ruhe-, Zeiger- und Klickverhalten erfordern die Sichtbarkeit „Immer“." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Idle, cursor, and click behaviors require Always visibility." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Los comportamientos de reposo, cursor y clic requieren la visibilidad «Siempre»." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les comportements d’inactivité, du pointeur et au clic nécessitent la visibilité « Toujours »." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Фоновые действия, курсор и реакции на клик доступны только в режиме «Всегда»." } }
+    } },
+    "pet.visibility" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Sichtbarkeit" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Visibility" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Visibilidad" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Visibilité" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Видимость" } }
+    } },
+    "pet.visibility.always" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Immer" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Always" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Siempre" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Toujours" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Всегда" } }
+    } },
+    "pet.visibility.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Lass die Katze immer da oder zeige sie nur beim Tippen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep the cat around or show it only while typing." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mantén el gato visible o muéstralo solo al escribir." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Gardez le chat à l’écran ou affichez-le seulement pendant la frappe." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оставлять кота на экране или показывать только во время печати." } }
+    } },
+    "pet.visibility.typing" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Beim Tippen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "While Typing" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Al escribir" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pendant la frappe" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Во время печати" } }
+    } },
+    "pet.watchCursor" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeiger beobachten" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Watch Cursor" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Observar el cursor" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Observer le pointeur" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Следить за курсором" } }
+    } },
+    "pet.watchCursor.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Zeigerbewegungen mit Augen und Kopf verfolgen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Follow pointer movement with its eyes and head." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Seguir el movimiento del puntero con los ojos y la cabeza." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Suivre le mouvement du pointeur des yeux et de la tête." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Следить за движением курсора глазами и головой." } }
+    } },
+    "sidebar.pet" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Begleiter" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pet" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mascota" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compagnon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец" } }
+    } },
+    "sidebar.section.pet" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Begleiter" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pet" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Mascota" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compagnon" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Питомец" } }
     } },
     "window.settings.title" : {
       "localizations" : {
