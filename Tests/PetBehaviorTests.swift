@@ -96,7 +96,17 @@ struct PetBehaviorTests {
                 petSize: self.petSize,
                 keyboardFrame: CGRect(origin: CGPoint(x: 24, y: 780), size: .zero),
                 visibleFrame: self.visibleFrame)
-                == CGPoint(x: 24, y: 648))
+                == CGPoint(x: 24, y: 568))
+    }
+
+    @Test("Bottom zero-size keyboard anchor reserves one keyboard row")
+    func bottomZeroSizeInitialPlacementAnchor() {
+        #expect(
+            PetInitialPlacement.origin(
+                petSize: self.petSize,
+                keyboardFrame: CGRect(origin: CGPoint(x: 24, y: 20), size: .zero),
+                visibleFrame: self.visibleFrame)
+                == CGPoint(x: 24, y: 112))
     }
 
     @Test("Bundled atlas and manifest satisfy the production contract")

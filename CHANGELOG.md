@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Animated Keypress Pet** — an original draggable cat with clean registered animations that types at your input speed, watches and hunts the cursor, sleeps, plays, and exposes independent behavior controls in Settings and onboarding
 - **Premium first-run onboarding** — a cinematic introduction with original sound, an interactive local preview, explicit Input Monitoring setup, and guided keyboard and Cursor Halo configuration
 - **Replayable setup tour** — unfinished onboarding can be resumed from Settings, while the complete experience can be replayed later without resetting saved preferences
-- **Cursor Halo** — customizable shapes, colors, glow, and responsive motion for movement, clicks, dragging, and scrolling
+- **Cursor Halo** — customizable shapes, layered translucent contours, colors, glow and responsive motion for movement, clicks, dragging and scrolling, with a live preview that matches the on-screen effect
 - **On-screen positioning editor** — drag the real keyboard overlay directly on any connected display with snapping, reset, and cancel support
 - **Native Studio settings** — a resizable sidebar interface with pinned live previews, grouped controls, and separate keyboard and pointer theme galleries
 - **Stacked History** — an optional conversation-style keyboard history that groups continuous typing and keeps shortcuts readable

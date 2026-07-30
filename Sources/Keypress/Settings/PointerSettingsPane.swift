@@ -112,7 +112,7 @@ struct PointerAppearanceSettingsPane: View {
                     titleKey: "pointer.appearance.title",
                     subtitleKey: "pointer.appearance.subtitle",
                     preview: {
-                        StudioPreviewSurface(height: 200) {
+                        StudioPreviewSurface(height: self.previewSurfaceHeight) {
                             PointerSettingsPreview(config: self.config)
                         }
                     },
@@ -143,6 +143,10 @@ struct PointerAppearanceSettingsPane: View {
         } message: {
             Text(self.strings["pointer.appearance.reset.confirm.message"])
         }
+    }
+
+    private var previewSurfaceHeight: CGFloat {
+        max(200, CGFloat(self.config.pointer.size) + 160)
     }
 
     @ViewBuilder
@@ -472,9 +476,6 @@ struct PointerThemeCard: View {
                 ZStack {
                     PointerContrastBackdrop(cornerRadius: 10)
                     self.sample
-                        .shadow(
-                            color: self.theme.primaryColor.color.opacity(self.theme.glowIntensity),
-                            radius: self.theme.glowRadius / 3)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 62)
@@ -531,162 +532,6 @@ private struct PointerContrastBackdrop: View {
                 endPoint: .bottomTrailing)
         }
         .clipShape(RoundedRectangle(cornerRadius: self.cornerRadius, style: .continuous))
-    }
-}
-
-struct PointerThemeArtwork: View {
-    let theme: PointerTheme
-    let size: CGFloat
-    var primaryColor: Color?
-
-    init(theme: PointerTheme, size: CGFloat, primaryColor: Color? = nil) {
-        self.theme = theme
-        self.size = size
-        self.primaryColor = primaryColor
-    }
-
-    private var primary: Color {
-        self.primaryColor ?? self.theme.primaryColor.color
-    }
-
-    var body: some View {
-        ZStack {
-            self.lines
-            self.detail
-        }
-        .frame(width: self.size, height: self.size)
-    }
-
-    @ViewBuilder
-    private var lines: some View {
-        let stroke = CGFloat(max(1, min(self.theme.strokeWidth, Double(self.size * 0.12))))
-        let glow = CGFloat(min(self.theme.glowRadius, Double(self.size * 0.34)))
-
-        switch self.theme.lineStyle {
-        case .aura:
-            self.shape(
-                color: self.primary.opacity(0.28 * self.theme.glowIntensity),
-                lineWidth: stroke * 2.4)
-                .blur(radius: max(1.5, glow * 0.5))
-            self.shape(color: self.primary, lineWidth: stroke)
-                .shadow(color: self.primary.opacity(self.theme.glowIntensity), radius: glow)
-
-        case .solid:
-            self.shape(color: self.primary, lineWidth: stroke)
-                .shadow(color: self.primary.opacity(self.theme.glowIntensity), radius: glow)
-
-        case .double:
-            self.shape(color: self.primary, lineWidth: stroke)
-            self.shape(
-                color: self.theme.secondaryColor.color,
-                lineWidth: max(1, stroke * 0.52),
-                scale: 0.78)
-                .shadow(
-                    color: self.theme.secondaryColor.color.opacity(self.theme.glowIntensity),
-                    radius: glow * 0.55)
-
-        case .segmented:
-            self.shape(
-                color: self.primary,
-                lineWidth: stroke,
-                dash: [stroke * 2.8, stroke * 1.9])
-            self.shape(
-                color: self.theme.secondaryColor.color.opacity(0.84),
-                lineWidth: max(1, stroke * 0.45),
-                scale: 0.8,
-                dash: [stroke * 1.4, stroke * 2.2])
-
-        case .neonDepth:
-            self.shape(
-                color: self.theme.secondaryColor.color.opacity(0.8),
-                lineWidth: stroke * 1.25)
-                .offset(y: max(2, self.size * 0.08))
-                .blur(radius: 1)
-            self.shape(color: self.primary, lineWidth: stroke)
-                .shadow(color: self.primary, radius: max(2, glow))
-            self.shape(
-                color: self.theme.secondaryColor.color,
-                lineWidth: max(1, stroke * 0.52),
-                scale: 0.78)
-                .shadow(color: self.theme.secondaryColor.color, radius: max(2, glow * 0.5))
-        }
-    }
-
-    @ViewBuilder
-    private var detail: some View {
-        let detailColor = self.theme.coreColor.color
-        switch self.theme.decoration {
-        case .none:
-            EmptyView()
-        case .centerDot:
-            Circle()
-                .fill(detailColor)
-                .frame(width: max(4, self.size * 0.1), height: max(4, self.size * 0.1))
-        case .innerRing:
-            self.shape(
-                color: detailColor.opacity(0.78),
-                lineWidth: max(1, self.size * 0.025),
-                scale: 0.55)
-        case .crosshair:
-            ForEach(0..<4, id: \.self) { index in
-                Capsule()
-                    .fill(detailColor.opacity(0.88))
-                    .frame(width: max(1.5, self.size * 0.035), height: self.size * 0.12)
-                    .offset(y: -self.size * 0.42)
-                    .rotationEffect(.degrees(Double(index) * 90))
-            }
-        case .cornerBrackets:
-            ForEach(0..<4, id: \.self) { index in
-                Image(systemName: "viewfinder")
-                    .font(.system(size: self.size * 0.32, weight: .bold))
-                    .foregroundStyle(self.theme.secondaryColor.color)
-                    .offset(y: -self.size * 0.36)
-                    .rotationEffect(.degrees(Double(index) * 90))
-            }
-        case .orbit:
-            Circle()
-                .fill(detailColor)
-                .frame(width: max(4, self.size * 0.09), height: max(4, self.size * 0.09))
-                .offset(y: -self.size * 0.46)
-            Circle()
-                .fill(self.theme.secondaryColor.color)
-                .frame(width: max(4, self.size * 0.09), height: max(4, self.size * 0.09))
-                .offset(y: self.size * 0.46)
-        }
-    }
-
-    @ViewBuilder
-    private func shape(
-        color: Color,
-        lineWidth: CGFloat,
-        scale: CGFloat = 1,
-        dash: [CGFloat] = []) -> some View
-    {
-        let stroke = StrokeStyle(
-            lineWidth: lineWidth,
-            lineCap: dash.isEmpty ? .butt : .round,
-            lineJoin: .round,
-            dash: dash)
-
-        switch self.theme.shape {
-        case .circle:
-            Circle()
-                .stroke(color, style: stroke)
-                .scaleEffect(scale)
-        case .squircle:
-            RoundedRectangle(cornerRadius: self.size * 0.28, style: .continuous)
-                .stroke(color, style: stroke)
-                .scaleEffect(scale)
-        case .square:
-            RoundedRectangle(cornerRadius: self.size * 0.11, style: .continuous)
-                .stroke(color, style: stroke)
-                .scaleEffect(scale)
-        case .diamond:
-            RoundedRectangle(cornerRadius: self.size * 0.09, style: .continuous)
-                .stroke(color, style: stroke)
-                .scaleEffect(0.72 * scale)
-                .rotationEffect(.degrees(45))
-        }
     }
 }
 
@@ -774,61 +619,28 @@ private struct PointerSettingsPreview: View {
                     height: max(116, CGFloat(self.config.pointer.size) + 34))
                 .shadow(color: Color.black.opacity(0.16), radius: 12, y: 6)
 
-            ZStack {
-                PointerThemeArtwork(
-                    theme: self.theme,
-                    size: CGFloat(self.config.pointer.size),
-                    primaryColor: self.glowColor)
-
-                if self.reaction == .secondary {
-                    self.pointerShape(
-                        color: self.theme.secondaryColor.color.opacity(0.7),
-                        lineWidth: 1.5)
-                        .scaleEffect(1.17)
-                }
-
-                if self.reaction == .middle {
-                    Circle()
-                        .fill(self.theme.coreColor.color)
-                        .frame(width: 8, height: 8)
-                        .shadow(color: self.theme.coreColor.color, radius: 9)
-                }
-
-                if self.theme.reactionStyle == .electric,
-                   self.reaction != .idle
-                {
-                    self.pointerShape(
-                        color: self.theme.secondaryColor.color.opacity(0.55),
-                        lineWidth: max(1, CGFloat(self.theme.strokeWidth) * 0.5))
-                        .scaleEffect(1.1)
-                        .blur(radius: 2)
-
-                    PointerElectricArc(
-                        color: self.theme.coreColor.color,
-                        lineWidth: max(1, CGFloat(self.theme.strokeWidth) * 0.34))
-                        .frame(
-                            width: CGFloat(self.config.pointer.size) * 0.88,
-                            height: CGFloat(self.config.pointer.size) * 0.88)
-                }
-            }
-            .opacity(self.config.pointer.opacity)
-            .scaleEffect(
-                x: self.previewTransform.scaleX,
-                y: self.previewTransform.scaleY)
-            .rotationEffect(.degrees(self.previewTransform.rotation))
-            .rotation3DEffect(
-                .degrees(self.previewTransform.xTilt),
-                axis: (x: 1, y: 0, z: 0),
-                perspective: 0.35)
-            .rotation3DEffect(
-                .degrees(self.previewTransform.yTilt),
-                axis: (x: 0, y: 1, z: 0),
-                perspective: 0.35)
-            .animation(
-                .spring(
-                    response: self.motionProfile.springResponse,
-                    dampingFraction: self.motionProfile.springDamping),
-                value: self.reaction)
+            PointerThemeArtwork(
+                theme: self.theme,
+                size: CGFloat(self.config.pointer.size),
+                reaction: self.reaction.artworkReaction)
+                .opacity(self.config.pointer.opacity)
+                .scaleEffect(
+                    x: self.previewTransform.scaleX,
+                    y: self.previewTransform.scaleY)
+                .rotationEffect(.degrees(self.previewTransform.rotation))
+                .rotation3DEffect(
+                    .degrees(self.previewTransform.xTilt),
+                    axis: (x: 1, y: 0, z: 0),
+                    perspective: 0.35)
+                .rotation3DEffect(
+                    .degrees(self.previewTransform.yTilt),
+                    axis: (x: 0, y: 1, z: 0),
+                    perspective: 0.35)
+                .animation(
+                    .spring(
+                        response: self.motionProfile.springResponse,
+                        dampingFraction: self.motionProfile.springDamping),
+                    value: self.reaction)
 
             Image(systemName: "cursorarrow")
                 .font(.system(size: 22, weight: .semibold))
@@ -891,12 +703,6 @@ private struct PointerSettingsPreview: View {
                 self.reaction = .idle
             }
         }
-    }
-
-    private var glowColor: Color {
-        self.reaction == .secondary
-            ? self.theme.secondaryColor.color
-            : self.theme.primaryColor.color
     }
 
     private var motionProfile: HaloMotionProfile {
@@ -963,63 +769,6 @@ private struct PointerSettingsPreview: View {
         case .scroll: self.config.pointer.showScroll
         }
     }
-
-    @ViewBuilder
-    private func pointerShape(color: Color, lineWidth: CGFloat) -> some View {
-        let size = CGFloat(self.config.pointer.size)
-
-        switch self.theme.shape {
-        case .circle:
-            Circle()
-                .stroke(color, lineWidth: lineWidth)
-                .frame(width: size, height: size)
-        case .squircle:
-            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                .stroke(color, lineWidth: lineWidth)
-                .frame(width: size, height: size)
-        case .square:
-            RoundedRectangle(cornerRadius: size * 0.11, style: .continuous)
-                .stroke(color, lineWidth: lineWidth)
-                .frame(width: size, height: size)
-        case .diamond:
-            RoundedRectangle(cornerRadius: size * 0.09, style: .continuous)
-                .stroke(color, lineWidth: lineWidth)
-                .frame(width: size, height: size)
-                .scaleEffect(0.72)
-                .rotationEffect(.degrees(45))
-        }
-    }
-}
-
-private struct PointerElectricArc: View {
-    let color: Color
-    let lineWidth: CGFloat
-
-    var body: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = geometry.size.height
-
-            Path { path in
-                path.move(to: CGPoint(x: width * 0.12, y: height * 0.28))
-                path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.20))
-                path.addLine(to: CGPoint(x: width * 0.31, y: height * 0.28))
-                path.addLine(to: CGPoint(x: width * 0.42, y: height * 0.15))
-
-                path.move(to: CGPoint(x: width * 0.70, y: height * 0.80))
-                path.addLine(to: CGPoint(x: width * 0.77, y: height * 0.70))
-                path.addLine(to: CGPoint(x: width * 0.84, y: height * 0.77))
-                path.addLine(to: CGPoint(x: width * 0.91, y: height * 0.64))
-            }
-            .stroke(
-                self.color,
-                style: StrokeStyle(
-                    lineWidth: self.lineWidth,
-                    lineCap: .round,
-                    lineJoin: .round))
-            .shadow(color: self.color, radius: 4)
-        }
-    }
 }
 
 private enum PointerPreviewReaction: CaseIterable, Hashable {
@@ -1030,6 +779,18 @@ private enum PointerPreviewReaction: CaseIterable, Hashable {
     case middle
     case drag
     case scroll
+
+    var artworkReaction: PointerArtworkReaction {
+        switch self {
+        case .idle: .idle
+        case .movement: .movement
+        case .primary: .primary
+        case .secondary: .secondary
+        case .middle: .middle
+        case .drag: .drag
+        case .scroll: .scroll
+        }
+    }
 
     var systemImage: String {
         switch self {

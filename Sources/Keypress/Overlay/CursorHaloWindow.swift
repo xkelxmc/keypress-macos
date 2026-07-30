@@ -2,13 +2,6 @@ import AppKit
 import KeypressCore
 import SwiftUI
 
-enum CursorHaloShape: String, CaseIterable, Sendable {
-    case circle
-    case squircle
-    case square
-    case diamond
-}
-
 enum CursorButton: Hashable, Sendable {
     case primary
     case secondary
@@ -24,18 +17,9 @@ enum CursorAction: Sendable {
 }
 
 struct CursorHaloStyle: Equatable, Sendable {
-    var shape: CursorHaloShape
-    var lineStyle: PointerLineStyle
-    var decoration: PointerDecoration
-    var reactionStyle: PointerReactionStyle
+    var theme: PointerTheme
     var size: CGFloat
-    var strokeWidth: CGFloat
     var opacity: Double
-    var primaryColor: KeypressColor
-    var secondaryColor: KeypressColor
-    var coreColor: KeypressColor
-    var glowRadius: CGFloat
-    var glowIntensity: Double
     var motionIntensity: Double
     var visibility: PointerVisibility
     var idleDelay: TimeInterval
@@ -49,50 +33,14 @@ struct CursorHaloStyle: Equatable, Sendable {
         theme: PointerTheme())
 
     init(settings: PointerSettings, theme: PointerTheme) {
-        self.shape = switch theme.shape {
-        case .circle: .circle
-        case .squircle: .squircle
-        case .square: .square
-        case .diamond: .diamond
-        }
-        self.lineStyle = theme.lineStyle
-        self.decoration = theme.decoration
-        self.reactionStyle = theme.reactionStyle
+        self.theme = theme
         self.size = CGFloat(settings.size)
-        self.strokeWidth = CGFloat(theme.strokeWidth)
         self.opacity = settings.opacity
-        self.primaryColor = KeypressColor(theme.primaryColor)
-        self.secondaryColor = KeypressColor(theme.secondaryColor)
-        self.coreColor = KeypressColor(theme.coreColor)
-        self.glowRadius = CGFloat(theme.glowRadius)
-        self.glowIntensity = theme.glowIntensity
         self.motionIntensity = settings.motionIntensity
         self.visibility = settings.visibility
         self.idleDelay = settings.visibility == .actionsOnly
             ? settings.idleDelay / 2
             : settings.idleDelay
-    }
-}
-
-struct KeypressColor: Equatable, Sendable {
-    let red: Double
-    let green: Double
-    let blue: Double
-    let alpha: Double
-
-    init(red: Double, green: Double, blue: Double, alpha: Double = 1) {
-        self.red = red
-        self.green = green
-        self.blue = blue
-        self.alpha = alpha
-    }
-
-    init(_ color: KeyColor) {
-        self.init(red: color.red, green: color.green, blue: color.blue, alpha: color.alpha)
-    }
-
-    var color: Color {
-        Color(red: self.red, green: self.green, blue: self.blue, opacity: self.alpha)
     }
 }
 
@@ -104,6 +52,18 @@ private enum HaloReaction: Equatable {
     case middle
     case drag(CGSize)
     case scroll(CGSize)
+
+    var artworkReaction: PointerArtworkReaction {
+        switch self {
+        case .idle: .idle
+        case .movement: .movement
+        case .primary: .primary
+        case .secondary: .secondary
+        case .middle: .middle
+        case .drag: .drag
+        case .scroll: .scroll
+        }
+    }
 }
 
 @MainActor
@@ -393,7 +353,7 @@ private struct CursorHaloView: View {
     }
 
     private var motionProfile: HaloMotionProfile {
-        HaloMotionProfile(style: self.state.style.reactionStyle)
+        HaloMotionProfile(style: self.state.style.theme.reactionStyle)
     }
 
     private var transform: HaloTransform {
@@ -459,74 +419,33 @@ private struct CursorHaloView: View {
         }
     }
 
-    private var glowColor: Color {
-        self.state.reaction == .secondary
-            ? self.state.style.secondaryColor.color
-            : self.state.style.primaryColor.color
-    }
-
     var body: some View {
-        ZStack {
-            self.lineArtwork
-            self.decoration
-
-            if self.state.reaction == .secondary {
-                self.haloShape(
-                    color: self.state.style.secondaryColor.color.opacity(0.72),
-                    lineWidth: max(1.5, self.state.style.strokeWidth * 0.42),
-                    scale: 1.16)
-                    .transition(.opacity.combined(with: .scale(scale: 0.92)))
-            }
-
-            if self.state.reaction == .middle {
-                Circle()
-                    .fill(self.state.style.coreColor.color)
-                    .frame(width: 8, height: 8)
-                    .shadow(color: self.state.style.coreColor.color, radius: 9)
-                    .transition(.opacity.combined(with: .scale(scale: 0.4)))
-            }
-
-            if self.state.style.reactionStyle == .electric,
-               self.state.reaction != .idle
-            {
-                self.haloShape(
-                    color: self.state.style.secondaryColor.color.opacity(0.55),
-                    lineWidth: max(1, self.state.style.strokeWidth * 0.5),
-                    scale: 1.08 * self.accentScale)
-                    .blur(radius: 2)
-
-                HaloElectricArc(
-                    color: self.state.style.coreColor.color,
-                    lineWidth: max(1, self.state.style.strokeWidth * 0.34))
-                    .frame(
-                        width: self.state.style.size * 0.88,
-                        height: self.state.style.size * 0.88)
-                    .transition(.opacity.combined(with: .scale(scale: 0.82)))
-            }
-        }
-        .frame(width: self.state.style.size, height: self.state.style.size)
-        .scaleEffect(x: self.transform.scaleX, y: self.transform.scaleY)
-        .rotationEffect(.degrees(self.transform.rotation))
-        .rotation3DEffect(.degrees(self.transform.xTilt), axis: (x: 1, y: 0, z: 0), perspective: 0.35)
-        .rotation3DEffect(.degrees(self.transform.yTilt), axis: (x: 0, y: 1, z: 0), perspective: 0.35)
-        .opacity(self.state.style.opacity)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(
-            self.continuousReaction
-                ? nil
-                : self.reduceMotion
-                ? .easeOut(duration: 0.12)
-                : .spring(
-                    response: self.motionProfile.springResponse,
-                    dampingFraction: self.motionProfile.springDamping),
-            value: self.state.sequence)
-        .animation(
-            self.continuousReaction
-                ? nil
-                : .spring(
-                    response: self.motionProfile.springResponse + 0.04,
-                    dampingFraction: self.motionProfile.springDamping),
-            value: self.state.reaction)
+        PointerThemeArtwork(
+            theme: self.state.style.theme,
+            size: self.state.style.size,
+            reaction: self.state.reaction.artworkReaction)
+            .scaleEffect(x: self.transform.scaleX, y: self.transform.scaleY)
+            .rotationEffect(.degrees(self.transform.rotation))
+            .rotation3DEffect(.degrees(self.transform.xTilt), axis: (x: 1, y: 0, z: 0), perspective: 0.35)
+            .rotation3DEffect(.degrees(self.transform.yTilt), axis: (x: 0, y: 1, z: 0), perspective: 0.35)
+            .opacity(self.state.style.opacity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .animation(
+                self.continuousReaction
+                    ? nil
+                    : self.reduceMotion
+                    ? .easeOut(duration: 0.12)
+                    : .spring(
+                        response: self.motionProfile.springResponse,
+                        dampingFraction: self.motionProfile.springDamping),
+                value: self.state.sequence)
+            .animation(
+                self.continuousReaction
+                    ? nil
+                    : .spring(
+                        response: self.motionProfile.springResponse + 0.04,
+                        dampingFraction: self.motionProfile.springDamping),
+                value: self.state.reaction)
     }
 
     private var continuousReaction: Bool {
@@ -535,259 +454,6 @@ private struct CursorHaloView: View {
             true
         case .idle, .primary, .secondary, .middle, .scroll:
             false
-        }
-    }
-
-    private var accentScale: CGFloat {
-        switch self.state.reaction {
-        case .idle, .movement:
-            1
-        case .primary:
-            0.76
-        case .secondary:
-            1.08
-        case .middle:
-            0.66
-        case .drag:
-            0.82
-        case .scroll:
-            0.9
-        }
-    }
-
-    private var decorationScale: CGFloat {
-        switch self.state.reaction {
-        case .idle:
-            1
-        case .movement:
-            self.state.style.reactionStyle == .fluid ? 1.04 : 1
-        case .primary:
-            0.72
-        case .secondary:
-            1.12
-        case .middle:
-            0.58
-        case .drag:
-            0.78
-        case .scroll:
-            0.9
-        }
-    }
-
-    private var decorationRotation: Double {
-        guard self.state.style.decoration == .orbit else { return 0 }
-        return switch self.state.reaction {
-        case .idle:
-            24
-        case .movement:
-            54
-        case .primary:
-            88
-        case .secondary:
-            -42
-        case .middle:
-            120
-        case .drag:
-            74
-        case .scroll:
-            -78
-        }
-    }
-
-    @ViewBuilder
-    private var lineArtwork: some View {
-        switch self.state.style.lineStyle {
-        case .aura:
-            self.haloShape(
-                color: self.glowColor.opacity(0.18 * self.state.style.glowIntensity),
-                lineWidth: self.state.style.strokeWidth * 3.2)
-                .blur(radius: max(4, self.state.style.glowRadius * 0.55))
-
-            self.haloShape(
-                color: self.glowColor.opacity(0.36 * self.state.style.glowIntensity),
-                lineWidth: self.state.style.strokeWidth * 1.8)
-                .blur(radius: max(2, self.state.style.glowRadius * 0.22))
-
-            self.haloShape(
-                color: self.glowColor,
-                lineWidth: self.state.style.strokeWidth)
-                .shadow(
-                    color: self.glowColor.opacity(self.state.style.glowIntensity),
-                    radius: self.state.style.glowRadius)
-
-        case .solid:
-            self.haloShape(
-                color: self.glowColor,
-                lineWidth: self.state.style.strokeWidth)
-                .shadow(
-                    color: self.glowColor.opacity(self.state.style.glowIntensity),
-                    radius: self.state.style.glowRadius)
-
-        case .double:
-            self.haloShape(
-                color: self.glowColor.opacity(0.2 * self.state.style.glowIntensity),
-                lineWidth: self.state.style.strokeWidth * 2.2)
-                .blur(radius: max(1, self.state.style.glowRadius * 0.35))
-
-            self.haloShape(
-                color: self.glowColor,
-                lineWidth: self.state.style.strokeWidth)
-
-            self.haloShape(
-                color: self.state.style.secondaryColor.color.opacity(0.86),
-                lineWidth: max(1, self.state.style.strokeWidth * 0.55),
-                scale: 0.82 * self.accentScale)
-
-        case .segmented:
-            self.haloShape(
-                color: self.glowColor.opacity(0.22 * self.state.style.glowIntensity),
-                lineWidth: self.state.style.strokeWidth * 2)
-                .blur(radius: max(1, self.state.style.glowRadius * 0.35))
-
-            self.haloShape(
-                color: self.glowColor,
-                lineWidth: self.state.style.strokeWidth,
-                dash: [
-                    self.state.style.strokeWidth * 3,
-                    self.state.style.strokeWidth * 2.2,
-                ],
-                dashPhase: self.state.reaction == .idle
-                    ? 0
-                    : self.state.style.strokeWidth * 1.35)
-
-            self.haloShape(
-                color: self.state.style.secondaryColor.color.opacity(0.82),
-                lineWidth: max(1, self.state.style.strokeWidth * 0.45),
-                scale: 0.84 * self.accentScale,
-                dash: [
-                    self.state.style.strokeWidth * 1.5,
-                    self.state.style.strokeWidth * 2.6,
-                ],
-                dashPhase: self.state.style.strokeWidth * 1.2)
-
-        case .neonDepth:
-            self.haloShape(
-                color: self.state.style.secondaryColor.color.opacity(0.72),
-                lineWidth: self.state.style.strokeWidth * 1.45,
-                scale: 0.98 * max(0.9, self.accentScale))
-                .offset(y: 4)
-                .blur(radius: 2.2)
-
-            self.haloShape(
-                color: self.glowColor.opacity(0.24 * self.state.style.glowIntensity),
-                lineWidth: self.state.style.strokeWidth * 3.6)
-                .blur(radius: max(5, self.state.style.glowRadius * 0.58))
-
-            self.haloShape(
-                color: self.glowColor,
-                lineWidth: self.state.style.strokeWidth)
-                .shadow(
-                    color: self.glowColor.opacity(self.state.style.glowIntensity),
-                    radius: self.state.style.glowRadius)
-
-            self.haloShape(
-                color: self.state.style.secondaryColor.color,
-                lineWidth: max(1.2, self.state.style.strokeWidth * 0.62),
-                scale: 0.82 * self.accentScale)
-                .shadow(
-                    color: self.state.style.secondaryColor.color.opacity(0.9),
-                    radius: self.state.style.glowRadius * 0.5)
-
-            self.haloShape(
-                color: self.state.style.coreColor.color.opacity(0.72),
-                lineWidth: max(0.75, self.state.style.strokeWidth * 0.22),
-                scale: 0.91 * max(0.84, self.accentScale))
-        }
-    }
-
-    private var decoration: some View {
-        Group {
-            switch self.state.style.decoration {
-            case .none:
-                EmptyView()
-
-            case .centerDot:
-                Circle()
-                    .fill(self.state.style.coreColor.color)
-                    .frame(
-                        width: max(5, self.state.style.strokeWidth * 1.7),
-                        height: max(5, self.state.style.strokeWidth * 1.7))
-                    .shadow(
-                        color: self.state.style.primaryColor.color.opacity(0.45),
-                        radius: 4)
-
-            case .innerRing:
-                self.haloShape(
-                    color: self.state.style.coreColor.color.opacity(0.7),
-                    lineWidth: max(1, self.state.style.strokeWidth * 0.36),
-                    scale: 0.58)
-
-            case .crosshair:
-                ForEach(0..<4, id: \.self) { index in
-                    Capsule()
-                        .fill(self.state.style.coreColor.color.opacity(0.88))
-                        .frame(
-                            width: max(1.5, self.state.style.strokeWidth * 0.7),
-                            height: self.state.style.size * 0.12)
-                        .offset(y: -self.state.style.size * 0.43)
-                        .rotationEffect(.degrees(Double(index) * 90))
-                }
-
-            case .cornerBrackets:
-                HaloCornerBrackets(
-                    color: self.state.style.secondaryColor.color,
-                    lineWidth: max(1.5, self.state.style.strokeWidth * 0.62))
-
-            case .orbit:
-                ZStack {
-                    Circle()
-                        .fill(self.state.style.coreColor.color)
-                        .frame(width: 5, height: 5)
-                        .offset(y: -self.state.style.size * 0.46)
-                    Circle()
-                        .fill(self.state.style.secondaryColor.color)
-                        .frame(width: 5, height: 5)
-                        .offset(y: self.state.style.size * 0.46)
-                }
-            }
-        }
-        .scaleEffect(self.decorationScale)
-        .rotationEffect(.degrees(self.decorationRotation))
-    }
-
-    @ViewBuilder
-    private func haloShape(
-        color: Color,
-        lineWidth: CGFloat,
-        scale: CGFloat = 1,
-        dash: [CGFloat] = [],
-        dashPhase: CGFloat = 0) -> some View
-    {
-        let strokeStyle = StrokeStyle(
-            lineWidth: lineWidth,
-            lineCap: dash.isEmpty ? .butt : .round,
-            lineJoin: .round,
-            dash: dash,
-            dashPhase: dashPhase)
-
-        switch self.state.style.shape {
-        case .circle:
-            Circle()
-                .stroke(color, style: strokeStyle)
-                .scaleEffect(scale)
-        case .squircle:
-            RoundedRectangle(cornerRadius: self.state.style.size * 0.28, style: .continuous)
-                .stroke(color, style: strokeStyle)
-                .scaleEffect(scale)
-        case .square:
-            RoundedRectangle(cornerRadius: self.state.style.size * 0.11, style: .continuous)
-                .stroke(color, style: strokeStyle)
-                .scaleEffect(scale)
-        case .diamond:
-            RoundedRectangle(cornerRadius: self.state.style.size * 0.09, style: .continuous)
-                .stroke(color, style: strokeStyle)
-                .scaleEffect(0.72 * scale)
-                .rotationEffect(.degrees(45))
         }
     }
 
@@ -810,76 +476,6 @@ private struct CursorHaloView: View {
             yTilt: min(
                 max(velocity.width / 100 * self.motionProfile.tiltScale, -8),
                 8) * self.intensity)
-    }
-}
-
-private struct HaloCornerBrackets: View {
-    let color: Color
-    let lineWidth: CGFloat
-
-    var body: some View {
-        GeometryReader { geometry in
-            let side = min(geometry.size.width, geometry.size.height)
-            let inset = side * 0.08
-            let length = side * 0.19
-            let maxX = geometry.size.width - inset
-            let maxY = geometry.size.height - inset
-
-            Path { path in
-                path.move(to: CGPoint(x: inset + length, y: inset))
-                path.addLine(to: CGPoint(x: inset, y: inset))
-                path.addLine(to: CGPoint(x: inset, y: inset + length))
-
-                path.move(to: CGPoint(x: maxX - length, y: inset))
-                path.addLine(to: CGPoint(x: maxX, y: inset))
-                path.addLine(to: CGPoint(x: maxX, y: inset + length))
-
-                path.move(to: CGPoint(x: inset, y: maxY - length))
-                path.addLine(to: CGPoint(x: inset, y: maxY))
-                path.addLine(to: CGPoint(x: inset + length, y: maxY))
-
-                path.move(to: CGPoint(x: maxX, y: maxY - length))
-                path.addLine(to: CGPoint(x: maxX, y: maxY))
-                path.addLine(to: CGPoint(x: maxX - length, y: maxY))
-            }
-            .stroke(
-                self.color,
-                style: StrokeStyle(
-                    lineWidth: self.lineWidth,
-                    lineCap: .round,
-                    lineJoin: .round))
-        }
-    }
-}
-
-private struct HaloElectricArc: View {
-    let color: Color
-    let lineWidth: CGFloat
-
-    var body: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = geometry.size.height
-
-            Path { path in
-                path.move(to: CGPoint(x: width * 0.12, y: height * 0.28))
-                path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.20))
-                path.addLine(to: CGPoint(x: width * 0.31, y: height * 0.28))
-                path.addLine(to: CGPoint(x: width * 0.42, y: height * 0.15))
-
-                path.move(to: CGPoint(x: width * 0.70, y: height * 0.80))
-                path.addLine(to: CGPoint(x: width * 0.77, y: height * 0.70))
-                path.addLine(to: CGPoint(x: width * 0.84, y: height * 0.77))
-                path.addLine(to: CGPoint(x: width * 0.91, y: height * 0.64))
-            }
-            .stroke(
-                self.color,
-                style: StrokeStyle(
-                    lineWidth: self.lineWidth,
-                    lineCap: .round,
-                    lineJoin: .round))
-            .shadow(color: self.color, radius: 4)
-        }
     }
 }
 

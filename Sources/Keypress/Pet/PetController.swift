@@ -640,6 +640,7 @@ final class PetController {
 enum PetInitialPlacement {
     private static let keyboardSpacing: CGFloat = 12
     private static let fallbackMargin: CGFloat = 24
+    private static let provisionalKeyboardRowHeight: CGFloat = 80
 
     static func origin(
         petSize: CGSize,
@@ -658,12 +659,22 @@ enum PetInitialPlacement {
                 to: visibleFrame)
         }
 
-        let x = keyboardFrame.midX <= visibleFrame.midX
-            ? keyboardFrame.minX
-            : keyboardFrame.maxX - petSize.width
-        let y = keyboardFrame.midY >= visibleFrame.midY
-            ? keyboardFrame.minY - petSize.height - self.keyboardSpacing
-            : keyboardFrame.maxY + self.keyboardSpacing
+        let keyboardIsAbove = keyboardFrame.midY >= visibleFrame.midY
+        let effectiveKeyboardFrame = keyboardFrame.isEmpty
+            ? CGRect(
+                x: keyboardFrame.minX,
+                y: keyboardIsAbove
+                    ? keyboardFrame.minY - self.provisionalKeyboardRowHeight
+                    : keyboardFrame.minY,
+                width: 0,
+                height: self.provisionalKeyboardRowHeight)
+            : keyboardFrame
+        let x = effectiveKeyboardFrame.midX <= visibleFrame.midX
+            ? effectiveKeyboardFrame.minX
+            : effectiveKeyboardFrame.maxX - petSize.width
+        let y = keyboardIsAbove
+            ? effectiveKeyboardFrame.minY - petSize.height - self.keyboardSpacing
+            : effectiveKeyboardFrame.maxY + self.keyboardSpacing
         return self.clamped(
             CGPoint(x: x, y: y),
             petSize: petSize,

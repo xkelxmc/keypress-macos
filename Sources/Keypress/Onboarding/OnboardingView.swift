@@ -463,7 +463,10 @@ private struct OnboardingInteractivePointerPreview: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                PointerThemeArtwork(theme: self.pointerTheme, size: 62)
+                PointerThemeArtwork(
+                    theme: self.pointerTheme,
+                    size: 62,
+                    reaction: self.isPointerPressed ? .primary : .idle)
                     .scaleEffect(
                         self.session.reduceMotion
                             ? 1
@@ -1034,7 +1037,10 @@ private struct OnboardingPointerLivePreview: View {
                 OnboardingPreviewSurface()
 
                 if self.session.config.pointer.enabled {
-                    PointerThemeArtwork(theme: self.pointerTheme, size: 76)
+                    PointerThemeArtwork(
+                        theme: self.pointerTheme,
+                        size: 76,
+                        reaction: self.isPointerPressed ? .primary : .idle)
                         .scaleEffect(
                             self.session.reduceMotion
                                 ? 1
