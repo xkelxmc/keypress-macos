@@ -11,7 +11,6 @@ enum WindowCapture {
         contentSize: CGSize,
         appearance appearanceName: NSAppearance.Name) -> NSImage?
     {
-        // swiftlint:disable:previous function_body_length
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         app.finishLaunching()
@@ -165,10 +164,21 @@ enum WindowCapture {
 private final class OffscreenWindow: NSWindow {
     var pretendsActive = false
 
-    override var isKeyWindow: Bool { self.pretendsActive || super.isKeyWindow }
-    override var isMainWindow: Bool { self.pretendsActive || super.isMainWindow }
-    override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
+    override var isKeyWindow: Bool {
+        self.pretendsActive || super.isKeyWindow
+    }
+
+    override var isMainWindow: Bool {
+        self.pretendsActive || super.isMainWindow
+    }
+
+    override var canBecomeKey: Bool {
+        true
+    }
+
+    override var canBecomeMain: Bool {
+        true
+    }
 
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
         frameRect
