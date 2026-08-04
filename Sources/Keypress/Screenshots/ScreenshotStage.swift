@@ -50,6 +50,8 @@ enum StagePalette {
 
 struct StageBackgroundView: View {
     let tone: StageTone
+    /// Screenshots are 1440x900; the App Preview video shares the stage at 1600x900.
+    var size: CGSize = ScreenshotCanvas.size
 
     var body: some View {
         ZStack {
@@ -76,7 +78,7 @@ struct StageBackgroundView: View {
 
             StageGrainView(tone: self.tone)
         }
-        .frame(width: ScreenshotCanvas.size.width, height: ScreenshotCanvas.size.height)
+        .frame(width: self.size.width, height: self.size.height)
         .clipped()
     }
 

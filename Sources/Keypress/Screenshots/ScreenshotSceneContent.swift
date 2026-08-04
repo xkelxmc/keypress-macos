@@ -189,7 +189,7 @@ private struct SceneCodeText: View {
 }
 
 /// Dotted canvas-app background for the halo window.
-private struct SceneDotGridView: View {
+struct SceneDotGridView: View {
     var body: some View {
         Canvas { context, size in
             let step: CGFloat = 26

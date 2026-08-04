@@ -2,16 +2,20 @@ import AppKit
 import SwiftUI
 
 enum SceneTypography {
-    private static let headlineFont = Font.system(size: 60, weight: .semibold, design: .serif)
+    /// Screenshots headline at 60 pt; the video caption uses a smaller line.
+    static func headlineFont(size: CGFloat = 60) -> Font {
+        Font.system(size: size, weight: .semibold, design: .serif)
+    }
 
     /// Builds the display headline from markup where the single `*accented*` word
     /// switches to italic serif in the stage accent colour.
-    static func headline(_ markup: String, accent: Color) -> Text {
-        markup
+    static func headline(_ markup: String, accent: Color, size: CGFloat = 60) -> Text {
+        let font = self.headlineFont(size: size)
+        return markup
             .split(separator: "*", omittingEmptySubsequences: false)
             .enumerated()
             .map { index, part in
-                let run = Text(String(part)).font(self.headlineFont)
+                let run = Text(String(part)).font(font)
                 return index.isMultiple(of: 2) ? run : run.italic().foregroundStyle(accent)
             }
             .reduce(Text(verbatim: ""), +)

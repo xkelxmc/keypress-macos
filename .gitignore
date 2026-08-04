@@ -53,12 +53,20 @@ assets/screenshots/generated/*
 assets/appstore/generated/*
 !assets/appstore/generated/.gitkeep
 
+# App Store preview video scratch (frames, derived SFX, intermediate mixes)
+assets/appstore/preview-frames/
+
 # Debug/analysis docs
 docs/*-analysis.md
 docs/.astro/
 
 # Local pet asset pipeline
 Scripts/pet/
+
+# Local tooling
+Sources/Keypress/Preview/
+Scripts/render_preview.sh
+Scripts/render_preview_audio.sh
 
 # Swift Package Manager metadata (leave sources tracked)
 # Packages/
