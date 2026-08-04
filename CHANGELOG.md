@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Selected Displays mode** — mirror the keyboard overlay across multiple displays with a separate saved position for each one
 
 ### Changed
+- **New app icon** — the Keypress cat peeking over a graphite mechanical keycap with a backlit K
+- **App Store marketing set rebuilt** — ten screenshot scenes rendered from the shipping components with a shared visual system and deterministic settings-window capture
 - **Keyboard presentation is now an explicit three-mode choice** — Latest, Horizontal History, and Stacked History use the same illustrated selector and animated preview in onboarding and Settings
 - **Stacked History keeps the active shortcut anchored** — typed text and completed shortcuts grow around a stable key combination according to its screen position instead of shifting the overlay
 - **Input Monitoring is requested only after a deliberate action** — onboarding explains why access is needed before opening System Settings, and the app remains disabled until setup is complete
