@@ -7,7 +7,7 @@ let package = Package(
         .macOS(.v14),
     ],
     dependencies: [
-        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "2.0.0"),
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "3.0.0"),
     ],
     targets: [
         .target(

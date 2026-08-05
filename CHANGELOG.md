@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Settings interactions stay immediate** — rapid slider and color changes are saved as one coalesced snapshot instead of blocking the UI on every step
 
 ### Fixed
+- **App Store processing no longer rejects the binary** — the KeyboardShortcuts dependency is updated to 3.0.1, whose Arabic localization file no longer breaks Apple's bundle and signing analysis
 - **Onboarding interactions stay responsive** — full-card hit targets, hover feedback, reliable ceremony skipping, and immediate Cursor Halo mode switching remove missed clicks and delayed controls
 - **Keyboard previews match the selected behavior** — All Keys demonstrates ⇧⌘K, Shortcuts Only demonstrates ⇧⌘V, and replay animates each key sequentially from an unpressed state
 - **Stacked History remains stable at every screen anchor** — mixed text and shortcut rows no longer drift, overflow their previews, duplicate the current chord, or align toward the wrong edge

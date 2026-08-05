@@ -5,32 +5,32 @@ extension KeyboardShortcuts.Name {
     /// Global shortcut to toggle overlay on/off. Default: ⌘⇧K
     static let toggleOverlay = Self(
         "toggleOverlay",
-        default: .init(carbonKeyCode: kVK_ANSI_K, carbonModifiers: cmdKey | shiftKey))
+        initial: .init(carbonKeyCode: kVK_ANSI_K, carbonModifiers: cmdKey | shiftKey))
 
     /// Global shortcut to toggle the cursor halo. Default: ⌃⌥H
     static let togglePointer = Self(
         "togglePointer",
-        default: .init(carbonKeyCode: kVK_ANSI_H, carbonModifiers: controlKey | optionKey))
+        initial: .init(carbonKeyCode: kVK_ANSI_H, carbonModifiers: controlKey | optionKey))
 
     /// Global shortcut to switch between all keys and shortcuts only. Default: ⌃⌥M
     static let switchContentMode = Self(
         "switchContentMode",
-        default: .init(carbonKeyCode: kVK_ANSI_M, carbonModifiers: controlKey | optionKey))
+        initial: .init(carbonKeyCode: kVK_ANSI_M, carbonModifiers: controlKey | optionKey))
 
     /// Global shortcut to open the on-screen positioning editor. Default: ⌃⌥P
     static let editPosition = Self(
         "editPosition",
-        default: .init(carbonKeyCode: kVK_ANSI_P, carbonModifiers: controlKey | optionKey))
+        initial: .init(carbonKeyCode: kVK_ANSI_P, carbonModifiers: controlKey | optionKey))
 
     /// Global shortcut to increase the keyboard overlay size. Default: ⌃⌥=
     static let increaseOverlaySize = Self(
         "increaseOverlaySize",
-        default: .init(carbonKeyCode: kVK_ANSI_Equal, carbonModifiers: controlKey | optionKey))
+        initial: .init(carbonKeyCode: kVK_ANSI_Equal, carbonModifiers: controlKey | optionKey))
 
     /// Global shortcut to decrease the keyboard overlay size. Default: ⌃⌥-
     static let decreaseOverlaySize = Self(
         "decreaseOverlaySize",
-        default: .init(carbonKeyCode: kVK_ANSI_Minus, carbonModifiers: controlKey | optionKey))
+        initial: .init(carbonKeyCode: kVK_ANSI_Minus, carbonModifiers: controlKey | optionKey))
 }
 
 extension KeyboardShortcuts.Shortcut {
