@@ -552,8 +552,12 @@ public final class KeyState: KeyStateProtocol {
     }
 
     private func sortPriority(_ symbol: KeySymbol) -> Int {
-        if symbol.isModifier { return 0 }
-        if symbol.isSpecial { return 1 }
+        if symbol.isModifier {
+            return 0
+        }
+        if symbol.isSpecial {
+            return 1
+        }
         return 2
     }
 

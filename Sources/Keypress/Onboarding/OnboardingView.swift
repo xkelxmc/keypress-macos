@@ -822,41 +822,39 @@ struct OnboardingPresentationArtwork: View {
     private let command = OnboardingMiniKey(label: "⌘", width: 31)
 
     var body: some View {
-        Group {
-            switch self.presentation {
-            case .latest:
-                HStack(spacing: 4) {
-                    self.shift
-                    self.command
-                    self.key
+        switch self.presentation {
+        case .latest:
+            HStack(spacing: 4) {
+                self.shift
+                self.command
+                self.key
+            }
+        case .horizontalHistory:
+            HStack(spacing: 4) {
+                self.shift
+                self.command
+                if self.contentMode == .allKeys {
+                    OnboardingMiniKey(label: "H", width: 23)
+                    OnboardingMiniKey(label: "I", width: 23)
+                } else {
+                    OnboardingMiniKey(label: "C", width: 23)
                 }
-            case .horizontalHistory:
-                HStack(spacing: 4) {
-                    self.shift
-                    self.command
-                    if self.contentMode == .allKeys {
-                        OnboardingMiniKey(label: "H", width: 23)
-                        OnboardingMiniKey(label: "I", width: 23)
-                    } else {
-                        OnboardingMiniKey(label: "C", width: 23)
-                    }
-                    self.key
+                self.key
+            }
+        case .stackedHistory:
+            VStack(spacing: 3) {
+                if self.contentMode == .allKeys {
+                    Text("HELLO")
+                        .font(.system(size: 8, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 74, height: 17)
+                        .background(
+                            Color.primary.opacity(0.055),
+                            in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                } else {
+                    self.chord(key: OnboardingMiniKey(label: "C", width: 23))
                 }
-            case .stackedHistory:
-                VStack(spacing: 3) {
-                    if self.contentMode == .allKeys {
-                        Text("HELLO")
-                            .font(.system(size: 8, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 74, height: 17)
-                            .background(
-                                Color.primary.opacity(0.055),
-                                in: RoundedRectangle(cornerRadius: 5, style: .continuous))
-                    } else {
-                        self.chord(key: OnboardingMiniKey(label: "C", width: 23))
-                    }
-                    self.chord(key: self.key)
-                }
+                self.chord(key: self.key)
             }
         }
     }

@@ -517,15 +517,29 @@ public enum KeyCodeMapper {
         let id = symbol.id
 
         // Modifiers
-        if id.hasPrefix("command") { return .command }
-        if id.hasPrefix("shift") { return .shift }
-        if id.hasPrefix("option") { return .option }
-        if id.hasPrefix("control") { return .control }
-        if id == "capslock" { return .capsLock }
-        if id == "fn" { return .command } // Fn grouped with command
+        if id.hasPrefix("command") {
+            return .command
+        }
+        if id.hasPrefix("shift") {
+            return .shift
+        }
+        if id.hasPrefix("option") {
+            return .option
+        }
+        if id.hasPrefix("control") {
+            return .control
+        }
+        if id == "capslock" {
+            return .capsLock
+        }
+        if id == "fn" {
+            return .command
+        } // Fn grouped with command
 
         // Special keys
-        if id == "escape" { return .escape }
+        if id == "escape" {
+            return .escape
+        }
 
         // Function keys
         if id.hasPrefix("f") && id.dropFirst().allSatisfy(\.isNumber) {

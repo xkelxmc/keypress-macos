@@ -8,26 +8,24 @@ struct KeyboardSettingsPane: View {
     @Bindable var config: KeypressConfig
 
     var body: some View {
-        Group {
-            if self.config.keyboard.enabled {
-                StudioPreviewPage(
-                    titleKey: "keyboard.title",
-                    subtitleKey: "keyboard.subtitle",
-                    preview: {
-                        StudioPreviewSurface(height: 166) {
-                            KeyboardPresentationDemo(
-                                config: self.config,
-                                replayLabel: self.strings["onboarding.keyboard.replay"])
-                        }
-                    },
-                    content: { self.settingsControls })
-            } else {
-                StudioPage(
-                    titleKey: "keyboard.title",
-                    subtitleKey: "keyboard.subtitle")
-                {
-                    self.keyboardToggle
-                }
+        if self.config.keyboard.enabled {
+            StudioPreviewPage(
+                titleKey: "keyboard.title",
+                subtitleKey: "keyboard.subtitle",
+                preview: {
+                    StudioPreviewSurface(height: 166) {
+                        KeyboardPresentationDemo(
+                            config: self.config,
+                            replayLabel: self.strings["onboarding.keyboard.replay"])
+                    }
+                },
+                content: { self.settingsControls })
+        } else {
+            StudioPage(
+                titleKey: "keyboard.title",
+                subtitleKey: "keyboard.subtitle")
+            {
+                self.keyboardToggle
             }
         }
     }
