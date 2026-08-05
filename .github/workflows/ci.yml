@@ -13,7 +13,8 @@ jobs:
 
       - name: Select latest Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode.app
+          # /Applications/Xcode.app points at the image default, not the newest
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
           xcodebuild -version
 
       # Pinned: unpinned brew installs pick up new lint rules and break CI on untouched code

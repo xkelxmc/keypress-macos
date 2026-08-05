@@ -24,7 +24,8 @@ jobs:
 
       - name: Select latest Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode.app
+          # /Applications/Xcode.app points at the image default, not the newest
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
           xcodebuild -version
 
       - name: Verify tag matches version.env
