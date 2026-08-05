@@ -184,10 +184,10 @@ struct AboutSettingsPane: View {
                 {
                     AboutExternalLinkRow(
                         title: self.strings["about.link.website"],
-                        detail: "github.com/xkelxmc/keypress-macos",
+                        detail: "showkeypress.com",
                         systemImage: "globe",
                         tint: .blue,
-                        url: URL(string: "https://github.com/xkelxmc/keypress-macos")!)
+                        url: URL(string: "https://showkeypress.com")!)
 
                     AboutExternalLinkRow(
                         title: self.strings["about.link.creator"],

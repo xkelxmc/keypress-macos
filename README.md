@@ -1,5 +1,6 @@
 # Show KeyPress
 
+[![Website](https://img.shields.io/badge/showkeypress.com-08080D?logo=safari&logoColor=67E8F9)](https://showkeypress.com)
 [![Mac App Store](https://img.shields.io/badge/Mac%20App%20Store-Show%20KeyPress-0D96F6?logo=apple&logoColor=white)](https://apps.apple.com/app/id6792384936)
 [![CI](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml/badge.svg)](https://github.com/xkelxmc/keypress-macos/actions/workflows/ci.yml)
 [![GitHub last commit](https://img.shields.io/github/last-commit/xkelxmc/keypress-macos)](https://github.com/xkelxmc/keypress-macos/commits/main)
@@ -8,6 +9,8 @@
 [![macOS 14+](https://img.shields.io/badge/macOS-14+-blue)](https://www.apple.com/macos/)
 
 A macOS menu bar app that visualizes keyboard input with beautiful skeuomorphic 3D mechanical key aesthetics.
+
+**[showkeypress.com](https://showkeypress.com)** — features, guides and the live keyboard demo.
 
 <sub>Mac App Store name **Show KeyPress** · repository `keypress-macos` · bundle `Keypress.app`</sub>
 
