@@ -50,6 +50,11 @@ hotkey, pet behavior, and similar settings) are saved locally in macOS
 retain these preferences in the app's sandbox container after you remove the
 app.
 
+If you choose to export a diagnostics report from Settings, the app writes a
+text file to the location you pick. It contains the app version, basic system
+and display information, and your settings — never keystrokes, pointer
+coordinates, or anything you typed. Nothing is exported automatically.
+
 ## Children
 
 Show KeyPress is a utility for showing keystrokes on screen. It does not
