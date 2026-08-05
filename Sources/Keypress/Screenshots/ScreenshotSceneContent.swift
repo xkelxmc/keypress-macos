@@ -4,6 +4,7 @@ import SwiftUI
 
 struct SceneContentView: View {
     let scene: ScreenshotScene
+    let strings: MarketingStrings
     let configs: SceneConfigs
     let assets: SceneAssets
 
@@ -12,21 +13,21 @@ struct SceneContentView: View {
         case .hero:
             HeroSceneView(configs: self.configs)
         case .cursorHalo:
-            CursorHaloSceneView()
+            CursorHaloSceneView(labels: self.strings.haloVariants)
         case .pet:
-            PetSceneView(configs: self.configs)
+            PetSceneView(configs: self.configs, chips: self.strings.petChips)
         case .themes:
-            ThemesSceneView(configs: self.configs)
+            ThemesSceneView(configs: self.configs, footnote: self.strings.themesFootnote)
         case .stackedHistory:
             StackedHistorySceneView(configs: self.configs)
         case .placement:
-            PlacementSceneView(configs: self.configs)
+            PlacementSceneView(configs: self.configs, strings: self.strings)
         case .studio, .studioAppearance:
             StudioSceneView(windowImage: self.assets.settingsWindow)
         case .languages:
             LanguagesSceneView(configs: self.configs)
         case .privacy:
-            PrivacySceneView(configs: self.configs)
+            PrivacySceneView(strings: self.strings)
         }
     }
 }
@@ -268,6 +269,9 @@ private struct HeroSceneView: View {
 // MARK: - 02 cursor-halo
 
 private struct CursorHaloSceneView: View {
+    /// One caption per variant tile, in the order the themes are declared.
+    let labels: [String]
+
     private static let primary = PointerTheme(
         shape: .squircle,
         lineStyle: .aura,
@@ -279,42 +283,34 @@ private struct CursorHaloSceneView: View {
 
     private static let deepCyan = KeyColor(red: 0.04, green: 0.35, blue: 0.52)
 
-    private static let variants: [(label: String, theme: PointerTheme)] = [
-        (
-            "circle · aura",
-            PointerTheme(
-                shape: .circle,
-                lineStyle: .aura,
-                decoration: .centerDot,
-                primaryColor: .pointerCyan,
-                secondaryColor: Self.deepCyan,
-                strokeWidth: 4,
-                glowRadius: 20)),
-        (
-            "squircle · neon depth",
-            ThemeDefinition.neon.pointer),
-        (
-            "square · solid",
-            PointerTheme(
-                shape: .square,
-                lineStyle: .solid,
-                decoration: .none,
-                primaryColor: .pointerCyan,
-                secondaryColor: Self.deepCyan,
-                strokeWidth: 4,
-                glowRadius: 18,
-                glowIntensity: 0.7)),
-        (
-            "diamond · segmented",
-            PointerTheme(
-                shape: .diamond,
-                lineStyle: .segmented,
-                decoration: .cornerBrackets,
-                primaryColor: .pointerCyan,
-                secondaryColor: Self.deepCyan,
-                strokeWidth: 3,
-                glowRadius: 16,
-                glowIntensity: 0.75)),
+    private static let variants: [PointerTheme] = [
+        PointerTheme(
+            shape: .circle,
+            lineStyle: .aura,
+            decoration: .centerDot,
+            primaryColor: .pointerCyan,
+            secondaryColor: Self.deepCyan,
+            strokeWidth: 4,
+            glowRadius: 20),
+        ThemeDefinition.neon.pointer,
+        PointerTheme(
+            shape: .square,
+            lineStyle: .solid,
+            decoration: .none,
+            primaryColor: .pointerCyan,
+            secondaryColor: Self.deepCyan,
+            strokeWidth: 4,
+            glowRadius: 18,
+            glowIntensity: 0.7),
+        PointerTheme(
+            shape: .diamond,
+            lineStyle: .segmented,
+            decoration: .cornerBrackets,
+            primaryColor: .pointerCyan,
+            secondaryColor: Self.deepCyan,
+            strokeWidth: 3,
+            glowRadius: 16,
+            glowIntensity: 0.75),
     ]
 
     var body: some View {
@@ -332,15 +328,15 @@ private struct CursorHaloSceneView: View {
             .offset(y: -86)
 
             HStack(spacing: 24) {
-                ForEach(Array(Self.variants.enumerated()), id: \.offset) { _, variant in
+                ForEach(Array(Self.variants.enumerated()), id: \.offset) { index, variant in
                     VStack(spacing: 12) {
                         PointerThemeArtwork(
-                            theme: variant.theme,
+                            theme: variant,
                             size: 82,
                             reaction: .movement)
                             .frame(height: 92)
 
-                        SceneCaption(text: variant.label)
+                        SceneCaption(text: self.labels[index])
                     }
                     .frame(width: 262, height: 150)
                     .background { SceneTileBackground() }
@@ -356,8 +352,7 @@ private struct CursorHaloSceneView: View {
 
 private struct PetSceneView: View {
     let configs: SceneConfigs
-
-    private static let chips = ["sleeps", "hunts the cursor", "stretches", "plays"]
+    let chips: [String]
 
     var body: some View {
         VStack(spacing: 34) {
@@ -374,7 +369,7 @@ private struct PetSceneView: View {
             .frame(height: 300)
 
             HStack(spacing: 16) {
-                ForEach(Self.chips, id: \.self) { chip in
+                ForEach(self.chips, id: \.self) { chip in
                     SceneChip(text: chip)
                 }
             }
@@ -386,6 +381,7 @@ private struct PetSceneView: View {
 
 private struct ThemesSceneView: View {
     let configs: SceneConfigs
+    let footnote: String
 
     private static let rows: [[(label: String, theme: ThemeSelection)]] = [
         [("dark", .dark), ("classic", .classic), ("modern", .modern)],
@@ -413,9 +409,7 @@ private struct ThemesSceneView: View {
                 }
             }
 
-            SceneCaption(
-                text: "+ custom editor · fonts · colors · depth · corners · shadows",
-                opacity: 0.4)
+            SceneCaption(text: self.footnote, opacity: 0.4)
                 .padding(.top, 2)
         }
         .foregroundStyle(StagePalette.darkForeground)
@@ -488,25 +482,26 @@ private struct SceneTerminalText: View {
 
 private struct PlacementSceneView: View {
     let configs: SceneConfigs
+    let strings: MarketingStrings
 
     var body: some View {
         VStack(spacing: 30) {
             HStack(spacing: 40) {
                 DisplayPlate(
-                    caption: "main display · dragging",
+                    caption: self.strings.placementCaptions[0],
                     isDragging: true,
                     config: self.configs[.dark])
 
                 DisplayPlate(
-                    caption: "external · saved position",
+                    caption: self.strings.placementCaptions[1],
                     isDragging: false,
                     config: self.configs[.dark])
             }
 
             HStack(spacing: 16) {
-                SceneChip(text: "drag anywhere")
-                SceneChip(text: "snapping")
-                SceneChip(text: "per-display")
+                ForEach(self.strings.placementChips, id: \.self) { chip in
+                    SceneChip(text: chip)
+                }
             }
         }
         .foregroundStyle(StagePalette.darkForeground)
@@ -674,13 +669,13 @@ private struct LanguagesSceneView: View {
 // MARK: - 09 privacy
 
 private struct PrivacySceneView: View {
-    let configs: SceneConfigs
+    let strings: MarketingStrings
 
     var body: some View {
         VStack(spacing: 42) {
-            SceneWindow(title: "sign in — account", size: CGSize(width: 640, height: 264)) {
+            SceneWindow(title: self.strings.privacyWindowTitle, size: CGSize(width: 640, height: 264)) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Password")
+                    Text(self.strings.privacyFieldLabel)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Color.white.opacity(0.5))
 
@@ -702,7 +697,7 @@ private struct PrivacySceneView: View {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 13, weight: .semibold))
 
-                        Text("SECURE INPUT · OVERLAY PAUSED")
+                        Text(self.strings.privacyBadge)
                             .font(.system(size: 13.5, weight: .medium, design: .monospaced))
                             .tracking(1.4)
                     }
@@ -715,9 +710,9 @@ private struct PrivacySceneView: View {
             }
 
             HStack(spacing: 18) {
-                SceneChip(text: "no storage", isAccented: true)
-                SceneChip(text: "no network", isAccented: true)
-                SceneChip(text: "secure input aware", isAccented: true)
+                ForEach(self.strings.privacyPills, id: \.self) { pill in
+                    SceneChip(text: pill, isAccented: true)
+                }
             }
         }
     }

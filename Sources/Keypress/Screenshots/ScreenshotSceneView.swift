@@ -26,6 +26,7 @@ struct SceneAssets {
 
 struct ScreenshotSceneView: View {
     let scene: ScreenshotScene
+    let strings: MarketingStrings
     let index: Int
     let total: Int
     let configs: SceneConfigs
@@ -41,6 +42,7 @@ struct ScreenshotSceneView: View {
 
             SceneContentView(
                 scene: self.scene,
+                strings: self.strings,
                 configs: self.configs,
                 assets: self.assets)
                 .frame(
@@ -56,15 +58,15 @@ struct ScreenshotSceneView: View {
                         .padding(.bottom, 22)
                 }
 
-                SceneKicker(text: self.scene.kicker)
+                SceneKicker(text: self.scene.copy.kicker)
                     .padding(.bottom, 14)
 
-                SceneTypography.headline(self.scene.headline, accent: StagePalette.accent)
+                SceneTypography.headline(self.scene.copy.headline, accent: StagePalette.accent)
                     .lineSpacing(4)
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 14)
 
-                SceneSubline(text: self.scene.subline, tone: self.scene.stage)
+                SceneSubline(text: self.scene.copy.subline, tone: self.scene.stage)
             }
             .foregroundStyle(self.foregroundColor)
             .padding(.top, 66)

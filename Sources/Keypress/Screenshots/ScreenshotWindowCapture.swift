@@ -45,6 +45,11 @@ enum WindowCapture {
         // `controlActiveState`. Every capture is verified by looking for the accent
         // colour and retried while SwiftUI settles its split view and previews.
         window.pretendsActive = true
+        // Neither of those reaches the toggles, sliders and segmented pickers: they
+        // draw gray unless this process is really the active one. Cooperative
+        // activation declines when the generator is launched from a window that is
+        // not frontmost, so the front-most claim has to be taken outright.
+        app.activate(ignoringOtherApps: true)
         window.orderFrontRegardless()
         window.setFrameOrigin(self.parkingOrigin(for: window.frame.size))
         let center = NotificationCenter.default
@@ -52,23 +57,24 @@ enum WindowCapture {
         center.post(name: NSWindow.didBecomeKeyNotification, object: window)
         self.pumpEvents(of: app, for: 1.2)
 
-        var lastCapture: NSImage?
         for _ in 0..<6 {
             window.displayIfNeeded()
             self.pumpEvents(of: app, for: 0.4)
 
-            guard let composited = self.compositedImage(of: window) else { continue }
-            lastCapture = composited
-            if self.hasAccentPixels(composited) {
+            if let composited = self.compositedImage(of: window), self.hasActiveControls(composited) {
                 return composited
             }
+
+            // Another app can take the front-most claim back between attempts, and
+            // the controls turn gray the moment it does.
+            app.activate(ignoringOtherApps: true)
+            center.post(name: NSWindow.didBecomeKeyNotification, object: window)
         }
 
-        if let lastCapture {
-            fputs("warning: settings window captured without accent colours\n", stderr)
-            return lastCapture
-        }
-        return self.cachedImage(of: hosting.view)
+        // A capture whose controls drew gray is a broken store asset, and it looks
+        // enough like the real thing to ship by mistake. Fail the run instead.
+        fputs("error: settings window captured with inactive controls\n", stderr)
+        return nil
     }
 
     /// A spot beyond every attached display, so the window is composited — and therefore
@@ -94,9 +100,13 @@ enum WindowCapture {
         }
     }
 
-    /// True when the system accent blue is present anywhere — selected sidebar rows,
-    /// toggles and segmented pickers only draw it when controls rendered active.
-    private static func hasAccentPixels(_ image: NSImage) -> Bool {
+    /// The sidebar keeps its blue app icons whatever the activation state, so only
+    /// the detail pane answers the question: its toggles, sliders, segmented
+    /// pickers and selection rings carry the accent colour when — and only when —
+    /// the controls rendered active.
+    private static let paneStart = 0.3
+
+    private static func hasActiveControls(_ image: NSImage) -> Bool {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
               let data = cgImage.dataProvider?.data as Data?
         else {
@@ -112,10 +122,11 @@ enum WindowCapture {
         let (redIndex, greenIndex, blueIndex) = littleEndian ? (2, 1, 0) : (1, 2, 3)
 
         let bytesPerRow = cgImage.bytesPerRow
+        let firstColumn = Int(Double(cgImage.width) * Self.paneStart)
         var matches = 0
         for row in 0..<cgImage.height {
             let rowStart = row * bytesPerRow
-            for column in 0..<cgImage.width {
+            for column in firstColumn..<cgImage.width {
                 let pixel = rowStart + column * bytesPerPixel
                 let red = data[pixel + redIndex]
                 let green = data[pixel + greenIndex]
@@ -144,17 +155,6 @@ enum WindowCapture {
             return nil
         }
         return NSImage(cgImage: cgImage, size: window.frame.size)
-    }
-
-    private static func cachedImage(of view: NSView) -> NSImage? {
-        guard let representation = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
-            return nil
-        }
-        view.cacheDisplay(in: view.bounds, to: representation)
-
-        let image = NSImage(size: view.bounds.size)
-        image.addRepresentation(representation)
-        return image
     }
 }
 

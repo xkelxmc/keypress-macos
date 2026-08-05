@@ -14,7 +14,7 @@
     "check": "swiftformat Sources Tests --lint && swiftlint --strict",
     "check:fix": "swiftformat Sources Tests && swiftlint --strict",
     "unit-test:run": "swift test",
-    "screenshots": "swift build && .build/debug/Keypress --screenshot",
+    "screenshots": "swift build && for locale in en-US de-DE es-ES fr-FR ru; do .build/debug/Keypress --screenshot --language \"$locale\"; done",
     "package": "./Scripts/package_app.sh",
     "package:release": "./Scripts/package_app.sh release",
     "release": "./Scripts/release.sh"
