@@ -127,6 +127,19 @@ enum DiagnosticsReport {
             }
         }
 
+        let effectiveFilters = snapshot.keyboard.presentation == .latest
+            ? snapshot.keyboard.filters
+            : snapshot.keyboard.filters.ignoringKeyCategories
+        let contentMode = self.withEffective(
+            snapshot.keyboard.contentMode.rawValue,
+            snapshot.keyboard.effectiveContentMode.rawValue)
+        let functionKeys = self.withEffective(
+            self.yesNo(snapshot.keyboard.filters.showFunctionKeys),
+            self.yesNo(effectiveFilters.showFunctionKeys))
+        let specialKeys = self.withEffective(
+            self.yesNo(snapshot.keyboard.filters.showSpecialKeys),
+            self.yesNo(effectiveFilters.showSpecialKeys))
+
         lines.append(contentsOf: [
             "SANITIZED SETTINGS",
             "Language: \(snapshot.general.language.rawValue)",
@@ -135,15 +148,16 @@ enum DiagnosticsReport {
             "HUD duration: \(self.number(snapshot.hud.duration)) s",
             "",
             "Keyboard mode: \(snapshot.keyboard.displayMode.rawValue)",
-            "Keyboard content: \(snapshot.keyboard.contentMode.rawValue)",
+            "Keyboard presentation: \(snapshot.keyboard.presentation.rawValue)",
+            "Keyboard content: \(contentMode)",
             "History layout: \(snapshot.keyboard.historyLayout.rawValue)",
             "Keyboard size: \(snapshot.keyboard.size.rawValue)",
             "Keyboard opacity: \(self.number(snapshot.keyboard.opacity))",
             "Key timeout: \(self.number(snapshot.keyboard.timeout)) s",
             "Maximum history items: \(snapshot.keyboard.maxItems)",
             "Standalone modifiers: \(self.yesNo(snapshot.keyboard.filters.showStandaloneModifiers))",
-            "Function keys: \(self.yesNo(snapshot.keyboard.filters.showFunctionKeys))",
-            "Special keys: \(self.yesNo(snapshot.keyboard.filters.showSpecialKeys))",
+            "Function keys: \(functionKeys)",
+            "Special keys: \(specialKeys)",
             "Echo line lifetime: \(self.number(snapshot.keyboard.textLineLifetime)) s",
             "Echo idle timeout: \(self.number(snapshot.keyboard.textIdleTimeout)) s",
             "Input key width: \(snapshot.keyboard.inputKeys.widthMode.rawValue)",
@@ -176,6 +190,8 @@ enum DiagnosticsReport {
             "Display target: \(self.displayTargetDescription(snapshot.displays.target))",
             "Saved display placements: \(placements.count)",
             "Custom display placements: \(customPlacementCount)",
+            "Saved command zone placements: \(snapshot.displays.commandZonePlacements.count)",
+            "Displays with a zone layout mode: \(snapshot.displays.zoneLayoutPresentations.count)",
             "",
         ])
     }
@@ -202,6 +218,13 @@ enum DiagnosticsReport {
 
     private static func yesNo(_ value: Bool) -> String {
         value ? "Yes" : "No"
+    }
+
+    /// A stored setting, annotated with what the running mode actually uses when the two differ
+    /// — the two-zone modes neutralize the content mode and both category filters, and a report
+    /// showing only the stored value sends the reader after a setting that is doing nothing.
+    private static func withEffective(_ stored: String, _ effective: String) -> String {
+        stored == effective ? stored : "\(stored) (effective: \(effective))"
     }
 
     private static var architecture: String {

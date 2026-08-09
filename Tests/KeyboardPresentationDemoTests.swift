@@ -17,8 +17,9 @@ struct KeyboardPresentationDemoTests {
     func twoZoneDemosFitOnboardingSurface() throws {
         for presentation in [KeyboardPresentation.horizontalHistory, .stackedHistory] {
             guard let size = try Self.layoutSize(for: presentation) else {
-                // No offscreen rendering available in this environment — nothing to measure.
-                return
+                // No offscreen rendering available in this environment — nothing to measure,
+                // but the other presentation still gets its turn.
+                continue
             }
 
             let drawnHeight = size.height * KeyboardPresentationDemo.twoZoneScale

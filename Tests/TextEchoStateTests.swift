@@ -131,6 +131,22 @@ struct TextEchoStateTextTests {
         #expect(state.lines.map(\.text) == ["A"])
     }
 
+    /// `KeyCodeMapper` upper-cases the layout's character for the keycap, and ß upper-cases to
+    /// "SS" — lower-casing that back would echo "ss". The character the layout produced is
+    /// carried alongside for exactly this, and it already reflects Shift and CapsLock, so the
+    /// flags must not be consulted on top of it.
+    @Test("A key whose uppercase is two letters echoes the character that was typed")
+    @MainActor
+    func lossyUppercaseEchoesTheTypedCharacter() {
+        let state = TextEchoState(isKeyDown: { _ in false })
+        let sharpS = KeySymbol(id: "key-27", display: "SS", typedText: "ß")
+
+        press(state, 0x1B, sharpS)
+        press(state, 0x1B, sharpS, modifiers: .maskAlphaShift)
+
+        #expect(state.lines.map(\.text) == ["ßß"])
+    }
+
     @Test("A line wraps by character at its budget, never by word")
     @MainActor
     func wrapsByCharacter() {
@@ -211,8 +227,8 @@ struct TextEchoStateTextTests {
 // MARK: - Lifecycle
 
 /// Three rules end a line, and they only make sense against each other: the one being written
-/// has no clock, the ones above it age out while typing continues, and stopping takes the whole
-/// zone at once.
+/// has no clock, the ones above it age out while typing continues, and once typing stops the
+/// idle clock clears whatever is still up.
 @Suite("TextEchoState Lifecycle Tests")
 struct TextEchoStateLifecycleTests {
     /// A line full of 24 characters, so the next keystroke has to start a new one.
@@ -270,9 +286,8 @@ struct TextEchoStateLifecycleTests {
         #expect(state.hasKeys == false)
     }
 
-    /// The whole point of the idle being shorter than a line's lifetime: when typing stops,
-    /// the zone leaves as one thing. A line dying on its own first would leave a hole above
-    /// text that is still on screen.
+    /// With the idle well inside the line lifetime, the idle clock is what clears the zone and
+    /// both lines go together — no hole left above text that is still on screen.
     @Test("When typing stops, every line goes at once")
     @MainActor
     func idleTakesEveryLineTogether() async {
@@ -353,7 +368,10 @@ struct TextEchoStateLifecycleTests {
         #expect(tooShort.textIdleTimeout == KeyboardSettings.textIdleTimeoutRange.lowerBound)
     }
 
-    /// The zone idles out faster than a line ages, so a stopped echo always leaves whole.
+    /// The two clocks run independently: while typing continues, finished lines thin out one by
+    /// one, and once it stops the idle clock clears whatever is left. Keeping the idle the
+    /// shorter of the two makes that the usual way the zone goes — but a line whose countdown
+    /// ends after the typing stopped is not held back, and may still leave on its own first.
     @Test("The idle is shorter than a line's lifetime by default")
     func idleOutrunsTheLineLifetime() {
         #expect(TextEchoState.defaultIdleTimeout < TextEchoState.defaultLineLifetime)

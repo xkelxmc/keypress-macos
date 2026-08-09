@@ -12,7 +12,8 @@ public struct RibbonKey: Identifiable, Equatable, Sendable {
     public let id: String
     public let symbol: KeySymbol
 
-    /// `symbol.display` with ribbon casing applied (lowercase unless Shift or CapsLock).
+    /// What the key produced: the layout's own character, or `symbol.display` re-cased when
+    /// the key arrived without one.
     public let display: String
     public let pressedAt: Date
 
@@ -279,10 +280,16 @@ public final class HorizontalHistoryState: KeyEventSink {
         self.enforceRibbonLimit()
     }
 
-    /// CapsLock has no reliable key events on macOS (`KeyCodeMapper` omits it), so the
-    /// event's alpha-shift flag is the only signal available — best effort.
+    /// The layout's own character already carries Shift and CapsLock, so it is shown verbatim.
+    ///
+    /// Only keys that arrived without one (the US-QWERTY fallback) fall back to re-casing
+    /// `display`, where CapsLock has no reliable key events on macOS (`KeyCodeMapper` omits it)
+    /// and the event's alpha-shift flag is the only signal available — best effort.
     private static func ribbonDisplay(for symbol: KeySymbol, modifiers: CGEventFlags) -> String {
         guard !symbol.isSpecial else { return symbol.display }
+        if let typedText = symbol.typedText {
+            return typedText
+        }
         let isUppercase = modifiers.contains(.maskShift) || modifiers.contains(.maskAlphaShift)
         return isUppercase ? symbol.display.uppercased() : symbol.display.lowercased()
     }

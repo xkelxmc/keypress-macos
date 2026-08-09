@@ -150,6 +150,22 @@ struct HorizontalHistoryStateRibbonTests {
         #expect(state.ribbonKeys.map(\.display) == ["A"])
     }
 
+    /// `KeyCodeMapper` upper-cases the layout's character for the keycap, and ß upper-cases to
+    /// "SS" — lower-casing that back would ribbon "ss". The character the layout produced is
+    /// carried alongside for exactly this, and it already reflects Shift and CapsLock, so the
+    /// flags must not be consulted on top of it.
+    @Test("A key whose uppercase is two letters ribbons the character that was typed")
+    @MainActor
+    func lossyUppercaseRibbonsTheTypedCharacter() {
+        let state = HorizontalHistoryState(isKeyDown: { _ in false })
+        let sharpS = KeySymbol(id: "key-27", display: "SS", typedText: "ß")
+
+        press(state, 0x1B, sharpS)
+        press(state, 0x1B, sharpS, modifiers: .maskAlphaShift)
+
+        #expect(state.ribbonKeys.map(\.display) == ["ß", "ß"])
+    }
+
     @Test("Latest ribbon key is the newest entry until another key arrives")
     @MainActor
     func latestFlagMovesWithTheNewestKey() {

@@ -71,8 +71,8 @@ public struct TextEchoLine: Identifiable, Equatable, Sendable {
 /// - the line being written has no clock at all and lives as long as the typing does;
 /// - a line that a newer one has replaced ages out on its own, one plaque at a time, so a long
 ///   burst of typing leaves a trail that thins out behind it;
-/// - and when typing stops the whole zone goes together after a shorter idle, so it is never
-///   seen dismantling itself line by line with nothing being written.
+/// - and once typing stops the shorter idle clock clears whatever is still up. A line whose own
+///   countdown ends first is not held back for it, so it may still leave alone.
 @MainActor
 @Observable
 public final class TextEchoState: KeyEventSink {
@@ -90,9 +90,9 @@ public final class TextEchoState: KeyEventSink {
 
     /// How long the whole zone stays up after the last thing typed or erased.
     ///
-    /// Shorter than a line's lifetime on purpose: while typing continues, the lines above the
-    /// one being written age out one by one, but the moment typing stops there is nothing left
-    /// to read along with — so the zone leaves as one thing rather than dismantling itself.
+    /// Shorter than a line's lifetime so that in the common case the idle clock is what clears
+    /// the zone. A line whose own countdown was already running when typing stopped is not
+    /// held back, though: if it runs out first, that line still leaves on its own.
     public nonisolated static let defaultIdleTimeout: TimeInterval = 2
 
     /// Keys that produce text and therefore belong in the echo. Enter and Tab produce a mark
@@ -365,9 +365,16 @@ public final class TextEchoState: KeyEventSink {
         }
     }
 
-    /// CapsLock has no reliable key events on macOS (`KeyCodeMapper` omits it), so the event's
-    /// alpha-shift flag is the only signal available — best effort, as in the ribbon.
+    /// The layout's own character already carries Shift and CapsLock, so it is echoed verbatim.
+    ///
+    /// Only keys that arrived without one (the US-QWERTY fallback) fall back to re-casing
+    /// `display`, where CapsLock has no reliable key events on macOS (`KeyCodeMapper` omits it)
+    /// and the event's alpha-shift flag is the only signal available — best effort, as in the
+    /// ribbon.
     private static func echoDisplay(for symbol: KeySymbol, modifiers: CGEventFlags) -> String {
+        if let typedText = symbol.typedText {
+            return typedText
+        }
         let isUppercase = modifiers.contains(.maskShift) || modifiers.contains(.maskAlphaShift)
         return isUppercase ? symbol.display.uppercased() : symbol.display.lowercased()
     }
@@ -480,8 +487,8 @@ public final class TextEchoState: KeyEventSink {
         self.idleTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(remaining))
             guard !Task.isCancelled else { return }
-            // Everything goes at once — including lines whose own countdown had not run out,
-            // so the zone is never seen dismantling itself one line at a time.
+            // Whatever is still up goes at once, including lines whose own countdown had not
+            // run out.
             self?.clearLines()
         }
     }

@@ -58,11 +58,25 @@ public struct KeySymbol: Sendable, Equatable, Hashable, Identifiable {
     /// Special keys (backspace, space, arrows, etc.) — shown with modifiers, no duplicates, but use timeout
     public let isSpecial: Bool
 
-    public init(id: String, display: String, isModifier: Bool = false, isSpecial: Bool = false) {
+    /// The character the layout really produced, for the modes that echo typed text.
+    ///
+    /// `display` is upper-cased by keycap convention, and lower-casing it back is not a round
+    /// trip: ß upper-cases to SS, ı to I. Nil when no character was available (a modifier, a
+    /// special key, or the US-QWERTY fallback).
+    public let typedText: String?
+
+    public init(
+        id: String,
+        display: String,
+        isModifier: Bool = false,
+        isSpecial: Bool = false,
+        typedText: String? = nil)
+    {
         self.id = id
         self.display = display
         self.isModifier = isModifier
         self.isSpecial = isSpecial
+        self.typedText = typedText
     }
 }
 
@@ -449,7 +463,10 @@ public enum KeyCodeMapper {
         // For character keys, try to get the actual character from CGEvent
         if self.characterKeycodes.contains(keyCode) {
             if let event, let character = Self.extractCharacter(from: event) {
-                return KeySymbol(id: "key-\(keyCode)", display: character.uppercased())
+                return KeySymbol(
+                    id: "key-\(keyCode)",
+                    display: character.uppercased(),
+                    typedText: character)
             }
             // Fallback to US QWERTY when CGEvent returns control chars (Ctrl pressed)
             if let fallback = fallbackCharacters[keyCode] {
