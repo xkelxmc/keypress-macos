@@ -174,7 +174,7 @@ struct BlockPresentation: Equatable {
 }
 
 extension EnvironmentValues {
-    // What the surrounding block is doing, so its contents can hold still while it moves.
+    /// What the surrounding block is doing, so its contents can hold still while it moves.
     @Entry var blockPhase: BlockPresentation.Phase = .shown
 }
 
