@@ -732,10 +732,13 @@ private func release(
         symbol: symbol)
 }
 
+/// The deadline is a guard against hanging, not a measurement: a passing test leaves on the
+/// first check that succeeds. It is generous so that a loaded CI runner, where MainActor work
+/// queues behind other tests, still reaches the expiry these tests wait for.
 @MainActor
 private func waitUntil(_ condition: () -> Bool) async {
     let clock = ContinuousClock()
-    let deadline = clock.now.advanced(by: .seconds(1))
+    let deadline = clock.now.advanced(by: .seconds(5))
     while !condition(), clock.now < deadline {
         try? await clock.sleep(for: .milliseconds(10))
     }

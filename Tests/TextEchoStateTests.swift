@@ -919,10 +919,14 @@ private func type(_ state: TextEchoState, _ text: String) {
     }
 }
 
+/// The deadline is a guard against hanging, not a measurement: a passing test leaves on the
+/// first check that succeeds. It has to clear the longest wait here — an idle the settings
+/// clamp to 0.5s — by enough that a loaded CI runner, where MainActor work queues behind other
+/// tests, still gets there.
 @MainActor
 private func waitUntil(_ condition: () -> Bool) async {
     let clock = ContinuousClock()
-    let deadline = clock.now.advanced(by: .seconds(1))
+    let deadline = clock.now.advanced(by: .seconds(5))
     while !condition(), clock.now < deadline {
         try? await clock.sleep(for: .milliseconds(10))
     }
