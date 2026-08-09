@@ -168,8 +168,7 @@ private struct OnboardingCeremonyView: View {
         KeyCapView(
             symbol: symbol,
             config: self.session.config,
-            isPressed: self.session.ceremonyStage == 2,
-            delayPressAnimation: false)
+            isPressed: self.session.ceremonyStage == 2)
             .scaleEffect(2.05)
             .frame(width: 150, height: 120)
             .rotationEffect(

@@ -23,25 +23,36 @@ private func modifierIsPressed(
     }
 }
 
-// MARK: - KeyStateProtocol
+// MARK: - KeyEventSink
 
-/// Common interface for key state tracking (shared by KeyState and SingleKeyState).
+/// The whole of what the overlay controller needs from a key state: feed it events, ask
+/// whether anything is on screen, wipe it.
+///
+/// Deliberately narrower than `KeyStateProtocol`, because a state model is free to shape
+/// its contents however its mode requires — the horizontal ribbon keeps two independent
+/// zones and has no single flat `pressedKeys` row to expose.
 @MainActor
-public protocol KeyStateProtocol: AnyObject {
-    /// Currently displayed keys.
-    var pressedKeys: [PressedKey] { get }
-
-    /// Whether any keys are currently displayed.
+public protocol KeyEventSink: AnyObject {
+    /// Whether anything is currently displayed.
     var hasKeys: Bool { get }
-
-    /// Timeout duration for keys.
-    var keyTimeout: TimeInterval { get set }
 
     /// Processes a key event and updates state.
     func processEvent(_ event: KeyEvent, symbol: KeySymbol?)
 
-    /// Removes all displayed keys.
+    /// Removes everything currently displayed.
     func clear()
+}
+
+// MARK: - KeyStateProtocol
+
+/// Common interface for single-row key state tracking (shared by KeyState and SingleKeyState).
+@MainActor
+public protocol KeyStateProtocol: KeyEventSink {
+    /// Currently displayed keys.
+    var pressedKeys: [PressedKey] { get }
+
+    /// Timeout duration for keys.
+    var keyTimeout: TimeInterval { get set }
 
     /// Returns true if the modifier with given symbol ID is physically pressed.
     /// Used for press animation — modifiers can be visible but released.

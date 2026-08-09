@@ -5,15 +5,13 @@ import SwiftUI
 struct KeyVisualizationView: View {
     var keyState: KeyState
     let config: KeypressConfig
-    var appliesSizeScale = true
 
     var body: some View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
             physicallyPressedKeys: self.keyState.physicallyPressedKeys,
             hasKeys: self.keyState.hasKeys,
-            config: self.config,
-            appliesSizeScale: self.appliesSizeScale)
+            config: self.config)
     }
 }
 
@@ -21,16 +19,20 @@ struct KeyVisualizationView: View {
 struct SingleKeyVisualizationView: View {
     var keyState: SingleKeyState
     let config: KeypressConfig
-    var appliesSizeScale = true
 
     var body: some View {
         KeyVisualizationContent(
             pressedKeys: self.keyState.pressedKeys,
             physicallyPressedKeys: self.keyState.physicallyPressedKeys,
             hasKeys: self.keyState.hasKeys,
-            config: self.config,
-            appliesSizeScale: self.appliesSizeScale)
+            config: self.config)
     }
+}
+
+/// What one key block draws, gathered so its exit animation can hold it still.
+struct KeyBlockContent: Equatable {
+    var keys: [PressedKey]
+    var pressedSymbolIDs: Set<String>
 }
 
 /// Shared visualization content (used by both modes).
@@ -39,61 +41,36 @@ struct KeyVisualizationContent: View {
     let physicallyPressedKeys: Set<String>
     let hasKeys: Bool
     let config: KeypressConfig
-    let appliesSizeScale: Bool
-
-    /// Tracks if overlay just appeared (was hidden, now visible).
-    /// Used to delay press animation until fade-in completes.
-    @State private var overlayJustAppeared: Bool = true
-    /// Task for delayed clearing of overlayJustAppeared flag.
-    @State private var appearDelayTask: Task<Void, Never>?
 
     private var keyboardTheme: KeyboardTheme {
         self.config.effectiveTheme(isSystemDark: self.systemIsDark).keyboard
     }
 
-    var body: some View {
-        let keysView = HStack(spacing: CGFloat(self.keyboardTheme.keySpacing)) {
-            ForEach(self.pressedKeys) { key in
-                KeyCapView(
-                    symbol: key.symbol,
-                    config: self.config,
-                    isPressed: self.isKeyPressed(key),
-                    delayPressAnimation: self.overlayJustAppeared)
-            }
-        }
+    /// Everything the block draws, in one value. The press set travels with the keys so the
+    /// block's exit can keep drawing them exactly as they were — reading it live would let it
+    /// empty out from under the animation.
+    private var blockContent: KeyBlockContent {
+        KeyBlockContent(keys: self.pressedKeys, pressedSymbolIDs: self.physicallyPressedKeys)
+    }
 
-        KeyboardThemeContainer(config: self.config) {
-            keysView
-        }
-        .scaleEffect(self.appliesSizeScale ? self.config.size.scaleFactor : 1)
-        .opacity(self.hasKeys ? 1 : 0)
-        .animation(.easeOut(duration: 0.2), value: self.hasKeys)
-        .onChange(of: self.hasKeys) { wasVisible, isVisible in
-            if !wasVisible, isVisible {
-                // Overlay just appeared — delay press animation
-                self.overlayJustAppeared = true
-                // Cancel any pending task
-                self.appearDelayTask?.cancel()
-                // After fade-in completes, clear the flag
-                self.appearDelayTask = Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(250))
-                    guard !Task.isCancelled else { return }
-                    self.overlayJustAppeared = false
+    var body: some View {
+        BlockPresentationView(value: self.blockContent, isPresent: self.hasKeys) { content in
+            KeyboardThemeContainer(config: self.config) {
+                HStack(spacing: CGFloat(self.keyboardTheme.keySpacing)) {
+                    ForEach(content.keys) { key in
+                        KeyCapView(
+                            symbol: key.symbol,
+                            config: self.config,
+                            isPressed: self.isKeyPressed(key, in: content))
+                    }
                 }
-            } else if !isVisible {
-                // Overlay hidden — reset for next appearance
-                self.appearDelayTask?.cancel()
-                self.overlayJustAppeared = true
             }
-        }
-        .onDisappear {
-            self.appearDelayTask?.cancel()
         }
     }
 
     /// Determines if a key should show pressed animation based on settings.
-    private func isKeyPressed(_ key: PressedKey) -> Bool {
-        let isPhysicallyPressed = self.physicallyPressedKeys.contains(key.symbol.id)
+    private func isKeyPressed(_ key: PressedKey, in content: KeyBlockContent) -> Bool {
+        let isPhysicallyPressed = content.pressedSymbolIDs.contains(key.symbol.id)
 
         if key.symbol.isModifier {
             return isPhysicallyPressed && self.config.pressAnimationModifiers

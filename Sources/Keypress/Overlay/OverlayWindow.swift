@@ -15,6 +15,12 @@ private let initialOverlayWindowSize = NSSize(
     width: 600 + overlayShadowInset * 2,
     height: 120 + overlayShadowInset * 2)
 
+/// How long the window stays up after the content empties, so the block's authored exit is
+/// never cut off. Owned by the animation, not by the window.
+private var overlayExitDuration: Duration {
+    .seconds(KeypressTiming.scaled(KeypressTiming.windowExitDelay))
+}
+
 /// Transparent, click-through window for displaying key visualization.
 @MainActor
 final class OverlayWindow: NSPanel {
@@ -26,38 +32,25 @@ final class OverlayWindow: NSPanel {
     private var targetScreen: NSScreen?
     private var lastMeasuredContentSize = CGSize.zero
 
+    /// Window size a shrink is waiting to apply, held back until the content settles.
+    private var pendingWindowSize: NSSize?
+    private var settleTask: Task<Void, Never>?
+
+    /// True from the moment a graceful hide starts until the window is ordered out. The
+    /// frame is untouchable for that whole stretch: the exit is content animating inside a
+    /// window that does not move.
+    private var isHiding = false
+    private var hideTask: Task<Void, Never>?
+
+    /// Nil for every mode but horizontal history, where it says which zone this window
+    /// carries and therefore which stored placement positions it.
+    private var horizontalHistoryZone: HorizontalHistoryZone?
+
     var visibleContentFrameDidChange: (() -> Void)?
 
     var visibleContentFrame: NSRect? {
         guard self.lastMeasuredContentSize != .zero else { return nil }
         return self.frame.insetBy(dx: overlayShadowInset, dy: overlayShadowInset)
-    }
-
-    // MARK: - Initialization (History mode)
-
-    init(keyState: KeyState, config: KeypressConfig) {
-        self.config = config
-
-        super.init(
-            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false)
-
-        self.configureWindow()
-        self.setupContentView(
-            OverlayContainerView(
-                keysView: AnyView(
-                    KeyVisualizationView(
-                        keyState: keyState,
-                        config: config,
-                        appliesSizeScale: false)),
-                config: config,
-                layoutState: self.layoutState,
-                onContentSizeChange: { [weak self] size in
-                    self?.updateContentSize(size)
-                }))
-        self.updatePosition()
     }
 
     // MARK: - Initialization (Single mode)
@@ -77,8 +70,44 @@ final class OverlayWindow: NSPanel {
                 keysView: AnyView(
                     SingleKeyVisualizationView(
                         keyState: singleKeyState,
-                        config: config,
-                        appliesSizeScale: false)),
+                        config: config)),
+                config: config,
+                layoutState: self.layoutState,
+                onContentSizeChange: { [weak self] size in
+                    self?.updateContentSize(size)
+                }))
+        self.updatePosition()
+    }
+
+    // MARK: - Initialization (Horizontal History)
+
+    init(
+        horizontalHistoryState: HorizontalHistoryState,
+        config: KeypressConfig,
+        zone: HorizontalHistoryZone)
+    {
+        self.config = config
+        self.horizontalHistoryZone = zone
+
+        super.init(
+            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false)
+
+        // One zone per window, so nothing this window draws can affect the other zone's size
+        // or position.
+        let zoneView = switch zone {
+        case .ribbon:
+            AnyView(HorizontalHistoryRibbonView(state: horizontalHistoryState, config: config))
+        case .commands:
+            AnyView(HorizontalHistoryCommandZoneView(state: horizontalHistoryState, config: config))
+        }
+
+        self.configureWindow()
+        self.setupContentView(
+            OverlayContainerView(
+                keysView: zoneView,
                 config: config,
                 layoutState: self.layoutState,
                 onContentSizeChange: { [weak self] size in
@@ -105,8 +134,7 @@ final class OverlayWindow: NSPanel {
                     StackedHistoryVisualizationView(
                         keyState: stackedHistoryState,
                         config: config,
-                        layoutState: self.layoutState,
-                        appliesSizeScale: false)),
+                        layoutState: self.layoutState)),
                 config: config,
                 layoutState: self.layoutState,
                 onContentSizeChange: { [weak self] size in
@@ -157,10 +185,12 @@ final class OverlayWindow: NSPanel {
     func updatePosition(on screen: NSScreen? = nil) {
         guard let targetScreen = screen ?? NSScreen.main else { return }
         self.targetScreen = targetScreen
+        self.syncLayoutState(on: targetScreen)
+        self.setFrameOrigin(self.origin(for: self.frame.size, on: targetScreen))
+    }
 
-        let screenFrame = targetScreen.visibleFrame
-        let windowSize = self.frame.size
-        let placement = self.placement(on: targetScreen)
+    private func syncLayoutState(on screen: NSScreen) {
+        let placement = self.placement(on: screen)
         let contentAnchor = OverlayContentAnchor(placement)
         if self.layoutState.anchor != contentAnchor {
             self.layoutState.anchor = contentAnchor
@@ -169,6 +199,16 @@ final class OverlayWindow: NSPanel {
         if self.layoutState.stackedHistoryLayout != stackedHistoryLayout {
             self.layoutState.stackedHistoryLayout = stackedHistoryLayout
         }
+    }
+
+    /// Where a window of `windowSize` has to sit for its content to land on the placement.
+    ///
+    /// The content is aligned to the same corner the placement anchors to, so a window that
+    /// is larger than its content still puts the content in the right place — which is what
+    /// lets the frame stay frozen while the content shrinks inside it.
+    private func origin(for windowSize: NSSize, on screen: NSScreen) -> NSPoint {
+        let screenFrame = screen.visibleFrame
+        let placement = self.placement(on: screen)
 
         // Offsets are measured from the screen edge to the visible content, so the
         // shadow inset is added back on whichever side the content is anchored to.
@@ -221,12 +261,14 @@ final class OverlayWindow: NSPanel {
                 y: centerPoint.y - windowSize.height / 2)
         }
 
-        let finalOrigin = self.clampedOrigin(origin, windowSize: windowSize, screenFrame: screenFrame)
-        self.setFrameOrigin(finalOrigin)
+        return self.clampedOrigin(origin, windowSize: windowSize, screenFrame: screenFrame)
     }
 
-    /// Resizes the panel to the SwiftUI view's ideal size, then reapplies its
-    /// screen-relative placement so anchored content does not drift as it grows.
+    /// Takes a freshly measured content size and decides what, if anything, the window frame
+    /// should do about it.
+    ///
+    /// This runs once per animation frame while the content moves, so it deliberately does
+    /// as little as possible: grow now, shrink later, and nothing at all during the exit.
     private func updateContentSize(_ measuredSize: CGSize) {
         guard measuredSize.width.isFinite,
               measuredSize.height.isFinite,
@@ -237,7 +279,67 @@ final class OverlayWindow: NSPanel {
         }
         self.lastMeasuredContentSize = measuredSize
 
-        let screen = self.targetScreen ?? NSScreen.main
+        guard let screen = self.targetScreen ?? NSScreen.main else { return }
+        let targetSize = self.windowSize(forContent: measuredSize, on: screen)
+
+        switch WindowFrameSizing.update(
+            current: self.frame.size,
+            target: targetSize,
+            isHiding: self.isHiding)
+        {
+        case .frozen:
+            // The overlay is fading out. Whatever the content does inside the window on its
+            // way off screen, the window itself holds still.
+            return
+        case .grow:
+            self.pendingWindowSize = nil
+            self.applyWindowSize(targetSize, on: screen)
+        case .deferShrink:
+            self.pendingWindowSize = targetSize
+        case .unchanged:
+            self.pendingWindowSize = nil
+        }
+
+        self.scheduleSettle()
+    }
+
+    /// Applies a held-back shrink and tells the pet where the overlay ended up — both only
+    /// once the content has stopped resizing, so neither happens per frame.
+    private func scheduleSettle() {
+        self.settleTask?.cancel()
+        self.settleTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: KeypressTiming.windowShrinkSettleDelay)
+            guard !Task.isCancelled, let self else { return }
+            self.settleTask = nil
+            self.applyPendingWindowSize()
+            self.visibleContentFrameDidChange?()
+        }
+    }
+
+    private func applyPendingWindowSize() {
+        guard let pendingWindowSize = self.pendingWindowSize,
+              let screen = self.targetScreen ?? NSScreen.main
+        else {
+            return
+        }
+        self.pendingWindowSize = nil
+        self.applyWindowSize(pendingWindowSize, on: screen)
+    }
+
+    /// Moves and resizes the window in one window-server transaction.
+    ///
+    /// Sizing and positioning used to be two calls, and because a resize keeps the top-left
+    /// corner fixed the window visibly hopped between them on every frame it was applied.
+    private func applyWindowSize(_ size: NSSize, on screen: NSScreen) {
+        self.syncLayoutState(on: screen)
+        let frame = NSRect(origin: self.origin(for: size, on: screen), size: size)
+        guard frame != self.frame else { return }
+        self.setFrame(frame, display: true)
+    }
+
+    /// The window size that fits `contentSize`, with the overlay scaled down if the content
+    /// would not otherwise fit the screen.
+    private func windowSize(forContent measuredSize: CGSize, on screen: NSScreen?) -> NSSize {
         let maximumSize = screen.map {
             NSSize(
                 width: $0.visibleFrame.width + overlayShadowInset * 2,
@@ -265,28 +367,29 @@ final class OverlayWindow: NSPanel {
         let scaledSize = CGSize(
             width: layoutContentSize.width * fittedScale + overlayShadowInset * 2,
             height: layoutContentSize.height * fittedScale + overlayShadowInset * 2)
-        let newSize = NSSize(
+        return NSSize(
             width: min(maximumSize.width, max(overlayShadowInset * 2 + 1, ceil(scaledSize.width))),
             height: min(maximumSize.height, max(overlayShadowInset * 2 + 1, ceil(scaledSize.height))))
-
-        guard abs(self.frame.width - newSize.width) >= 0.5 ||
-            abs(self.frame.height - newSize.height) >= 0.5
-        else {
-            return
-        }
-
-        self.setContentSize(newSize)
-        self.updatePosition(on: screen)
-        self.visibleContentFrameDidChange?()
     }
 
     private func placement(on screen: NSScreen) -> DisplayPlacement {
         ConnectedDisplays.id(for: screen).map {
-            self.config.displays.placement(for: $0)
+            self.placement(forDisplay: $0)
         } ?? .anchor(
             position: self.config.position,
             horizontalOffset: Double(self.config.horizontalOffset),
             verticalOffset: Double(self.config.verticalOffset))
+    }
+
+    /// A detached command zone follows its own stored placement; every other window follows
+    /// the display's widget placement.
+    private func placement(forDisplay displayID: UUID) -> DisplayPlacement {
+        guard self.horizontalHistoryZone == .commands,
+              let commandZonePlacement = self.config.displays.commandZonePlacement(for: displayID)
+        else {
+            return self.config.displays.placement(for: displayID)
+        }
+        return commandZonePlacement
     }
 
     private func availableContentSize(on screen: NSScreen) -> CGSize {
@@ -313,9 +416,19 @@ final class OverlayWindow: NSPanel {
             height: max(1, frame.height - (reservesVerticalEdge ? CGFloat(verticalOffset) : 0)))
     }
 
+    /// Re-applies the window frame after a settings change. Deliberate changes are not
+    /// animation frames, so this one takes effect at once in either direction.
     func refreshContentSize() {
-        guard self.lastMeasuredContentSize != .zero else { return }
-        self.updateContentSize(self.lastMeasuredContentSize)
+        guard self.lastMeasuredContentSize != .zero,
+              let screen = self.targetScreen ?? NSScreen.main
+        else {
+            return
+        }
+        self.pendingWindowSize = nil
+        self.applyWindowSize(
+            self.windowSize(forContent: self.lastMeasuredContentSize, on: screen),
+            on: screen)
+        self.visibleContentFrameDidChange?()
     }
 
     /// Clamps origin so the visible content stays within screen bounds.
@@ -334,8 +447,9 @@ final class OverlayWindow: NSPanel {
 
     // MARK: - Visibility
 
-    /// Shows the overlay window.
+    /// Shows the overlay window, calling off a fade that was already under way.
     func showOverlay() {
+        self.cancelGracefulHide()
         if let contentHostingView {
             contentHostingView.needsLayout = true
             contentHostingView.layoutSubtreeIfNeeded()
@@ -344,9 +458,38 @@ final class OverlayWindow: NSPanel {
         self.orderFrontRegardless()
     }
 
-    /// Hides the overlay window.
-    func hideOverlay() {
-        self.orderOut(nil)
+    /// Takes the overlay off screen.
+    ///
+    /// A graceful hide leaves the window up until the content has finished fading, so the
+    /// exit is not cut off half-way; every other reason orders out at once.
+    func hideOverlay(_ style: OverlayHideStyle = .immediate) {
+        switch style {
+        case .immediate:
+            self.cancelGracefulHide()
+            self.orderOut(nil)
+        case .graceful:
+            self.beginGracefulHide()
+        }
+    }
+
+    private func beginGracefulHide() {
+        guard self.isVisible, !self.isHiding else { return }
+        self.isHiding = true
+        self.hideTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: overlayExitDuration)
+            guard !Task.isCancelled, let self else { return }
+            self.isHiding = false
+            self.hideTask = nil
+            self.orderOut(nil)
+            // The window is off screen now, so the shrink the exit held back is free.
+            self.applyPendingWindowSize()
+        }
+    }
+
+    private func cancelGracefulHide() {
+        self.hideTask?.cancel()
+        self.hideTask = nil
+        self.isHiding = false
     }
 
     // MARK: - NSPanel Overrides
@@ -429,7 +572,9 @@ final class OverlayLayoutState: ObservableObject {
     @Published var stackedHistoryLayout = StackedHistoryLayout(.defaultPlacement)
 }
 
-/// Adds the shadow-safe inset around the keyboard visualization.
+/// Adds the shadow-safe inset around the keyboard visualization, and owns the overlay size
+/// scale for every mode — `layoutState.scale` is the configured size factor after it has
+/// been fitted to the screen, so no visualization view scales itself.
 @MainActor
 private struct OverlayContainerView: View {
     let keysView: AnyView

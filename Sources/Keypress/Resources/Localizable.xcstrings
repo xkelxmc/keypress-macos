@@ -3104,6 +3104,177 @@
         "fr" : { "stringUnit" : { "state" : "translated", "value" : "Réglages de Keypress" } },
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки Keypress" } }
       }
+    },
+    "key.backspace" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Rückschritt" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Backspace" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Retroceso" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Retour arrière" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Backspace" } }
+      }
+    },
+    "key.enter" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Enter" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Intro" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Entrée" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Enter" } }
+      }
+    },
+    "key.space" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Leertaste" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Space" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Espacio" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Espace" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Space" } }
+      }
+    },
+    "key.tab" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tab" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tab" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tabulador" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Tabulation" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Tab" } }
+      }
+    },
+    "keyboard.commandZone" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Befehlsbereich" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Command Zone" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Zona de comandos" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Zone de commandes" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Зона команд" } }
+      }
+    },
+    "keyboard.commandZone.side" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Seite des Befehlsbereichs" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Command Zone Side" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Lado de la zona de comandos" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Côté de la zone de commandes" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сторона зоны команд" } }
+      }
+    },
+    "keyboard.commandZone.side.auto" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Automatisch" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Auto" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Automático" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Automatique" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Авто" } }
+      }
+    },
+    "keyboard.commandZone.side.left" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Links" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Left" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Izquierda" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Gauche" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Слева" } }
+      }
+    },
+    "keyboard.commandZone.side.right" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Rechts" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Right" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Derecha" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Droite" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Справа" } }
+      }
+    },
+    "keyboard.commandZone.side.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "An welcher Seite Kurzbefehle unter dem Textband ausgerichtet werden." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Which side shortcuts line up with under the text ribbon." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "El lado con el que se alinean los atajos bajo la cinta de texto." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Le côté sur lequel les raccourcis s’alignent sous le ruban de texte." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "С какой стороны выравниваются сочетания под лентой текста." } }
+      }
+    },
+    "keyboard.inputKeys" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Eingabetasten" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Input Keys" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclas de entrada" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches de saisie" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиши ввода" } }
+      }
+    },
+    "keyboard.inputKeys.tint" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Leertaste, Enter, Rückschritt & Tab einfärben" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tint Space, Enter, Backspace & Tab" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Matizar Espacio, Intro, Retroceso y Tabulador" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Teinter Espace, Entrée, Retour arrière et Tabulation" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оттенок для Space, Enter, Backspace и Tab" } }
+      }
+    },
+    "keyboard.inputKeys.tint.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gibt ihnen einen leicht anderen Ton als den Buchstabentasten." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Give them a slightly different tone from letter keys." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Les da un tono ligeramente distinto al de las teclas de letras." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Leur donne un ton légèrement différent des touches de lettres." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Слегка отличает их по тону от буквенных клавиш." } }
+      }
+    },
+    "keyboard.inputKeys.width" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Breite" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Width" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Anchura" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Largeur" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ширина" } }
+      }
+    },
+    "keyboard.inputKeys.width.custom" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigene" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Custom" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Personalizada" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Personnalisée" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Своя" } }
+      }
+    },
+    "keyboard.inputKeys.width.narrow" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schmal" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Narrow" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Estrecha" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Étroite" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Узкая" } }
+      }
+    },
+    "keyboard.inputKeys.width.subtitle" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie breit Leertaste, Enter, Rückschritt und Tab erscheinen." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "How wide Space, Enter, Backspace, and Tab appear." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuánto ocupan Espacio, Intro, Retroceso y Tabulador." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "La largeur d’Espace, Entrée, Retour arrière et Tabulation." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Насколько широкими выглядят Space, Enter, Backspace и Tab." } }
+      }
+    },
+    "keyboard.inputKeys.width.wide" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Breit" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wide" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ancha" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Large" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Широкая" } }
+      }
+    },
+    "position.editor.subtitle.zones" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Ziehe jeden Bereich an seinen Platz und klicke auf „Fertig“." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Drag each zone into place, then click Done." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Arrastra cada zona a su sitio y haz clic en Hecho." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Faites glisser chaque zone à sa place, puis cliquez sur Terminé." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "%@ · Перетащите каждую зону на место и нажмите «Готово»." } }
+      }
     }
   },
   "version" : "1.0"

@@ -83,6 +83,151 @@ public struct KeyboardFilterSettings: Codable, Sendable, Equatable {
     }
 }
 
+// MARK: - Input Keys
+
+/// The four keys whose width and tint the input-key settings govern.
+public enum InputKey: String, CaseIterable, Codable, Sendable {
+    case space
+    case enter
+    case backspace
+    case tab
+
+    /// The setting a key symbol obeys, or nil when the symbol is governed by none of them.
+    ///
+    /// Forward Delete has no row of its own: it is the same key in the other direction, so
+    /// it follows whatever Backspace is set to rather than being left behind at full width.
+    public static func from(symbolID: String) -> InputKey? {
+        switch symbolID {
+        case "space": .space
+        case "return", "enter": .enter
+        case "delete", "forward-delete": .backspace
+        case "tab": .tab
+        default: nil
+        }
+    }
+}
+
+public enum InputKeyWidthMode: String, CaseIterable, Codable, Sendable {
+    /// Wide wherever the key acts as a control, standard once it rides into ribbon history.
+    case wide
+
+    /// Standard width everywhere, in every mode.
+    case narrow
+
+    /// Each key picks one of the two behaviours above.
+    case custom
+}
+
+/// Per-key width choice for `InputKeyWidthMode.custom`. `true` means the key behaves like
+/// `.wide`, `false` like `.narrow`.
+public struct InputKeyWidths: Codable, Sendable, Equatable {
+    public var space: Bool
+    public var enter: Bool
+    public var backspace: Bool
+    public var tab: Bool
+
+    public init(
+        space: Bool = true,
+        enter: Bool = true,
+        backspace: Bool = true,
+        tab: Bool = true)
+    {
+        self.space = space
+        self.enter = enter
+        self.backspace = backspace
+        self.tab = tab
+    }
+
+    public subscript(key: InputKey) -> Bool {
+        get {
+            switch key {
+            case .space: self.space
+            case .enter: self.enter
+            case .backspace: self.backspace
+            case .tab: self.tab
+            }
+        }
+        set {
+            switch key {
+            case .space: self.space = newValue
+            case .enter: self.enter = newValue
+            case .backspace: self.backspace = newValue
+            case .tab: self.tab = newValue
+            }
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case space
+        case enter
+        case backspace
+        case tab
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            space: (try? container.decode(Bool.self, forKey: .space)) ?? true,
+            enter: (try? container.decode(Bool.self, forKey: .enter)) ?? true,
+            backspace: (try? container.decode(Bool.self, forKey: .backspace)) ?? true,
+            tab: (try? container.decode(Bool.self, forKey: .tab)) ?? true)
+    }
+}
+
+public struct InputKeySettings: Codable, Sendable, Equatable {
+    public var widthMode: InputKeyWidthMode
+    public var widths: InputKeyWidths
+
+    /// Gives Space, Enter, Backspace and Tab a tone of their own, subtly apart from the
+    /// letter keys.
+    public var highlight: Bool
+
+    public init(
+        widthMode: InputKeyWidthMode = .wide,
+        widths: InputKeyWidths = InputKeyWidths(),
+        highlight: Bool = true)
+    {
+        self.widthMode = widthMode
+        self.widths = widths
+        self.highlight = highlight
+    }
+
+    /// Whether the key renders wide.
+    ///
+    /// `isControlPosition` is false only for a horizontal-ribbon entry that is no longer the
+    /// latest press; everywhere else these keys act as controls and may take the wide look.
+    public func rendersWide(_ key: InputKey, isControlPosition: Bool) -> Bool {
+        guard isControlPosition else { return false }
+        return switch self.widthMode {
+        case .wide: true
+        case .narrow: false
+        case .custom: self.widths[key]
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case widthMode
+        case widths
+        case highlight
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            widthMode: (try? container.decode(InputKeyWidthMode.self, forKey: .widthMode)) ?? .wide,
+            widths: (try? container.decode(InputKeyWidths.self, forKey: .widths)) ?? InputKeyWidths(),
+            highlight: (try? container.decode(Bool.self, forKey: .highlight)) ?? true)
+    }
+}
+
+/// Which side of the horizontal-history widget the command zone gravitates to.
+public enum CommandZoneSide: String, CaseIterable, Codable, Sendable {
+    /// Follows the display placement's own horizontal anchor.
+    case auto
+    case left
+    case right
+}
+
 public struct KeyboardSettings: Codable, Sendable, Equatable {
     public var enabled: Bool
     public var displayMode: DisplayMode
@@ -97,6 +242,8 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
     public var limitIncludesModifiers: Bool
     public var pressAnimationModifiers: Bool
     public var pressAnimationRegularKeys: Bool
+    public var inputKeys: InputKeySettings
+    public var commandZoneSide: CommandZoneSide
 
     public init(
         enabled: Bool = true,
@@ -111,7 +258,9 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
         duplicateLetters: Bool = true,
         limitIncludesModifiers: Bool = true,
         pressAnimationModifiers: Bool = true,
-        pressAnimationRegularKeys: Bool = true)
+        pressAnimationRegularKeys: Bool = true,
+        inputKeys: InputKeySettings = InputKeySettings(),
+        commandZoneSide: CommandZoneSide = .auto)
     {
         self.enabled = enabled
         self.displayMode = displayMode
@@ -126,6 +275,8 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
         self.limitIncludesModifiers = limitIncludesModifiers
         self.pressAnimationModifiers = pressAnimationModifiers
         self.pressAnimationRegularKeys = pressAnimationRegularKeys
+        self.inputKeys = inputKeys
+        self.commandZoneSide = commandZoneSide
     }
 
     func normalized() -> KeyboardSettings {
@@ -142,7 +293,61 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
             duplicateLetters: self.duplicateLetters,
             limitIncludesModifiers: self.limitIncludesModifiers,
             pressAnimationModifiers: self.pressAnimationModifiers,
-            pressAnimationRegularKeys: self.pressAnimationRegularKeys)
+            pressAnimationRegularKeys: self.pressAnimationRegularKeys,
+            inputKeys: self.inputKeys,
+            commandZoneSide: self.commandZoneSide)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case enabled
+        case displayMode
+        case contentMode
+        case filters
+        case historyLayout
+        case size
+        case opacity
+        case timeout
+        case maxItems
+        case duplicateLetters
+        case limitIncludesModifiers
+        case pressAnimationModifiers
+        case pressAnimationRegularKeys
+        case inputKeys
+        case commandZoneSide
+    }
+
+    /// Decodes field by field so a settings file written by an older build — which has no
+    /// entry for fields added later — keeps every value it does carry instead of falling
+    /// back to a wholesale default.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = KeyboardSettings()
+        self.init(
+            enabled: (try? container.decode(Bool.self, forKey: .enabled)) ?? defaults.enabled,
+            displayMode: (try? container.decode(DisplayMode.self, forKey: .displayMode))
+                ?? defaults.displayMode,
+            contentMode: (try? container.decode(KeyboardContentMode.self, forKey: .contentMode))
+                ?? defaults.contentMode,
+            filters: (try? container.decode(KeyboardFilterSettings.self, forKey: .filters))
+                ?? defaults.filters,
+            historyLayout: (try? container.decode(HistoryLayout.self, forKey: .historyLayout))
+                ?? defaults.historyLayout,
+            size: (try? container.decode(OverlaySize.self, forKey: .size)) ?? defaults.size,
+            opacity: (try? container.decode(Double.self, forKey: .opacity)) ?? defaults.opacity,
+            timeout: (try? container.decode(TimeInterval.self, forKey: .timeout)) ?? defaults.timeout,
+            maxItems: (try? container.decode(Int.self, forKey: .maxItems)) ?? defaults.maxItems,
+            duplicateLetters: (try? container.decode(Bool.self, forKey: .duplicateLetters))
+                ?? defaults.duplicateLetters,
+            limitIncludesModifiers: (try? container.decode(Bool.self, forKey: .limitIncludesModifiers))
+                ?? defaults.limitIncludesModifiers,
+            pressAnimationModifiers: (try? container.decode(Bool.self, forKey: .pressAnimationModifiers))
+                ?? defaults.pressAnimationModifiers,
+            pressAnimationRegularKeys: (try? container.decode(Bool.self, forKey: .pressAnimationRegularKeys))
+                ?? defaults.pressAnimationRegularKeys,
+            inputKeys: (try? container.decode(InputKeySettings.self, forKey: .inputKeys))
+                ?? defaults.inputKeys,
+            commandZoneSide: (try? container.decode(CommandZoneSide.self, forKey: .commandZoneSide))
+                ?? defaults.commandZoneSide)
     }
 
     public var presentation: KeyboardPresentation {
@@ -1049,17 +1254,23 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
     public var placements: [UUID: DisplayPlacement]
     public var fallbackPlacement: DisplayPlacement
 
+    /// Placement of the horizontal-history command zone, when the user has dragged it out of
+    /// the stacked default. An absent entry means the zone rides under the text ribbon.
+    public var commandZonePlacements: [UUID: DisplayPlacement]
+
     public init(
         target: DisplayTarget = .followPointer,
         rememberedSelectedDisplayIDs: Set<UUID>? = nil,
         placements: [UUID: DisplayPlacement] = [:],
-        fallbackPlacement: DisplayPlacement = .defaultPlacement)
+        fallbackPlacement: DisplayPlacement = .defaultPlacement,
+        commandZonePlacements: [UUID: DisplayPlacement] = [:])
     {
         self.target = target
         self.rememberedSelectedDisplayIDs = rememberedSelectedDisplayIDs
             ?? (target.selectedDisplayIDs.count > 1 ? target.selectedDisplayIDs : [])
         self.placements = placements.mapValues(\.normalized)
         self.fallbackPlacement = fallbackPlacement.normalized
+        self.commandZonePlacements = commandZonePlacements.mapValues(\.normalized)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1067,6 +1278,7 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
         case rememberedSelectedDisplayIDs
         case placements
         case fallbackPlacement
+        case commandZonePlacements
     }
 
     public init(from decoder: Decoder) throws {
@@ -1091,6 +1303,11 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
             ((try? container.decode(DisplayPlacement.self, forKey: .fallbackPlacement))
                 ?? .defaultPlacement)
             .normalized
+        self.commandZonePlacements =
+            ((try? container.decode(
+                [UUID: DisplayPlacement].self,
+                forKey: .commandZonePlacements)) ?? [:])
+            .mapValues(\.normalized)
     }
 
     public func placement(for displayID: UUID) -> DisplayPlacement {
@@ -1103,6 +1320,22 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
 
     public mutating func removePlacement(for displayID: UUID) {
         self.placements.removeValue(forKey: displayID)
+    }
+
+    /// The command zone's own placement, or nil while it stays stacked under the ribbon.
+    public func commandZonePlacement(for displayID: UUID) -> DisplayPlacement? {
+        self.commandZonePlacements[displayID]
+    }
+
+    public mutating func setCommandZonePlacement(
+        _ placement: DisplayPlacement,
+        for displayID: UUID)
+    {
+        self.commandZonePlacements[displayID] = placement.normalized
+    }
+
+    public mutating func removeCommandZonePlacement(for displayID: UUID) {
+        self.commandZonePlacements.removeValue(forKey: displayID)
     }
 }
 
@@ -1211,4 +1444,27 @@ extension KeyColor {
     public static let white = KeyColor(red: 1, green: 1, blue: 1)
     public static let pointerCyan = KeyColor(red: 0.05, green: 0.8, blue: 1)
     public static let pointerPurple = KeyColor(red: 0.65, green: 0.3, blue: 1)
+
+    /// A barely-there tone that sets Space, Enter, Backspace and Tab apart from the letter
+    /// keys around them.
+    ///
+    /// The shift is relative to the key's own brightness — dark keycaps lift, light ones
+    /// sink — so one rule reads the same on every material instead of needing a per-theme
+    /// colour. A touch of desaturation keeps tinted colour keys from looking like a
+    /// different category.
+    public func inputKeyTinted() -> KeyColor {
+        let brightness = (self.red + self.green + self.blue) / 3
+        let shift = brightness > 0.5 ? -0.055 : 0.055
+
+        func adjust(_ channel: Double) -> Double {
+            let desaturated = channel + (brightness - channel) * 0.18
+            return min(1, max(0, desaturated + shift))
+        }
+
+        return KeyColor(
+            red: adjust(self.red),
+            green: adjust(self.green),
+            blue: adjust(self.blue),
+            alpha: self.alpha)
+    }
 }

@@ -6,7 +6,6 @@ struct StackedHistoryVisualizationView: View {
     var keyState: StackedHistoryState
     let config: KeypressConfig
     @ObservedObject var layoutState: OverlayLayoutState
-    var appliesSizeScale = true
 
     private var keyboardTheme: KeyboardTheme {
         self.config.effectiveTheme(isSystemDark: self.systemIsDark).keyboard
@@ -14,7 +13,6 @@ struct StackedHistoryVisualizationView: View {
 
     var body: some View {
         self.content
-            .scaleEffect(self.appliesSizeScale ? self.config.size.scaleFactor : 1)
     }
 
     @ViewBuilder
@@ -57,8 +55,7 @@ struct StackedHistoryVisualizationView: View {
             pressedKeys: self.keyState.pressedKeys,
             physicallyPressedKeys: self.keyState.physicallyPressedKeys,
             hasKeys: self.keyState.hasAnchorKeys,
-            config: self.config,
-            appliesSizeScale: false)
+            config: self.config)
     }
 
     private func historyRows(_ entries: [StackedHistoryEntry]) -> some View {
@@ -82,8 +79,7 @@ struct StackedHistoryVisualizationView: View {
                 pressedKeys: entry.keys,
                 physicallyPressedKeys: [],
                 hasKeys: true,
-                config: self.config,
-                appliesSizeScale: false)
+                config: self.config)
         }
     }
 

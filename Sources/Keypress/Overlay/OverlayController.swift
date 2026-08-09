@@ -21,6 +21,10 @@ final class OverlayController {
     private var keyMonitor: KeyMonitor?
     private var pointerInputMonitor: PointerInputMonitor?
     private var overlayWindows: [UUID: OverlayWindow] = [:]
+
+    /// Second window per display, carrying the horizontal-history command zone. It is a
+    /// window of its own so that the zone appearing or leaving can never move the ribbon.
+    private var commandZoneWindows: [UUID: OverlayWindow] = [:]
     private var secureInputTask: Task<Void, Never>?
     private var monitorHealthTask: Task<Void, Never>?
     private var overlayShouldBeVisible = false
@@ -33,7 +37,7 @@ final class OverlayController {
     private var lastAppliedSettings: AppSettings?
 
     // Key state (one of these will be used based on display mode)
-    private var historyKeyState: KeyState?
+    private var horizontalHistoryState: HorizontalHistoryState?
     private var singleKeyState: SingleKeyState?
     private var stackedHistoryState: StackedHistoryState?
 
@@ -63,13 +67,13 @@ final class OverlayController {
         self.overlayWindows[displayID]?.frame
     }
 
-    /// Current key state protocol reference for common operations.
-    private var currentKeyState: (any KeyStateProtocol)? {
+    /// Current key state reference for common operations.
+    private var currentKeyState: (any KeyEventSink)? {
         switch self.config.keyboard.presentation {
         case .latest:
             self.singleKeyState
         case .horizontalHistory:
-            self.historyKeyState
+            self.horizontalHistoryState
         case .stackedHistory:
             self.stackedHistoryState
         }
@@ -100,7 +104,7 @@ final class OverlayController {
         guard self.keyMonitor == nil else { return }
 
         // Clean up any existing overlay window (e.g., from delayed stop)
-        self.hideAndRemoveOverlayWindows()
+        self.hideAndRemoveOverlayWindows(.stopping)
         self.overlayShouldBeVisible = false
         self.hudWindow.hide()
         self.pointerController.clear()
@@ -155,14 +159,14 @@ final class OverlayController {
         self.pointerInputMonitor = nil
         self.permission.stopPolling()
 
-        self.hideAndRemoveOverlayWindows()
+        self.hideAndRemoveOverlayWindows(.stopping)
         self.overlayShouldBeVisible = false
         self.pointerController.clear()
         self.petController.stop()
         self.hudWindow.hide()
 
         self.currentKeyState?.clear()
-        self.historyKeyState = nil
+        self.horizontalHistoryState = nil
         self.singleKeyState = nil
         self.stackedHistoryState = nil
         self.secureInputEnabled = false
@@ -190,7 +194,7 @@ final class OverlayController {
         self.permission.stopPolling()
         self.currentKeyState?.clear()
         self.overlayShouldBeVisible = false
-        self.hideOverlayWindows()
+        self.hideOverlayWindows(.stopping)
         self.pointerController.clear()
         self.petController.stop()
     }
@@ -209,24 +213,19 @@ final class OverlayController {
 
     /// Updates overlay opacity based on current settings.
     func updateOpacity() {
-        for window in self.overlayWindows.values {
+        for window in self.allOverlayWindows {
             window.alphaValue = self.config.opacity
         }
     }
 
     /// Updates key timeout based on current settings.
     func updateKeyTimeout() {
-        self.historyKeyState?.keyTimeout = self.config.keyTimeout
         self.singleKeyState?.keyTimeout = self.config.keyTimeout
     }
 
     /// Updates history mode settings.
     func updateHistorySettings() {
-        self.historyKeyState?.maxDisplayedKeys = self.config.maxKeys
-        self.historyKeyState?.duplicateLetters = self.config.duplicateLetters
-        self.historyKeyState?.limitIncludesModifiers = self.config.limitIncludesModifiers
-        self.historyKeyState?.contentMode = self.config.keyboard.contentMode
-        self.historyKeyState?.filters = self.config.keyboard.filters
+        self.horizontalHistoryState?.apply(self.config.keyboard)
         self.stackedHistoryState?.apply(self.config.keyboard)
     }
 
@@ -378,7 +377,7 @@ final class OverlayController {
 
     private func reconcileOverlayWindows() {
         guard self.config.general.enabled, self.config.keyboard.enabled else {
-            self.hideAndRemoveOverlayWindows()
+            self.hideAndRemoveOverlayWindows(.stopping)
             return
         }
 
@@ -387,10 +386,18 @@ final class OverlayController {
 
         let staleDisplayIDs = self.overlayWindows.keys.filter { !targetIDs.contains($0) }
         for displayID in staleDisplayIDs {
-            self.overlayWindows.removeValue(forKey: displayID)?.hideOverlay()
+            self.overlayWindows.removeValue(forKey: displayID)?
+                .hideOverlay(OverlayHideReason.displayNoLongerTargeted.style)
+        }
+        let staleCommandZoneIDs = self.commandZoneWindows.keys.filter { !targetIDs.contains($0) }
+        for displayID in staleCommandZoneIDs {
+            self.commandZoneWindows.removeValue(forKey: displayID)?
+                .hideOverlay(OverlayHideReason.displayNoLongerTargeted.style)
         }
 
         for display in displays {
+            self.migrateZonePlacementsIfNeeded(for: display)
+
             let window: OverlayWindow
             if let existingWindow = self.overlayWindows[display.id] {
                 window = existingWindow
@@ -408,6 +415,8 @@ final class OverlayController {
             if self.overlayShouldBeVisible, !self.placementEditorActive {
                 window.showOverlay()
             }
+
+            self.reconcileCommandZoneWindow(for: display)
         }
 
         let previousIDs = self.activeKeyboardDisplays.map(\.id)
@@ -444,13 +453,14 @@ final class OverlayController {
                 singleKeyState: singleState,
                 config: self.config)
         case .horizontalHistory:
-            guard let historyState = self.historyKeyState else {
-                print("[Keypress] ERROR: KeyState not created - cannot create overlay")
+            guard let horizontalHistoryState = self.horizontalHistoryState else {
+                print("[Keypress] ERROR: HorizontalHistoryState not created - cannot create overlay")
                 return nil
             }
             return OverlayWindow(
-                keyState: historyState,
-                config: self.config)
+                horizontalHistoryState: horizontalHistoryState,
+                config: self.config,
+                zone: .ribbon)
         case .stackedHistory:
             guard let stackedHistoryState = self.stackedHistoryState else {
                 print("[Keypress] ERROR: StackedHistoryState not created - cannot create overlay")
@@ -462,21 +472,80 @@ final class OverlayController {
         }
     }
 
-    private func showOverlayWindows() {
-        for window in self.overlayWindows.values {
+    /// Gives the display its own explicit placement for each zone, once.
+    ///
+    /// Both zones need a placement of their own for either to stay put while the other comes
+    /// and goes. A display arriving in this mode carries a single placement from whatever it
+    /// was showing before, so the pair is derived from it and written back immediately — the
+    /// stored command-zone placement is what marks the display as done.
+    private func migrateZonePlacementsIfNeeded(for display: ConnectedDisplay) {
+        guard self.config.keyboard.presentation.usesSeparateCommandZoneWindow,
+              self.config.displays.commandZonePlacement(for: display.id) == nil
+        else {
+            return
+        }
+
+        let placements = HorizontalHistoryZonePlacements.derived(
+            from: self.config.displays.placement(for: display.id),
+            scale: self.config.size.scaleFactor,
+            visibleHeight: display.screen.visibleFrame.height)
+
+        self.config.displays.setPlacement(placements.ribbon, for: display.id)
+        self.config.displays.setCommandZonePlacement(placements.commandZone, for: display.id)
+    }
+
+    /// Creates or tears down the display's command-zone window. In horizontal history it is
+    /// always present; every other mode has none.
+    private func reconcileCommandZoneWindow(for display: ConnectedDisplay) {
+        guard self.config.keyboard.presentation.usesSeparateCommandZoneWindow,
+              let horizontalHistoryState = self.horizontalHistoryState
+        else {
+            self.commandZoneWindows.removeValue(forKey: display.id)?
+                .hideOverlay(OverlayHideReason.presentationChanged.style)
+            return
+        }
+
+        let window: OverlayWindow
+        if let existingWindow = self.commandZoneWindows[display.id] {
+            window = existingWindow
+        } else {
+            window = OverlayWindow(
+                horizontalHistoryState: horizontalHistoryState,
+                config: self.config,
+                zone: .commands)
+            self.commandZoneWindows[display.id] = window
+        }
+
+        window.updatePosition(on: display.screen)
+        window.alphaValue = self.config.opacity
+        if self.overlayShouldBeVisible, !self.placementEditorActive {
             window.showOverlay()
         }
     }
 
-    private func hideOverlayWindows() {
-        for window in self.overlayWindows.values {
-            window.hideOverlay()
+    /// Every window on screen, including the detached command zones.
+    private var allOverlayWindows: [OverlayWindow] {
+        Array(self.overlayWindows.values) + Array(self.commandZoneWindows.values)
+    }
+
+    private func showOverlayWindows() {
+        for window in self.allOverlayWindows {
+            window.showOverlay()
         }
     }
 
-    private func hideAndRemoveOverlayWindows() {
-        self.hideOverlayWindows()
+    /// Takes every overlay window off screen. Only a key timing out earns the animated exit;
+    /// every other reason has to be gone at once.
+    private func hideOverlayWindows(_ reason: OverlayHideReason) {
+        for window in self.allOverlayWindows {
+            window.hideOverlay(reason.style)
+        }
+    }
+
+    private func hideAndRemoveOverlayWindows(_ reason: OverlayHideReason) {
+        self.hideOverlayWindows(reason)
         self.overlayWindows.removeAll()
+        self.commandZoneWindows.removeAll()
         if !self.activeKeyboardDisplays.isEmpty {
             self.activeKeyboardDisplays = []
             self.displayTargetsDidChange?([])
@@ -484,7 +553,7 @@ final class OverlayController {
     }
 
     private func createKeyState() {
-        self.historyKeyState = nil
+        self.horizontalHistoryState = nil
         self.singleKeyState = nil
         self.stackedHistoryState = nil
 
@@ -496,14 +565,7 @@ final class OverlayController {
             state.filters = self.config.keyboard.filters
             self.singleKeyState = state
         case .horizontalHistory:
-            let state = KeyState()
-            state.keyTimeout = self.config.keyTimeout
-            state.maxDisplayedKeys = self.config.maxKeys
-            state.duplicateLetters = self.config.duplicateLetters
-            state.limitIncludesModifiers = self.config.limitIncludesModifiers
-            state.contentMode = self.config.keyboard.contentMode
-            state.filters = self.config.keyboard.filters
-            self.historyKeyState = state
+            self.horizontalHistoryState = HorizontalHistoryState(settings: self.config.keyboard)
         case .stackedHistory:
             self.stackedHistoryState = StackedHistoryState(settings: self.config.keyboard)
         }
@@ -553,7 +615,7 @@ final class OverlayController {
         if shouldBeVisible, !self.placementEditorActive {
             self.showOverlayWindows()
         } else if !shouldBeVisible {
-            self.hideOverlayWindows()
+            self.hideOverlayWindows(.keysExpired)
         }
     }
 
@@ -607,7 +669,7 @@ final class OverlayController {
 
         if presentationChanged {
             self.currentKeyState?.clear()
-            self.hideAndRemoveOverlayWindows()
+            self.hideAndRemoveOverlayWindows(.presentationChanged)
             self.createKeyState()
             if self.keyMonitor?.isRunning == true {
                 self.startObservingKeyState()
@@ -637,8 +699,10 @@ final class OverlayController {
 
         if previous.keyboard.size != settings.keyboard.size
             || keyboardAppearanceChanged
+            || previous.keyboard.inputKeys != settings.keyboard.inputKeys
+            || previous.keyboard.commandZoneSide != settings.keyboard.commandZoneSide
         {
-            for window in self.overlayWindows.values {
+            for window in self.allOverlayWindows {
                 window.refreshContentSize()
             }
         }
@@ -723,13 +787,129 @@ final class OverlayController {
 
         self.currentKeyState?.clear()
         self.overlayShouldBeVisible = false
-        self.hideOverlayWindows()
+        self.hideOverlayWindows(.secureInput)
         let strings = StudioStrings(languageCode: self.config.general.language.studioLanguageCode)
         self.showHUD(text: strings["hud.secureInput"], kind: .privacy)
     }
 
-    // MARK: - Screen Observation
+    private func resetTransientInputState() {
+        self.currentKeyState?.clear()
+        self.pointerController.clear()
+        self.pointerController.refresh()
+        self.petController.resetTransientState()
+        self.overlayShouldBeVisible = false
+        self.hideOverlayWindows(.transientReset)
+    }
+}
 
+extension OverlayController {
+    private var preferredPetKeyboardFrame: NSRect? {
+        if let pointerDisplay = ConnectedDisplays.display(containing: NSEvent.mouseLocation),
+           let frame = self.overlayWindows[pointerDisplay.id]?.visibleContentFrame
+        {
+            return frame
+        }
+        if let frame = self.activeKeyboardDisplays.lazy
+            .compactMap({ self.overlayWindows[$0.id]?.visibleContentFrame })
+            .first
+        {
+            return frame
+        }
+
+        guard let display = self.targetDisplays().first else { return nil }
+        let visibleFrame = display.screen.visibleFrame
+        let placement = self.config.displays.placement(for: display.id)
+        let point: CGPoint
+        switch placement {
+        case let .custom(center, _):
+            point = CGPoint(
+                x: visibleFrame.minX + CGFloat(center.x) * visibleFrame.width,
+                y: visibleFrame.minY + CGFloat(center.y) * visibleFrame.height)
+        case let .anchor(position, horizontalOffset, verticalOffset):
+            let x = switch position {
+            case .topLeft, .centerLeft, .bottomLeft:
+                visibleFrame.minX + CGFloat(horizontalOffset)
+            case .topCenter, .bottomCenter:
+                visibleFrame.midX
+            case .topRight, .centerRight, .bottomRight:
+                visibleFrame.maxX - CGFloat(horizontalOffset)
+            }
+            let y = switch position {
+            case .bottomLeft, .bottomCenter, .bottomRight:
+                visibleFrame.minY + CGFloat(verticalOffset)
+            case .centerLeft, .centerRight:
+                visibleFrame.midY
+            case .topLeft, .topCenter, .topRight:
+                visibleFrame.maxY - CGFloat(verticalOffset)
+            }
+            point = CGPoint(x: x, y: y)
+        }
+        return NSRect(origin: point, size: .zero)
+    }
+
+    private var needsKeyboardMonitoring: Bool {
+        self.config.general.enabled
+            && (self.config.keyboard.enabled || self.config.pet.enabled)
+    }
+
+    private var needsPointerMonitoring: Bool {
+        let petNeedsPointer = self.config.pet.enabled
+            && self.config.pet.visibility == .always
+            && (self.config.pet.watchCursor || self.config.pet.huntCursor)
+        return self.config.general.enabled
+            && (self.config.pointer.enabled || petNeedsPointer)
+    }
+
+    private func ensureKeyboardMonitoring() {
+        guard self.needsKeyboardMonitoring else {
+            self.stopKeyboardMonitoring()
+            return
+        }
+        guard self.keyMonitor?.isRunning != true else { return }
+
+        if self.keyMonitor == nil {
+            self.keyMonitor = self.makeKeyMonitor()
+        }
+        let started = self.keyMonitor?.start() ?? false
+        if started {
+            print("[Keypress] KeyMonitor started successfully")
+            self.keyMonitor?.emitCurrentModifiers()
+            self.startObservingKeyState()
+            return
+        }
+
+        if KeyMonitor.hasInputMonitoringPermission() {
+            print(
+                "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
+        } else {
+            print("[Keypress] KeyMonitor.start() waiting for explicit Input Monitoring access")
+        }
+        self.permission.startPolling()
+    }
+
+    private func stopKeyboardMonitoring() {
+        self.keyMonitor?.stop()
+        self.isObservingKeyState = false
+        self.keyStateObservationGeneration &+= 1
+        self.secureInputTask?.cancel()
+        self.secureInputTask = nil
+        self.secureInputEnabled = false
+        self.petController.handleSecureInputChanged(false)
+        self.currentKeyState?.clear()
+        self.overlayShouldBeVisible = false
+        self.hideOverlayWindows(.stopping)
+        self.stopPermissionPollingIfUnused()
+    }
+
+    private func stopPermissionPollingIfUnused() {
+        guard !self.needsKeyboardMonitoring, !self.needsPointerMonitoring else { return }
+        self.permission.stopPolling()
+    }
+}
+
+// MARK: - Screen Observation
+
+extension OverlayController {
     private func startObservingScreens() {
         // Observe screen parameter changes (monitor connect/disconnect)
         self.screenParametersObserver = NotificationCenter.default.addObserver(
@@ -786,7 +966,7 @@ final class OverlayController {
         { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.placementEditorActive = true
-                self?.hideOverlayWindows()
+                self?.hideOverlayWindows(.placementEditor)
             }
         }
 
@@ -893,119 +1073,5 @@ final class OverlayController {
         guard abs(event.deltaX) > abs(event.deltaY), event.deltaX != 0 else { return }
         self.pointerController.handleNavigationSwipe(
             cancelled: event.phase.contains(.cancelled))
-    }
-
-    private func resetTransientInputState() {
-        self.currentKeyState?.clear()
-        self.pointerController.clear()
-        self.pointerController.refresh()
-        self.petController.resetTransientState()
-        self.overlayShouldBeVisible = false
-        self.hideOverlayWindows()
-    }
-}
-
-extension OverlayController {
-    private var preferredPetKeyboardFrame: NSRect? {
-        if let pointerDisplay = ConnectedDisplays.display(containing: NSEvent.mouseLocation),
-           let frame = self.overlayWindows[pointerDisplay.id]?.visibleContentFrame
-        {
-            return frame
-        }
-        if let frame = self.activeKeyboardDisplays.lazy
-            .compactMap({ self.overlayWindows[$0.id]?.visibleContentFrame })
-            .first
-        {
-            return frame
-        }
-
-        guard let display = self.targetDisplays().first else { return nil }
-        let visibleFrame = display.screen.visibleFrame
-        let placement = self.config.displays.placement(for: display.id)
-        let point: CGPoint
-        switch placement {
-        case let .custom(center, _):
-            point = CGPoint(
-                x: visibleFrame.minX + CGFloat(center.x) * visibleFrame.width,
-                y: visibleFrame.minY + CGFloat(center.y) * visibleFrame.height)
-        case let .anchor(position, horizontalOffset, verticalOffset):
-            let x = switch position {
-            case .topLeft, .centerLeft, .bottomLeft:
-                visibleFrame.minX + CGFloat(horizontalOffset)
-            case .topCenter, .bottomCenter:
-                visibleFrame.midX
-            case .topRight, .centerRight, .bottomRight:
-                visibleFrame.maxX - CGFloat(horizontalOffset)
-            }
-            let y = switch position {
-            case .bottomLeft, .bottomCenter, .bottomRight:
-                visibleFrame.minY + CGFloat(verticalOffset)
-            case .centerLeft, .centerRight:
-                visibleFrame.midY
-            case .topLeft, .topCenter, .topRight:
-                visibleFrame.maxY - CGFloat(verticalOffset)
-            }
-            point = CGPoint(x: x, y: y)
-        }
-        return NSRect(origin: point, size: .zero)
-    }
-
-    private var needsKeyboardMonitoring: Bool {
-        self.config.general.enabled
-            && (self.config.keyboard.enabled || self.config.pet.enabled)
-    }
-
-    private var needsPointerMonitoring: Bool {
-        let petNeedsPointer = self.config.pet.enabled
-            && self.config.pet.visibility == .always
-            && (self.config.pet.watchCursor || self.config.pet.huntCursor)
-        return self.config.general.enabled
-            && (self.config.pointer.enabled || petNeedsPointer)
-    }
-
-    private func ensureKeyboardMonitoring() {
-        guard self.needsKeyboardMonitoring else {
-            self.stopKeyboardMonitoring()
-            return
-        }
-        guard self.keyMonitor?.isRunning != true else { return }
-
-        if self.keyMonitor == nil {
-            self.keyMonitor = self.makeKeyMonitor()
-        }
-        let started = self.keyMonitor?.start() ?? false
-        if started {
-            print("[Keypress] KeyMonitor started successfully")
-            self.keyMonitor?.emitCurrentModifiers()
-            self.startObservingKeyState()
-            return
-        }
-
-        if KeyMonitor.hasInputMonitoringPermission() {
-            print(
-                "[Keypress] ERROR: KeyMonitor.start() failed despite having permissions - system resource issue")
-        } else {
-            print("[Keypress] KeyMonitor.start() waiting for explicit Input Monitoring access")
-        }
-        self.permission.startPolling()
-    }
-
-    private func stopKeyboardMonitoring() {
-        self.keyMonitor?.stop()
-        self.isObservingKeyState = false
-        self.keyStateObservationGeneration &+= 1
-        self.secureInputTask?.cancel()
-        self.secureInputTask = nil
-        self.secureInputEnabled = false
-        self.petController.handleSecureInputChanged(false)
-        self.currentKeyState?.clear()
-        self.overlayShouldBeVisible = false
-        self.hideOverlayWindows()
-        self.stopPermissionPollingIfUnused()
-    }
-
-    private func stopPermissionPollingIfUnused() {
-        guard !self.needsKeyboardMonitoring, !self.needsPointerMonitoring else { return }
-        self.permission.stopPolling()
     }
 }

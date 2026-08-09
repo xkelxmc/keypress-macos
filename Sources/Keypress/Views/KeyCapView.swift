@@ -38,6 +38,21 @@ enum KeyCapSize {
             return .standard
         }
     }
+
+    /// Width for Space, Enter, Backspace and Tab under the current input-key settings.
+    ///
+    /// `isControlPosition` is false only for a horizontal-ribbon entry that is no longer the
+    /// latest press. Returns nil for every other key, leaving `from(symbol:)` in charge.
+    static func inputKey(
+        for symbol: KeySymbol,
+        settings: InputKeySettings,
+        isControlPosition: Bool) -> KeyCapSize?
+    {
+        guard let inputKey = InputKey.from(symbolID: symbol.id) else { return nil }
+        return settings.rendersWide(inputKey, isControlPosition: isControlPosition)
+            ? .wide
+            : .standard
+    }
 }
 
 // MARK: - ModifierInfo
@@ -77,36 +92,56 @@ struct KeyCapView: View {
     /// Whether the key is physically pressed (for modifiers only).
     /// Affects visual appearance: pressed keys appear pushed down.
     let isPressed: Bool
-    /// Whether to delay press animation (when overlay just appeared).
-    let delayPressAnimation: Bool
+    /// Replaces the label text. The horizontal ribbon applies its own casing, which
+    /// `symbol.display` does not carry.
+    let displayText: String?
+    /// Replaces the width category. The ribbon shrinks Space/Enter/Tab once they stop
+    /// being the latest key.
+    let sizeOverride: KeyCapSize?
 
-    /// Local state to delay press animation on appear.
-    /// This creates a visible "press down" effect when key first appears.
-    @State private var showPressedState: Bool = false
-    /// Task for delayed press animation.
-    @State private var pressDelayTask: Task<Void, Never>?
+    /// What the surrounding block is doing. A press only animates once the block is settled;
+    /// while it is arriving or leaving, the press state still updates but lands instantly, so
+    /// it cannot compete with the block's own movement for the same leaves.
+    @Environment(\.blockPhase) private var blockPhase
+
+    /// Press state the visuals actually render. It follows `isPressed` through an explicit
+    /// animation transaction, so a relayout of the surrounding row can never be swept into
+    /// the press animation and slide this keycap on its own. Seeded from the inputs rather
+    /// than on appear, because `ImageRenderer` (screenshots, promo frames) draws the view
+    /// without ever appearing it.
+    @State private var pressVisual: Bool
 
     init(
         symbol: KeySymbol,
         config: KeypressConfig = .shared,
         isPressed: Bool = false,
-        delayPressAnimation: Bool = false)
+        displayText: String? = nil,
+        sizeOverride: KeyCapSize? = nil)
     {
         self.symbol = symbol
         self.config = config
         self.isPressed = isPressed
-        self.delayPressAnimation = delayPressAnimation
+        self.displayText = displayText
+        self.sizeOverride = sizeOverride
+        self._pressVisual = State(initialValue: isPressed)
     }
 
-    /// Effective pressed state — combines external isPressed with appear delay.
-    private var effectivelyPressed: Bool {
-        self.isPressed && (!self.delayPressAnimation || self.showPressedState)
+    /// Text drawn on the keycap.
+    private var label: String {
+        self.displayText ?? self.symbol.display
     }
 
     // MARK: - Layout Constants
 
     private var size: KeyCapSize {
-        KeyCapSize.from(symbol: self.symbol)
+        if let sizeOverride = self.sizeOverride {
+            return sizeOverride
+        }
+        return KeyCapSize.inputKey(
+            for: self.symbol,
+            settings: self.config.keyboard.inputKeys,
+            isControlPosition: true)
+            ?? KeyCapSize.from(symbol: self.symbol)
     }
 
     private var category: KeyCategory {
@@ -154,14 +189,26 @@ struct KeyCapView: View {
     // MARK: - Colors
 
     private var baseColor: Color {
-        self.style.color.color
+        self.tintedKeyColor.color
+    }
+
+    /// The keycap colour after the optional input-key tint, which sets Space, Enter,
+    /// Backspace and Tab slightly apart from the letters beside them.
+    private var tintedKeyColor: KeyColor {
+        let color = self.style.color
+        guard self.config.keyboard.inputKeys.highlight,
+              InputKey.from(symbolID: self.symbol.id) != nil
+        else {
+            return color
+        }
+        return color.inputKeyTinted()
     }
 
     private var textColor: Color {
         if self.config.appearance.keyboardThemeSelection == .system
             || self.config.appearance.keyboardThemeSelection == .dark
         {
-            let keyColor = self.style.color
+            let keyColor = self.tintedKeyColor
             let brightness = (keyColor.red + keyColor.green + keyColor.blue) / 3
             return brightness > 0.5 ? .black : .white
         }
@@ -186,24 +233,42 @@ struct KeyCapView: View {
         .shadow(
             color: self.pressGlowColor.opacity(self.pressGlowOpacity),
             radius: self.pressGlowRadius)
-        .animation(self.pressAnimation, value: self.effectivelyPressed)
-        .onAppear { self.scheduleShowPressed() }
-        .onDisappear { self.pressDelayTask?.cancel() }
+        .geometryGroup()
         .onChange(of: self.isPressed) { _, newValue in
-            if newValue {
-                self.scheduleShowPressed()
-            } else {
-                self.pressDelayTask?.cancel()
-                self.showPressedState = false
-            }
+            self.applyPress(newValue)
         }
+        .onChange(of: self.blockPhase) { _, phase in
+            // Arriving at rest, the keycap takes its press state without a flourish.
+            guard phase == .shown, self.pressVisual != self.isPressed else { return }
+            self.applyPress(self.isPressed, animated: false)
+        }
+    }
+
+    /// A press animates only while the block is settled. During the block's own entrance and
+    /// exit the state still lands — it just lands instantly, so nothing tries to animate a
+    /// keycap that is already being moved by something larger.
+    private func applyPress(_ isPressed: Bool, animated: Bool? = nil) {
+        let playsAnimation = animated ?? (self.blockPhase == .shown)
+        AnimationJournal.shared.record(
+            .press,
+            phaseIn: "\(self.blockPhase)",
+            animation: playsAnimation ? "press" : "instant",
+            detail: self.symbol.id)
+
+        guard playsAnimation else {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { self.pressVisual = isPressed }
+            return
+        }
+        withAnimation(self.pressAnimation) { self.pressVisual = isPressed }
     }
 
     // MARK: - Press Animation Constants
 
     /// Vertical offset when key is pressed (top surface moves down).
     private var pressOffset: CGFloat {
-        guard self.effectivelyPressed else { return 0 }
+        guard self.pressVisual else { return 0 }
         return switch self.keyboardTheme.pressEffect {
         case .travel: 2.5
         case .deepTravel: 4.5
@@ -215,7 +280,7 @@ struct KeyCapView: View {
     }
 
     private var pressedDepthReduction: CGFloat {
-        guard self.effectivelyPressed else { return 0 }
+        guard self.pressVisual else { return 0 }
         return switch self.keyboardTheme.pressEffect {
         case .travel: 2
         case .deepTravel: 4
@@ -226,11 +291,11 @@ struct KeyCapView: View {
     }
 
     private var pressedShadowMultiplier: CGFloat {
-        self.effectivelyPressed ? 0.5 : 1.0
+        self.pressVisual ? 0.5 : 1.0
     }
 
     private var flatPressOffset: CGFloat {
-        guard self.effectivelyPressed else { return 0 }
+        guard self.pressVisual else { return 0 }
         return switch self.keyboardTheme.pressEffect {
         case .travel: 1.5
         case .deepTravel: 2.5
@@ -241,7 +306,7 @@ struct KeyCapView: View {
     }
 
     private var pressScale: CGSize {
-        guard self.effectivelyPressed else { return CGSize(width: 1, height: 1) }
+        guard self.pressVisual else { return CGSize(width: 1, height: 1) }
         return switch self.keyboardTheme.pressEffect {
         case .travel, .deepTravel:
             CGSize(width: 1, height: 1)
@@ -257,7 +322,7 @@ struct KeyCapView: View {
     }
 
     private var pressRotation: Double {
-        guard self.effectivelyPressed, self.keyboardTheme.pressEffect == .snap else { return 0 }
+        guard self.pressVisual, self.keyboardTheme.pressEffect == .snap else { return 0 }
         return -1.25
     }
 
@@ -273,7 +338,7 @@ struct KeyCapView: View {
     }
 
     private var pressGlowOpacity: Double {
-        guard self.effectivelyPressed else { return 0 }
+        guard self.pressVisual else { return 0 }
         return switch self.keyboardTheme.pressEffect {
         case .snap: 0.7
         case .glow: 0.95
@@ -290,20 +355,7 @@ struct KeyCapView: View {
     }
 
     private var pressAnimation: Animation {
-        switch self.keyboardTheme.pressEffect {
-        case .travel:
-            .spring(response: 0.15, dampingFraction: 0.7)
-        case .deepTravel:
-            .spring(response: 0.24, dampingFraction: 0.62)
-        case .compress:
-            .spring(response: 0.14, dampingFraction: 0.82)
-        case .scale:
-            .easeOut(duration: 0.12)
-        case .snap:
-            .interpolatingSpring(stiffness: 520, damping: 30)
-        case .glow:
-            .spring(response: 0.2, dampingFraction: 0.58)
-        }
+        KeypressTiming.press(self.keyboardTheme.pressEffect)
     }
 
     // MARK: - Mechanical Style (3D skeuomorphic)
@@ -322,31 +374,10 @@ struct KeyCapView: View {
         .frame(width: self.size.width, height: self.size.height + self.depth)
     }
 
-    /// Schedules showing pressed state.
-    /// When overlay just appeared (delayPressAnimation=true), waits for fade-in to complete.
-    /// When overlay was already visible, shows press immediately.
-    private func scheduleShowPressed() {
-        self.pressDelayTask?.cancel()
-        guard self.isPressed else {
-            self.showPressedState = false
-            return
-        }
-        guard self.delayPressAnimation else {
-            self.showPressedState = true
-            return
-        }
-        self.showPressedState = false
-        self.pressDelayTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(200))
-            guard !Task.isCancelled else { return }
-            self.showPressedState = true
-        }
-    }
-
     // MARK: - Flat Style (modern flat design)
 
     private var flatBody: some View {
-        let flatShadowOffset: CGFloat = self.effectivelyPressed ? 1 : 2
+        let flatShadowOffset: CGFloat = self.pressVisual ? 1 : 2
 
         return ZStack {
             if self.keyboardTheme.material == .neon {
@@ -389,9 +420,9 @@ struct KeyCapView: View {
 
     private var flatShadowRadius: CGFloat {
         if self.keyboardTheme.material == .monochrome {
-            return self.effectivelyPressed ? 1 : 2
+            return self.pressVisual ? 1 : 2
         }
-        return self.effectivelyPressed ? 3 : 4
+        return self.pressVisual ? 3 : 4
     }
 
     private var neonDepthColor: Color {
@@ -416,10 +447,10 @@ struct KeyCapView: View {
                 RoundedRectangle(cornerRadius: self.cornerRadius, style: .continuous)
                     .strokeBorder(self.neonSecondaryColor.opacity(0.86), lineWidth: 1.25)
             }
-            .offset(y: self.effectivelyPressed ? 1.5 : 5)
+            .offset(y: self.pressVisual ? 1.5 : 5)
             .shadow(
-                color: self.neonSecondaryColor.opacity(self.effectivelyPressed ? 0.34 : 0.58),
-                radius: self.effectivelyPressed ? 3 : 6,
+                color: self.neonSecondaryColor.opacity(self.pressVisual ? 0.34 : 0.58),
+                radius: self.pressVisual ? 3 : 6,
                 y: 2)
     }
 
@@ -438,10 +469,10 @@ struct KeyCapView: View {
                     lineWidth: max(2, CGFloat(self.keyboardTheme.borderWidth)))
                 .shadow(
                     color: self.keyboardTheme.borderColor.color.opacity(0.9),
-                    radius: self.effectivelyPressed ? 11 : 7)
+                    radius: self.pressVisual ? 11 : 7)
                 .shadow(
                     color: self.neonSecondaryColor.opacity(0.55),
-                    radius: self.effectivelyPressed ? 18 : 11)
+                    radius: self.pressVisual ? 18 : 11)
 
             RoundedRectangle(
                 cornerRadius: max(2, self.cornerRadius - 3),
@@ -455,7 +486,7 @@ struct KeyCapView: View {
                         startPoint: .top,
                         endPoint: .bottom),
                     lineWidth: max(0.8, CGFloat(self.keyboardTheme.borderWidth) * 0.48))
-                .padding(self.effectivelyPressed ? 2.5 : 4.5)
+                .padding(self.pressVisual ? 2.5 : 4.5)
                 .shadow(color: self.neonSecondaryColor.opacity(0.48), radius: 4)
         }
     }
@@ -513,7 +544,7 @@ struct KeyCapView: View {
         ZStack {
             // Simple pill background
             RoundedRectangle(cornerRadius: self.minimalCornerRadius)
-                .fill(self.baseColor.opacity(self.effectivelyPressed ? 0.95 : 0.85))
+                .fill(self.baseColor.opacity(self.pressVisual ? 0.95 : 0.85))
 
             if self.keyboardTheme.borderWidth > 0 {
                 RoundedRectangle(cornerRadius: self.minimalCornerRadius)
@@ -561,14 +592,14 @@ struct KeyCapView: View {
             .foregroundColor(self.textColor)
         } else {
             // Regular key
-            Text(self.symbol.display)
+            Text(self.label)
                 .font(self.keyFont(size: self.minimalFontSize))
                 .foregroundColor(self.textColor)
         }
     }
 
     private var minimalFontSize: CGFloat {
-        let display = self.symbol.display
+        let display = self.label
         if display.count == 1 {
             return 15
         }
@@ -631,13 +662,13 @@ struct KeyCapView: View {
             if self.keyboardTheme.material == .gaming {
                 RoundedRectangle(cornerRadius: self.cornerRadius)
                     .strokeBorder(
-                        self.gamingRimColor.opacity(self.effectivelyPressed ? 0.38 : 0.88),
+                        self.gamingRimColor.opacity(self.pressVisual ? 0.38 : 0.88),
                         lineWidth: 1.4)
                     .frame(width: self.size.width - 3, height: self.size.height - 1)
                     .offset(y: effectiveDepth / 2 + 1)
                     .shadow(
-                        color: self.gamingRimColor.opacity(self.effectivelyPressed ? 0.2 : 0.58),
-                        radius: self.effectivelyPressed ? 2 : 5,
+                        color: self.gamingRimColor.opacity(self.pressVisual ? 0.2 : 0.58),
+                        radius: self.pressVisual ? 2 : 5,
                         y: 2)
 
                 if self.category == .letter {
@@ -713,7 +744,7 @@ struct KeyCapView: View {
 
     private var mechanicalShadowRadius: CGFloat {
         let baseRadius: CGFloat = self.keyboardTheme.material == .gaming ? 5 : 8
-        return self.effectivelyPressed ? max(2, baseRadius - 2) : baseRadius
+        return self.pressVisual ? max(2, baseRadius - 2) : baseRadius
     }
 
     private var keyWellColor: Color {
@@ -813,7 +844,7 @@ struct KeyCapView: View {
             .foregroundColor(self.textColor)
         } else {
             // Regular key: single label
-            Text(self.symbol.display)
+            Text(self.label)
                 .font(self.keyFont(size: self.fontSize))
                 .foregroundColor(self.textColor)
         }
@@ -835,7 +866,7 @@ struct KeyCapView: View {
     }
 
     private var fontSize: CGFloat {
-        let display = self.symbol.display
+        let display = self.label
 
         // Single character symbols get larger font
         if display.count == 1 {

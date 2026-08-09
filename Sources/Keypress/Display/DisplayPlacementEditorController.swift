@@ -33,13 +33,19 @@ final class DisplayPlacementEditorController {
             display: display,
             initialPlacement: initialPlacement,
             initialUsesFallback: initialUsesFallback,
+            initialCommandZonePlacement: displaySettings.commandZonePlacement(for: display.id),
             resetPlacement: resetPlacement,
             config: config,
-            onDone: { [weak self] placement, usesFallback in
-                if usesFallback {
+            onDone: { [weak self] result in
+                if result.usesFallback {
                     config.displays.removePlacement(for: display.id)
                 } else {
-                    config.displays.setPlacement(placement, for: display.id)
+                    config.displays.setPlacement(result.placement, for: display.id)
+                }
+                if let commandZonePlacement = result.commandZonePlacement {
+                    config.displays.setCommandZonePlacement(commandZonePlacement, for: display.id)
+                } else {
+                    config.displays.removeCommandZonePlacement(for: display.id)
                 }
                 NotificationCenter.default.post(name: .displayPlacementEditorDidSave, object: nil)
                 self?.close()
@@ -123,6 +129,18 @@ final class DisplayPlacementEditorController {
     }
 }
 
+// MARK: - Editor Result
+
+/// What the editor hands back when the user clicks Done.
+struct DisplayPlacementEditorResult {
+    let placement: DisplayPlacement
+    let usesFallback: Bool
+
+    /// Placement for the horizontal-history command zone, or nil while it stays stacked
+    /// under the text ribbon.
+    let commandZonePlacement: DisplayPlacement?
+}
+
 // MARK: - Editor Panel
 
 @MainActor
@@ -141,9 +159,10 @@ private final class DisplayPlacementEditorPanel: NSPanel {
         display: ConnectedDisplay,
         initialPlacement: DisplayPlacement,
         initialUsesFallback: Bool,
+        initialCommandZonePlacement: DisplayPlacement?,
         resetPlacement: DisplayPlacement,
         config: KeypressConfig,
-        onDone: @escaping @MainActor (DisplayPlacement, Bool) -> Void,
+        onDone: @escaping @MainActor (DisplayPlacementEditorResult) -> Void,
         onCancel: @escaping @MainActor () -> Void)
     {
         let screenFrame = display.screen.frame
@@ -173,6 +192,7 @@ private final class DisplayPlacementEditorPanel: NSPanel {
             availableFrame: localVisibleFrame,
             initialPlacement: initialPlacement,
             initialUsesFallback: initialUsesFallback,
+            initialCommandZonePlacement: initialCommandZonePlacement,
             resetPlacement: resetPlacement,
             config: config,
             onDone: onDone,
@@ -195,25 +215,35 @@ private struct DisplayPlacementEditorView: View {
     let availableFrame: CGRect
     let resetPlacement: DisplayPlacement
     @Bindable var config: KeypressConfig
-    let onDone: @MainActor (DisplayPlacement, Bool) -> Void
+    let onDone: @MainActor (DisplayPlacementEditorResult) -> Void
     let onCancel: @MainActor () -> Void
 
     @State private var draftPlacement: DisplayPlacement
     @State private var usesFallback: Bool
-    @State private var previewSize = CGSize(width: 250, height: 80)
-    @State private var dragStartCenter: CGPoint?
+    @State private var commandZoneDraft: DisplayPlacement?
+    @State private var previewSize: CGSize
+    @State private var commandZonePreviewSize: CGSize
+    @State private var dragSession = ZoneDragSession()
+    @State private var commandZoneDragSession = ZoneDragSession()
 
-    private let snapThreshold: CGFloat = 32
-    private let visualMargin: CGFloat = 18
+    /// Gap the live overlay leaves between the ribbon and the command zone.
+    private static let zoneSpacing: CGFloat = 10
+
+    private var geometry: PlacementZoneGeometry {
+        PlacementZoneGeometry(
+            availableFrame: self.availableFrame,
+            resetPlacement: self.resetPlacement)
+    }
 
     init(
         displayName: String,
         availableFrame: CGRect,
         initialPlacement: DisplayPlacement,
         initialUsesFallback: Bool,
+        initialCommandZonePlacement: DisplayPlacement?,
         resetPlacement: DisplayPlacement,
         config: KeypressConfig,
-        onDone: @escaping @MainActor (DisplayPlacement, Bool) -> Void,
+        onDone: @escaping @MainActor (DisplayPlacementEditorResult) -> Void,
         onCancel: @escaping @MainActor () -> Void)
     {
         self.displayName = displayName
@@ -224,6 +254,35 @@ private struct DisplayPlacementEditorView: View {
         self.onCancel = onCancel
         self._draftPlacement = State(initialValue: initialPlacement)
         self._usesFallback = State(initialValue: initialUsesFallback)
+        self._commandZoneDraft = State(initialValue: initialCommandZonePlacement)
+
+        // Both zones are laid out and snapped by their real size from the first frame, so
+        // the sizes are measured up front rather than guessed and corrected later.
+        let scale = config.size.scaleFactor
+        let widgetKind: PlacementZoneKind =
+            config.keyboard.presentation == .horizontalHistory ? .ribbon : .widget
+        self._previewSize = State(
+            initialValue: Self.fittingSize(of: widgetKind, config: config, scale: scale))
+        self._commandZonePreviewSize = State(
+            initialValue: Self.fittingSize(of: .commands, config: config, scale: scale))
+    }
+
+    private static func fittingSize(
+        of kind: PlacementZoneKind,
+        config: KeypressConfig,
+        scale: CGFloat) -> CGSize
+    {
+        let size = ViewMeasure.fittingSize(of: PlacementZonePreview(kind: kind, config: config))
+        return CGSize(width: size.width * scale, height: size.height * scale)
+    }
+
+    /// Mode 2 places a text ribbon and a command zone, each dragged on its own.
+    private var editsCommandZone: Bool {
+        self.config.keyboard.presentation == .horizontalHistory
+    }
+
+    private var widgetKind: PlacementZoneKind {
+        self.editsCommandZone ? .ribbon : .widget
     }
 
     var body: some View {
@@ -233,15 +292,109 @@ private struct DisplayPlacementEditorView: View {
 
             self.snapGuides
 
-            self.preview
-                .position(self.center(for: self.draftPlacement))
+            self.zonePreview(self.widgetKind, size: self.$previewSize)
+                .modifier(PlacementPreviewChrome(isSnapped: self.isSnapped(self.draftPlacement)))
+                .position(self.geometry.center(
+                    for: self.draftPlacement,
+                    previewSize: self.previewSize))
                 .gesture(self.dragGesture)
+
+            if self.editsCommandZone {
+                self.zonePreview(.commands, size: self.$commandZonePreviewSize)
+                    .modifier(PlacementPreviewChrome(isSnapped: self.commandZoneIsSnapped))
+                    .position(self.commandZoneCenter)
+                    .gesture(self.commandZoneDragGesture)
+            }
 
             self.banner
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .padding(.top, max(18, self.availableFrame.minY + 18))
         }
         .coordinateSpace(name: "placement-editor")
+    }
+
+    /// Returns both zones to the default the mode derives for this display — the command
+    /// zone on the display's own placement and the ribbon clear of it — rather than to a
+    /// single widget position the two zones would have to share.
+    private func reset() {
+        withAnimation(.easeInOut(duration: 0.18)) {
+            guard self.editsCommandZone else {
+                self.draftPlacement = self.resetPlacement
+                self.usesFallback = true
+                self.commandZoneDraft = nil
+                return
+            }
+
+            let placements = HorizontalHistoryZonePlacements.derived(
+                from: self.resetPlacement,
+                scale: self.config.size.scaleFactor,
+                visibleHeight: self.availableFrame.height)
+            self.draftPlacement = placements.ribbon
+            self.usesFallback = false
+            self.commandZoneDraft = placements.commandZone
+        }
+    }
+
+    private func zonePreview(_ kind: PlacementZoneKind, size: Binding<CGSize>) -> some View {
+        PlacementZonePreview(kind: kind, config: self.config)
+            .scaleEffect(self.config.size.scaleFactor)
+            .opacity(self.config.opacity)
+            .measured(into: size, scale: self.config.size.scaleFactor)
+    }
+
+    /// Where the command zone is drawn: its own placement once the user has dragged it,
+    /// otherwise the derived spot directly under the ribbon that the live overlay uses.
+    private var commandZoneCenter: CGPoint {
+        guard let commandZoneDraft = self.commandZoneDraft else {
+            return self.geometry.stackedCommandZoneCenter(
+                ribbonCenter: self.geometry.center(
+                    for: self.draftPlacement,
+                    previewSize: self.previewSize),
+                ribbonSize: self.previewSize,
+                commandZoneSize: self.commandZonePreviewSize,
+                side: self.zoneSide,
+                spacing: Self.zoneSpacing)
+        }
+        return self.geometry.center(
+            for: commandZoneDraft,
+            previewSize: self.commandZonePreviewSize)
+    }
+
+    private var commandZoneIsSnapped: Bool {
+        self.commandZoneDraft.map(self.isSnapped) ?? false
+    }
+
+    /// The zones only see each other in mode 2, and only so that a drag can stick one beside
+    /// the other. Neither follows the other once dropped.
+    private var commandZoneNeighbour: PlacementZoneNeighbour? {
+        guard self.editsCommandZone else { return nil }
+        return PlacementZoneNeighbour(
+            center: self.commandZoneCenter,
+            size: self.commandZonePreviewSize)
+    }
+
+    private var ribbonNeighbour: PlacementZoneNeighbour? {
+        guard self.editsCommandZone else { return nil }
+        return PlacementZoneNeighbour(
+            center: self.geometry.center(for: self.draftPlacement, previewSize: self.previewSize),
+            size: self.previewSize)
+    }
+
+    /// Mirrors how the live overlay lines the command zone up under the ribbon.
+    private var zoneSide: PlacementZoneSide {
+        switch self.config.keyboard.commandZoneSide {
+        case .left:
+            return .leading
+        case .right:
+            return .trailing
+        case .auto:
+            guard case let .anchor(position, _, _) = self.draftPlacement else { return .center }
+            return switch position {
+            case .topLeft, .centerLeft, .bottomLeft: .leading
+            case .topRight, .centerRight, .bottomRight: .trailing
+            case .topCenter, .bottomCenter: .center
+            }
+        }
     }
 
     private var banner: some View {
@@ -253,7 +406,11 @@ private struct DisplayPlacementEditorView: View {
                 Text(self.strings["position.editor.title"])
                     .font(.headline)
                 Text(String(
-                    format: self.strings["position.editor.subtitle"],
+                    format: self.strings[
+                        self.editsCommandZone
+                            ? "position.editor.subtitle.zones"
+                            : "position.editor.subtitle"
+                    ],
                     locale: self.strings.locale,
                     self.displayName))
                     .font(.caption)
@@ -269,18 +426,16 @@ private struct DisplayPlacementEditorView: View {
                 .padding(.vertical, 6)
                 .background(.thinMaterial, in: Capsule())
 
-            Button(self.strings["action.reset"]) {
-                withAnimation(.easeInOut(duration: 0.18)) {
-                    self.draftPlacement = self.resetPlacement
-                    self.usesFallback = true
-                }
-            }
+            Button(self.strings["action.reset"], action: self.reset)
 
             Button(self.strings["action.cancel"], action: self.onCancel)
                 .keyboardShortcut(.cancelAction)
 
             Button(self.strings["action.done"]) {
-                self.onDone(self.placementForSaving, self.usesFallback)
+                self.onDone(DisplayPlacementEditorResult(
+                    placement: self.placementForSaving,
+                    usesFallback: self.usesFallback,
+                    commandZonePlacement: self.commandZonePlacementForSaving))
             }
             .keyboardShortcut(.defaultAction)
         }
@@ -295,64 +450,13 @@ private struct DisplayPlacementEditorView: View {
         .shadow(color: .black.opacity(0.3), radius: 18, y: 8)
     }
 
-    private var preview: some View {
-        KeyboardThemeContainer(config: self.config, disableOuterShadow: true) {
-            self.previewKeys
-        }
-        .scaleEffect(self.config.size.scaleFactor)
-        .opacity(self.config.opacity)
-        .background {
-            GeometryReader { geometry in
-                Color.clear.preference(
-                    key: PlacementPreviewSizePreferenceKey.self,
-                    value: geometry.size)
-            }
-        }
-        .onPreferenceChange(PlacementPreviewSizePreferenceKey.self) { size in
-            guard size.width > 0, size.height > 0 else { return }
-            self.previewSize = CGSize(
-                width: size.width * self.config.size.scaleFactor,
-                height: size.height * self.config.size.scaleFactor)
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(
-                    Color.accentColor,
-                    lineWidth: self.snappedAnchor == nil && !self.isSnappedToCenter ? 1 : 3)
-                .padding(-5)
-        }
-        .shadow(
-            color: Color.accentColor.opacity(
-                self.snappedAnchor == nil && !self.isSnappedToCenter ? 0.15 : 0.55),
-            radius: 12)
-        .onHover { isHovering in
-            (isHovering ? NSCursor.openHand : NSCursor.arrow).set()
-        }
-    }
-
-    private var previewKeys: some View {
-        HStack(spacing: CGFloat(self.keyboardTheme.keySpacing)) {
-            KeyCapView(
-                symbol: KeySymbol(id: "command-left", display: "⌘", isModifier: true),
-                config: self.config)
-            KeyCapView(
-                symbol: KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
-                config: self.config)
-            KeyCapView(
-                symbol: KeySymbol(id: "key-40", display: "K"),
-                config: self.config)
-        }
-    }
-
-    private var keyboardTheme: KeyboardTheme {
-        let isSystemDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-        return self.config.effectiveTheme(isSystemDark: isSystemDark).keyboard
-    }
-
     @ViewBuilder
     private var snapGuides: some View {
         ForEach(OverlayPosition.allCases, id: \.self) { position in
-            let center = self.anchorCenter(for: position, placement: self.snapPlacement(for: position))
+            let center = self.geometry.anchorCenter(
+                for: position,
+                placement: self.geometry.snapPlacement(for: position),
+                previewSize: self.previewSize)
             let size: CGFloat = self.snappedAnchor == position ? 12 : 8
 
             Circle()
@@ -377,19 +481,39 @@ private struct DisplayPlacementEditorView: View {
         DragGesture(minimumDistance: 0, coordinateSpace: .named("placement-editor"))
             .onChanged { value in
                 NSCursor.closedHand.set()
-                if self.dragStartCenter == nil {
-                    self.dragStartCenter = self.center(for: self.draftPlacement)
-                }
-                guard let dragStartCenter = self.dragStartCenter else { return }
                 self.usesFallback = false
-
-                let candidate = CGPoint(
-                    x: dragStartCenter.x + value.translation.width,
-                    y: dragStartCenter.y + value.translation.height)
-                self.draftPlacement = self.placement(forDraggedCenter: candidate)
+                self.draftPlacement = self.dragSession.placement(
+                    startLocation: value.startLocation,
+                    currentCenter: self.geometry.center(
+                        for: self.draftPlacement,
+                        previewSize: self.previewSize),
+                    translation: value.translation,
+                    previewSize: self.previewSize,
+                    geometry: self.geometry,
+                    neighbour: self.commandZoneNeighbour)
             }
             .onEnded { _ in
-                self.dragStartCenter = nil
+                self.dragSession.end()
+                NSCursor.openHand.set()
+            }
+    }
+
+    /// Drags the command zone. The first drag gives it a placement of its own; until then it
+    /// simply rides along under the ribbon.
+    private var commandZoneDragGesture: some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .named("placement-editor"))
+            .onChanged { value in
+                NSCursor.closedHand.set()
+                self.commandZoneDraft = self.commandZoneDragSession.placement(
+                    startLocation: value.startLocation,
+                    currentCenter: self.commandZoneCenter,
+                    translation: value.translation,
+                    previewSize: self.commandZonePreviewSize,
+                    geometry: self.geometry,
+                    neighbour: self.ribbonNeighbour)
+            }
+            .onEnded { _ in
+                self.commandZoneDragSession.end()
                 NSCursor.openHand.set()
             }
     }
@@ -400,12 +524,23 @@ private struct DisplayPlacementEditorView: View {
     }
 
     private var isSnappedToCenter: Bool {
-        guard case let .custom(center, _) = self.draftPlacement else { return false }
+        self.isSnappedToCenter(self.draftPlacement)
+    }
+
+    private func isSnappedToCenter(_ placement: DisplayPlacement) -> Bool {
+        guard case let .custom(center, _) = placement else { return false }
         return abs(center.x - 0.5) < 0.001 && abs(center.y - 0.5) < 0.001
     }
 
+    private func isSnapped(_ placement: DisplayPlacement) -> Bool {
+        if case .anchor = placement {
+            return true
+        }
+        return self.isSnappedToCenter(placement)
+    }
+
     private var availableFrameCenter: CGPoint {
-        CGPoint(x: self.availableFrame.midX, y: self.availableFrame.midY)
+        self.geometry.availableFrameCenter
     }
 
     private var currentPlacementLabel: String {
@@ -420,152 +555,19 @@ private struct DisplayPlacementEditorView: View {
     }
 
     private var placementForSaving: DisplayPlacement {
-        let displayedCenter = self.center(for: self.draftPlacement)
-        switch self.draftPlacement {
-        case let .custom(_, fallbackAnchor):
-            return .custom(
-                center: self.normalizedPoint(for: displayedCenter),
-                fallbackAnchor: fallbackAnchor)
-        case let .anchor(position, horizontalOffset, verticalOffset):
-            let halfWidth = self.previewSize.width / 2
-            let halfHeight = self.previewSize.height / 2
-            let savedHorizontalOffset = switch position {
-            case .topLeft, .centerLeft, .bottomLeft:
-                displayedCenter.x - halfWidth - self.availableFrame.minX
-            case .topRight, .centerRight, .bottomRight:
-                self.availableFrame.maxX - displayedCenter.x - halfWidth
-            case .topCenter, .bottomCenter:
-                CGFloat(horizontalOffset)
-            }
-            let savedVerticalOffset = switch position {
-            case .topLeft, .topCenter, .topRight:
-                displayedCenter.y - halfHeight - self.availableFrame.minY
-            case .bottomLeft, .bottomCenter, .bottomRight:
-                self.availableFrame.maxY - displayedCenter.y - halfHeight
-            case .centerLeft, .centerRight:
-                CGFloat(verticalOffset)
-            }
-            return .anchor(
-                position: position,
-                horizontalOffset: Double(max(0, savedHorizontalOffset)),
-                verticalOffset: Double(max(0, savedVerticalOffset)))
-        }
+        self.placementForSaving(self.draftPlacement, previewSize: self.previewSize)
     }
 
-    private func placement(forDraggedCenter center: CGPoint) -> DisplayPlacement {
-        let clampedCenter = self.clamped(center: center)
-
-        if hypot(
-            self.availableFrameCenter.x - clampedCenter.x,
-            self.availableFrameCenter.y - clampedCenter.y) <= self.snapThreshold
-        {
-            return .custom(
-                center: NormalizedPoint(x: 0.5, y: 0.5),
-                fallbackAnchor: self.nearestAnchor(to: clampedCenter))
-        }
-
-        if let snappedPosition = OverlayPosition.allCases.first(where: { position in
-            let snapPlacement = self.snapPlacement(for: position)
-            let snapCenter = self.anchorCenter(for: position, placement: snapPlacement)
-            return hypot(snapCenter.x - clampedCenter.x, snapCenter.y - clampedCenter.y) <= self.snapThreshold
-        }) {
-            return self.snapPlacement(for: snappedPosition)
-        }
-
-        return .custom(
-            center: self.normalizedPoint(for: clampedCenter),
-            fallbackAnchor: self.nearestAnchor(to: clampedCenter))
+    private var commandZonePlacementForSaving: DisplayPlacement? {
+        guard self.editsCommandZone, let commandZoneDraft = self.commandZoneDraft else { return nil }
+        return self.placementForSaving(commandZoneDraft, previewSize: self.commandZonePreviewSize)
     }
 
-    private func snapPlacement(for position: OverlayPosition) -> DisplayPlacement {
-        let offsets = self.anchorOffsets
-        return .anchor(
-            position: position,
-            horizontalOffset: offsets.horizontal,
-            verticalOffset: offsets.vertical)
-    }
-
-    private var anchorOffsets: (horizontal: Double, vertical: Double) {
-        if case let .anchor(_, horizontalOffset, verticalOffset) = self.resetPlacement {
-            return (horizontalOffset, verticalOffset)
-        }
-        return (20, 20)
-    }
-
-    private func center(for placement: DisplayPlacement) -> CGPoint {
-        switch placement {
-        case let .anchor(position, _, _):
-            self.anchorCenter(for: position, placement: placement)
-        case let .custom(center, _):
-            self.clamped(center: CGPoint(
-                x: self.availableFrame.minX + CGFloat(center.x) * self.availableFrame.width,
-                y: self.availableFrame.maxY - CGFloat(center.y) * self.availableFrame.height))
-        }
-    }
-
-    private func nearestAnchor(to center: CGPoint) -> OverlayPosition {
-        OverlayPosition.allCases.min { lhs, rhs in
-            let lhsCenter = self.anchorCenter(for: lhs, placement: self.snapPlacement(for: lhs))
-            let rhsCenter = self.anchorCenter(for: rhs, placement: self.snapPlacement(for: rhs))
-            return hypot(lhsCenter.x - center.x, lhsCenter.y - center.y) <
-                hypot(rhsCenter.x - center.x, rhsCenter.y - center.y)
-        } ?? .bottomRight
-    }
-
-    private func anchorCenter(for position: OverlayPosition, placement: DisplayPlacement) -> CGPoint {
-        let horizontalOffset: CGFloat
-        let verticalOffset: CGFloat
-        if case let .anchor(_, storedHorizontalOffset, storedVerticalOffset) = placement {
-            horizontalOffset = CGFloat(storedHorizontalOffset)
-            verticalOffset = CGFloat(storedVerticalOffset)
-        } else {
-            horizontalOffset = 20
-            verticalOffset = 20
-        }
-
-        let halfWidth = self.previewSize.width / 2
-        let halfHeight = self.previewSize.height / 2
-        let left = self.availableFrame.minX + horizontalOffset + halfWidth
-        let centerX = self.availableFrame.midX
-        let right = self.availableFrame.maxX - horizontalOffset - halfWidth
-        let top = self.availableFrame.minY + verticalOffset + halfHeight
-        let centerY = self.availableFrame.midY
-        let bottom = self.availableFrame.maxY - verticalOffset - halfHeight
-
-        let center = switch position {
-        case .topLeft: CGPoint(x: left, y: top)
-        case .topCenter: CGPoint(x: centerX, y: top)
-        case .topRight: CGPoint(x: right, y: top)
-        case .centerLeft: CGPoint(x: left, y: centerY)
-        case .centerRight: CGPoint(x: right, y: centerY)
-        case .bottomLeft: CGPoint(x: left, y: bottom)
-        case .bottomCenter: CGPoint(x: centerX, y: bottom)
-        case .bottomRight: CGPoint(x: right, y: bottom)
-        }
-        return self.clamped(center: center)
-    }
-
-    private func clamped(center: CGPoint) -> CGPoint {
-        let halfWidth = self.previewSize.width / 2 + self.visualMargin
-        let halfHeight = self.previewSize.height / 2 + self.visualMargin
-        guard self.availableFrame.width >= self.previewSize.width + self.visualMargin * 2,
-              self.availableFrame.height >= self.previewSize.height + self.visualMargin * 2
-        else {
-            return CGPoint(x: self.availableFrame.midX, y: self.availableFrame.midY)
-        }
-        return CGPoint(
-            x: min(
-                max(center.x, self.availableFrame.minX + halfWidth),
-                self.availableFrame.maxX - halfWidth),
-            y: min(
-                max(center.y, self.availableFrame.minY + halfHeight),
-                self.availableFrame.maxY - halfHeight))
-    }
-
-    private func normalizedPoint(for center: CGPoint) -> NormalizedPoint {
-        let x = (center.x - self.availableFrame.minX) / self.availableFrame.width
-        let y = (self.availableFrame.maxY - center.y) / self.availableFrame.height
-        return NormalizedPoint(x: Double(x), y: Double(y))
+    private func placementForSaving(
+        _ placement: DisplayPlacement,
+        previewSize: CGSize) -> DisplayPlacement
+    {
+        self.geometry.placementForSaving(placement, previewSize: previewSize)
     }
 }
 
@@ -589,5 +591,99 @@ private struct PlacementPreviewSizePreferenceKey: PreferenceKey {
 
     static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
         value = nextValue()
+    }
+}
+
+/// Which widget a draggable preview stands for.
+private enum PlacementZoneKind {
+    /// Latest and Stacked History: one row of keys.
+    case widget
+
+    /// Horizontal history: the text ribbon.
+    case ribbon
+
+    /// Horizontal history: the command zone.
+    case commands
+}
+
+/// A stand-in for one placeable widget, drawn in the current theme so its footprint matches
+/// what the overlay will occupy.
+@MainActor
+private struct PlacementZonePreview: View {
+    let kind: PlacementZoneKind
+    let config: KeypressConfig
+
+    var body: some View {
+        KeyboardThemeContainer(config: self.config, disableOuterShadow: true) {
+            HStack(spacing: CGFloat(self.theme.keySpacing)) {
+                ForEach(self.symbols, id: \.id) { symbol in
+                    KeyCapView(symbol: symbol, config: self.config)
+                }
+            }
+        }
+    }
+
+    private var symbols: [KeySymbol] {
+        switch self.kind {
+        case .widget:
+            [
+                KeySymbol(id: "command-left", display: "⌘", isModifier: true),
+                KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
+                KeySymbol(id: "key-40", display: "K"),
+            ]
+        case .ribbon:
+            [
+                KeySymbol(id: "h", display: "h"),
+                KeySymbol(id: "e", display: "e"),
+                KeySymbol(id: "y", display: "y"),
+            ]
+        case .commands:
+            [
+                KeySymbol(id: "command-left", display: "⌘", isModifier: true),
+                KeySymbol(id: "key-40", display: "K"),
+            ]
+        }
+    }
+
+    private var theme: KeyboardTheme {
+        let isSystemDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        return self.config.effectiveTheme(isSystemDark: isSystemDark).keyboard
+    }
+}
+
+/// Selection outline every draggable zone preview wears.
+private struct PlacementPreviewChrome: ViewModifier {
+    let isSnapped: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(Color.accentColor, lineWidth: self.isSnapped ? 3 : 1)
+                    .padding(-5)
+            }
+            .shadow(color: Color.accentColor.opacity(self.isSnapped ? 0.55 : 0.15), radius: 12)
+            .onHover { isHovering in
+                (isHovering ? NSCursor.openHand : NSCursor.arrow).set()
+            }
+    }
+}
+
+extension View {
+    /// Reports the view's laid-out size, scaled by the overlay size factor, into a binding.
+    fileprivate func measured(into size: Binding<CGSize>, scale: CGFloat) -> some View {
+        self.background {
+            GeometryReader { geometry in
+                Color.clear.preference(
+                    key: PlacementPreviewSizePreferenceKey.self,
+                    value: geometry.size)
+            }
+        }
+        .onPreferenceChange(PlacementPreviewSizePreferenceKey.self) { measured in
+            guard measured.width > 0, measured.height > 0 else { return }
+            size.wrappedValue = CGSize(
+                width: measured.width * scale,
+                height: measured.height * scale)
+        }
     }
 }

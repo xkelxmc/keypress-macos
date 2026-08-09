@@ -100,6 +100,51 @@ struct KeyboardSettingsPane: View {
                 binding: self.$config.keyboard.filters.showSpecialKeys)
         }
 
+        StudioCard("keyboard.inputKeys", systemImage: "space", tint: .indigo) {
+            SettingsRow("keyboard.inputKeys.width", subtitleKey: "keyboard.inputKeys.width.subtitle") {
+                Picker("", selection: self.$config.keyboard.inputKeys.widthMode) {
+                    Text(self.strings["keyboard.inputKeys.width.wide"])
+                        .tag(InputKeyWidthMode.wide)
+                    Text(self.strings["keyboard.inputKeys.width.narrow"])
+                        .tag(InputKeyWidthMode.narrow)
+                    Text(self.strings["keyboard.inputKeys.width.custom"])
+                        .tag(InputKeyWidthMode.custom)
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .frame(width: 240)
+            }
+
+            if self.config.keyboard.inputKeys.widthMode == .custom {
+                ForEach(InputKey.allCases, id: \.self) { key in
+                    StudioDivider()
+                    self.inputKeyWidthRow(key)
+                }
+            }
+
+            StudioDivider()
+
+            self.switchRow(
+                "keyboard.inputKeys.tint",
+                subtitleKey: "keyboard.inputKeys.tint.subtitle",
+                binding: self.$config.keyboard.inputKeys.highlight)
+        }
+
+        if self.config.keyboard.presentation == .horizontalHistory {
+            StudioCard("keyboard.commandZone", systemImage: "rectangle.split.1x2", tint: .purple) {
+                SettingsRow("keyboard.commandZone.side", subtitleKey: "keyboard.commandZone.side.subtitle") {
+                    Picker("", selection: self.$config.keyboard.commandZoneSide) {
+                        Text(self.strings["keyboard.commandZone.side.auto"]).tag(CommandZoneSide.auto)
+                        Text(self.strings["keyboard.commandZone.side.left"]).tag(CommandZoneSide.left)
+                        Text(self.strings["keyboard.commandZone.side.right"]).tag(CommandZoneSide.right)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(width: 210)
+                }
+            }
+        }
+
         if self.config.keyboard.presentation != .latest {
             StudioCard(
                 "keyboard.history",
@@ -212,6 +257,24 @@ struct KeyboardSettingsPane: View {
         self.switchRow(titleKey, subtitleKey: subtitleKey, binding: binding)
     }
 
+    private func inputKeyWidthRow(_ key: InputKey) -> some View {
+        SettingsRow(key.localizationKey) {
+            Picker("", selection: self.widthBinding(for: key)) {
+                Text(self.strings["keyboard.inputKeys.width.wide"]).tag(true)
+                Text(self.strings["keyboard.inputKeys.width.narrow"]).tag(false)
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .frame(width: 170)
+        }
+    }
+
+    private func widthBinding(for key: InputKey) -> Binding<Bool> {
+        Binding(
+            get: { self.config.keyboard.inputKeys.widths[key] },
+            set: { self.config.keyboard.inputKeys.widths[key] = $0 })
+    }
+
     private func switchRow(
         _ titleKey: String,
         subtitleKey: String? = nil,
@@ -222,6 +285,17 @@ struct KeyboardSettingsPane: View {
                 .labelsHidden()
                 .toggleStyle(.switch)
                 .accessibilityLabel(self.strings[titleKey])
+        }
+    }
+}
+
+extension InputKey {
+    fileprivate var localizationKey: String {
+        switch self {
+        case .space: "key.space"
+        case .enter: "key.enter"
+        case .backspace: "key.backspace"
+        case .tab: "key.tab"
         }
     }
 }

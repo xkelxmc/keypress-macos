@@ -51,8 +51,7 @@ struct SceneKeyboardRow: View {
                     KeyCapView(
                         symbol: symbol,
                         config: self.config,
-                        isPressed: self.isPressed,
-                        delayPressAnimation: false)
+                        isPressed: self.isPressed)
                 }
             }
         }
