@@ -430,9 +430,9 @@ private struct StackedHistorySceneView: View {
                 SceneTerminalText()
 
                 VStack(alignment: .leading, spacing: 10) {
-                    StackedHistoryTextRow(text: "git commit -m \"ship 2.0\"", theme: self.theme)
+                    TypedTextRow(text: "git commit -m \"ship 2.0\"", theme: self.theme)
                         .opacity(0.42)
-                    StackedHistoryTextRow(text: "every keystroke, on screen", theme: self.theme)
+                    TypedTextRow(text: "every keystroke, on screen", theme: self.theme)
                         .opacity(0.72)
 
                     SceneKeyboardRow(

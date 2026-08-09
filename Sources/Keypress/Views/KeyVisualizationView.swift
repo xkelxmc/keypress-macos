@@ -1,20 +1,6 @@
 import KeypressCore
 import SwiftUI
 
-/// Simple view displaying pressed keys as styled keycaps.
-struct KeyVisualizationView: View {
-    var keyState: KeyState
-    let config: KeypressConfig
-
-    var body: some View {
-        KeyVisualizationContent(
-            pressedKeys: self.keyState.pressedKeys,
-            physicallyPressedKeys: self.keyState.physicallyPressedKeys,
-            hasKeys: self.keyState.hasKeys,
-            config: self.config)
-    }
-}
-
 /// View for Single mode (SingleKeyState).
 struct SingleKeyVisualizationView: View {
     var keyState: SingleKeyState
@@ -35,7 +21,7 @@ struct KeyBlockContent: Equatable {
     var pressedSymbolIDs: Set<String>
 }
 
-/// Shared visualization content (used by both modes).
+/// Shared visualization content.
 struct KeyVisualizationContent: View {
     let pressedKeys: [PressedKey]
     let physicallyPressedKeys: Set<String>
@@ -569,9 +555,9 @@ struct KeyboardFrameView<Content: View>: View {
 // MARK: - Previews
 
 #Preview("Key Visualization") {
-    @Previewable @State var keyState = KeyState()
+    @Previewable @State var keyState = SingleKeyState()
 
-    KeyVisualizationView(keyState: keyState, config: .shared)
+    SingleKeyVisualizationView(keyState: keyState, config: .shared)
         .frame(width: 400, height: 120)
         .background(Color.gray.opacity(0.3))
         .onAppear {

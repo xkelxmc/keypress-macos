@@ -42,10 +42,16 @@ final class DisplayPlacementEditorController {
                 } else {
                     config.displays.setPlacement(result.placement, for: display.id)
                 }
+                // Whatever the user dropped is now this mode's layout, so it is stamped as
+                // such: the running mode leaves its own layout alone, drags included.
                 if let commandZonePlacement = result.commandZonePlacement {
                     config.displays.setCommandZonePlacement(commandZonePlacement, for: display.id)
+                    config.displays.setZoneLayoutPresentation(
+                        config.keyboard.presentation,
+                        for: display.id)
                 } else {
                     config.displays.removeCommandZonePlacement(for: display.id)
+                    config.displays.removeZoneLayoutPresentation(for: display.id)
                 }
                 NotificationCenter.default.post(name: .displayPlacementEditorDidSave, object: nil)
                 self?.close()
@@ -259,8 +265,7 @@ private struct DisplayPlacementEditorView: View {
         // Both zones are laid out and snapped by their real size from the first frame, so
         // the sizes are measured up front rather than guessed and corrected later.
         let scale = config.size.scaleFactor
-        let widgetKind: PlacementZoneKind =
-            config.keyboard.presentation == .horizontalHistory ? .ribbon : .widget
+        let widgetKind = PlacementZoneKind(config.keyboard.presentation)
         self._previewSize = State(
             initialValue: Self.fittingSize(of: widgetKind, config: config, scale: scale))
         self._commandZonePreviewSize = State(
@@ -276,13 +281,13 @@ private struct DisplayPlacementEditorView: View {
         return CGSize(width: size.width * scale, height: size.height * scale)
     }
 
-    /// Mode 2 places a text ribbon and a command zone, each dragged on its own.
+    /// The two-zone modes place their own zone and a command zone, each dragged on its own.
     private var editsCommandZone: Bool {
-        self.config.keyboard.presentation == .horizontalHistory
+        self.config.keyboard.presentation.usesSeparateCommandZoneWindow
     }
 
     private var widgetKind: PlacementZoneKind {
-        self.editsCommandZone ? .ribbon : .widget
+        PlacementZoneKind(self.config.keyboard.presentation)
     }
 
     var body: some View {
@@ -328,7 +333,8 @@ private struct DisplayPlacementEditorView: View {
             let placements = HorizontalHistoryZonePlacements.derived(
                 from: self.resetPlacement,
                 scale: self.config.size.scaleFactor,
-                visibleHeight: self.availableFrame.height)
+                visibleHeight: self.availableFrame.height,
+                primaryZoneHeight: self.config.keyboard.presentation.primaryZoneNominalHeight)
             self.draftPlacement = placements.ribbon
             self.usesFallback = false
             self.commandZoneDraft = placements.commandZone
@@ -380,20 +386,14 @@ private struct DisplayPlacementEditorView: View {
             size: self.previewSize)
     }
 
-    /// Mirrors how the live overlay lines the command zone up under the ribbon.
+    /// Mirrors how the live overlay lines the command zone up under the ribbon: on whichever
+    /// side the ribbon's own anchor sits, and centred when it has none.
     private var zoneSide: PlacementZoneSide {
-        switch self.config.keyboard.commandZoneSide {
-        case .left:
-            return .leading
-        case .right:
-            return .trailing
-        case .auto:
-            guard case let .anchor(position, _, _) = self.draftPlacement else { return .center }
-            return switch position {
-            case .topLeft, .centerLeft, .bottomLeft: .leading
-            case .topRight, .centerRight, .bottomRight: .trailing
-            case .topCenter, .bottomCenter: .center
-            }
+        guard case let .anchor(position, _, _) = self.draftPlacement else { return .center }
+        return switch position {
+        case .topLeft, .centerLeft, .bottomLeft: .leading
+        case .topRight, .centerRight, .bottomRight: .trailing
+        case .topCenter, .bottomCenter: .center
         }
     }
 
@@ -596,14 +596,26 @@ private struct PlacementPreviewSizePreferenceKey: PreferenceKey {
 
 /// Which widget a draggable preview stands for.
 private enum PlacementZoneKind {
-    /// Latest and Stacked History: one row of keys.
+    /// Latest: one row of keys.
     case widget
 
     /// Horizontal history: the text ribbon.
     case ribbon
 
-    /// Horizontal history: the command zone.
+    /// Text echo: three lines of typed text, always all three. A preview one line tall would
+    /// have the user park the command zone exactly where lines two and three will land.
+    case textEcho
+
+    /// The command zone, in either two-zone mode.
     case commands
+
+    init(_ presentation: KeyboardPresentation) {
+        self = switch presentation {
+        case .latest: .widget
+        case .horizontalHistory: .ribbon
+        case .stackedHistory: .textEcho
+        }
+    }
 }
 
 /// A stand-in for one placeable widget, drawn in the current theme so its footprint matches
@@ -614,14 +626,26 @@ private struct PlacementZonePreview: View {
     let config: KeypressConfig
 
     var body: some View {
-        KeyboardThemeContainer(config: self.config, disableOuterShadow: true) {
-            HStack(spacing: CGFloat(self.theme.keySpacing)) {
-                ForEach(self.symbols, id: \.id) { symbol in
-                    KeyCapView(symbol: symbol, config: self.config)
+        // The echo wears no keyboard frame — its lines carry their own plaques.
+        if self.kind == .textEcho {
+            TextEchoPreviewLines(lines: Self.echoLines, config: self.config)
+        } else {
+            KeyboardThemeContainer(config: self.config, disableOuterShadow: true) {
+                HStack(spacing: CGFloat(self.theme.keySpacing)) {
+                    ForEach(self.symbols, id: \.id) { symbol in
+                        KeyCapView(symbol: symbol, config: self.config)
+                    }
                 }
             }
         }
     }
+
+    /// A full three-line block, so the preview's footprint is the one the echo will take.
+    private static let echoLines = [
+        "the quick brown fox",
+        "jumps over the lazy",
+        "dog while typing",
+    ]
 
     private var symbols: [KeySymbol] {
         switch self.kind {
@@ -631,7 +655,7 @@ private struct PlacementZonePreview: View {
                 KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
                 KeySymbol(id: "key-40", display: "K"),
             ]
-        case .ribbon:
+        case .ribbon, .textEcho:
             [
                 KeySymbol(id: "h", display: "h"),
                 KeySymbol(id: "e", display: "e"),

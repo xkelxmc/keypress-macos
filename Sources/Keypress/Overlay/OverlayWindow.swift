@@ -9,7 +9,10 @@ import SwiftUI
 /// content is inset and the window origin compensates for it — the visible
 /// content ends up exactly where it would be without the inset.
 /// Sized for the frame drop shadow (28pt) at the largest overlay scale (1.25).
-private let overlayShadowInset: CGFloat = 48
+///
+/// It is also the only boundary anything animating inside the overlay can be clipped by, so
+/// content that moves on its way out has to be gone before it reaches this far.
+let overlayShadowInset: CGFloat = 48
 
 private let initialOverlayWindowSize = NSSize(
     width: 600 + overlayShadowInset * 2,
@@ -42,9 +45,9 @@ final class OverlayWindow: NSPanel {
     private var isHiding = false
     private var hideTask: Task<Void, Never>?
 
-    /// Nil for every mode but horizontal history, where it says which zone this window
-    /// carries and therefore which stored placement positions it.
-    private var horizontalHistoryZone: HorizontalHistoryZone?
+    /// Nil in single-window modes; otherwise which zone this window carries, and therefore
+    /// which stored placement positions it.
+    private var overlayZone: OverlayZone?
 
     var visibleContentFrameDidChange: (() -> Void)?
 
@@ -81,13 +84,9 @@ final class OverlayWindow: NSPanel {
 
     // MARK: - Initialization (Horizontal History)
 
-    init(
-        horizontalHistoryState: HorizontalHistoryState,
-        config: KeypressConfig,
-        zone: HorizontalHistoryZone)
-    {
+    init(horizontalHistoryState: HorizontalHistoryState, config: KeypressConfig) {
         self.config = config
-        self.horizontalHistoryZone = zone
+        self.overlayZone = .primary
 
         super.init(
             contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
@@ -95,47 +94,57 @@ final class OverlayWindow: NSPanel {
             backing: .buffered,
             defer: false)
 
-        // One zone per window, so nothing this window draws can affect the other zone's size
-        // or position.
-        let zoneView = switch zone {
-        case .ribbon:
-            AnyView(HorizontalHistoryRibbonView(state: horizontalHistoryState, config: config))
-        case .commands:
-            AnyView(HorizontalHistoryCommandZoneView(state: horizontalHistoryState, config: config))
-        }
+        self.configureWindow()
+        self.setupZoneContent(
+            AnyView(HorizontalHistoryRibbonView(state: horizontalHistoryState, config: config)))
+    }
+
+    // MARK: - Initialization (Text Echo)
+
+    init(textEchoState: TextEchoState, config: KeypressConfig) {
+        self.config = config
+        self.overlayZone = .primary
+
+        super.init(
+            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false)
 
         self.configureWindow()
+        self.setupZoneContent(
+            AnyView(TextEchoLinesView(
+                state: textEchoState,
+                config: config,
+                layoutState: self.layoutState)))
+    }
+
+    // MARK: - Initialization (Command Zone)
+
+    /// The command zone gets a window of its own in every mode that has one, driven by the one
+    /// state those modes share — so both modes' second window really is the same window.
+    init(commandZoneState: CommandZoneState, config: KeypressConfig) {
+        self.config = config
+        self.overlayZone = .commands
+
+        super.init(
+            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false)
+
+        self.configureWindow()
+        self.setupZoneContent(
+            AnyView(CommandZoneView(state: commandZoneState, config: config)))
+    }
+
+    /// One zone per window, so nothing this window draws can affect the other zone's size or
+    /// position.
+    private func setupZoneContent(_ zoneView: AnyView) {
         self.setupContentView(
             OverlayContainerView(
                 keysView: zoneView,
-                config: config,
-                layoutState: self.layoutState,
-                onContentSizeChange: { [weak self] size in
-                    self?.updateContentSize(size)
-                }))
-        self.updatePosition()
-    }
-
-    // MARK: - Initialization (Stacked History)
-
-    init(stackedHistoryState: StackedHistoryState, config: KeypressConfig) {
-        self.config = config
-
-        super.init(
-            contentRect: NSRect(origin: .zero, size: initialOverlayWindowSize),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false)
-
-        self.configureWindow()
-        self.setupContentView(
-            OverlayContainerView(
-                keysView: AnyView(
-                    StackedHistoryVisualizationView(
-                        keyState: stackedHistoryState,
-                        config: config,
-                        layoutState: self.layoutState)),
-                config: config,
+                config: self.config,
                 layoutState: self.layoutState,
                 onContentSizeChange: { [weak self] size in
                     self?.updateContentSize(size)
@@ -198,6 +207,10 @@ final class OverlayWindow: NSPanel {
         let stackedHistoryLayout = StackedHistoryLayout(placement)
         if self.layoutState.stackedHistoryLayout != stackedHistoryLayout {
             self.layoutState.stackedHistoryLayout = stackedHistoryLayout
+        }
+        let textEchoFlow = TextEchoFlow.resolve(placement: placement)
+        if self.layoutState.textEchoFlow != textEchoFlow {
+            self.layoutState.textEchoFlow = textEchoFlow
         }
     }
 
@@ -384,7 +397,7 @@ final class OverlayWindow: NSPanel {
     /// A detached command zone follows its own stored placement; every other window follows
     /// the display's widget placement.
     private func placement(forDisplay displayID: UUID) -> DisplayPlacement {
-        guard self.horizontalHistoryZone == .commands,
+        guard self.overlayZone == .commands,
               let commandZonePlacement = self.config.displays.commandZonePlacement(for: displayID)
         else {
             return self.config.displays.placement(for: displayID)
@@ -570,6 +583,7 @@ final class OverlayLayoutState: ObservableObject {
     @Published var anchor = OverlayContentAnchor.center
     @Published var scale: CGFloat = 1
     @Published var stackedHistoryLayout = StackedHistoryLayout(.defaultPlacement)
+    @Published var textEchoFlow = TextEchoFlow.resolve(placement: .defaultPlacement)
 }
 
 /// Adds the shadow-safe inset around the keyboard visualization, and owns the overlay size

@@ -228,8 +228,6 @@ extension KeypressConfig {
         static let displayMode = "settings.displayMode"
         static let showModifiersOnly = "settings.showModifiersOnly"
         static let maxKeys = "settings.maxKeys"
-        static let duplicateLetters = "settings.duplicateLetters"
-        static let limitIncludesModifiers = "settings.limitIncludesModifiers"
         static let keyCapStyle = "settings.keyCapStyle"
         static let colorScheme = "settings.colorScheme"
         static let appearanceMode = "settings.appearanceMode"
@@ -319,14 +317,6 @@ extension KeypressConfig {
                 opacity: Self.legacyDouble(defaults, key: LegacyKeys.opacity, defaultValue: 1),
                 timeout: Self.legacyDouble(defaults, key: LegacyKeys.keyTimeout, defaultValue: 1.5),
                 maxItems: Self.legacyInt(defaults, key: LegacyKeys.maxKeys, defaultValue: 6),
-                duplicateLetters: Self.legacyBool(
-                    defaults,
-                    key: LegacyKeys.duplicateLetters,
-                    defaultValue: true),
-                limitIncludesModifiers: Self.legacyBool(
-                    defaults,
-                    key: LegacyKeys.limitIncludesModifiers,
-                    defaultValue: true),
                 pressAnimationModifiers: Self.legacyBool(
                     defaults,
                     key: LegacyKeys.pressAnimationModifiers,
@@ -510,16 +500,6 @@ extension KeypressConfig {
     public var maxKeys: Int {
         get { self.keyboard.maxItems }
         set { self.keyboard.maxItems = newValue }
-    }
-
-    public var duplicateLetters: Bool {
-        get { self.keyboard.duplicateLetters }
-        set { self.keyboard.duplicateLetters = newValue }
-    }
-
-    public var limitIncludesModifiers: Bool {
-        get { self.keyboard.limitIncludesModifiers }
-        set { self.keyboard.limitIncludesModifiers = newValue }
     }
 
     public var pressAnimationModifiers: Bool {

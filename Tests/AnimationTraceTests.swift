@@ -154,7 +154,9 @@ struct AnimationTimingSourceTests {
             "Views/KeyCapView.swift",
             "Views/KeyVisualizationView.swift",
             "Views/HorizontalHistoryVisualizationView.swift",
-            "Views/StackedHistoryVisualizationView.swift",
+            "Views/CommandZoneView.swift",
+            "Views/TextEchoVisualizationView.swift",
+            "Views/TypedTextRow.swift",
             "Overlay/OverlayWindow.swift",
         ]
 

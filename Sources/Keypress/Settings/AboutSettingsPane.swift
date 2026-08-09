@@ -17,7 +17,32 @@ struct AboutSettingsPane: View {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
     }
 
-    private var releaseNotes: [AboutReleaseNote] {
+    private var latestReleaseNotes: [AboutReleaseNote] {
+        [
+            AboutReleaseNote(
+                titleKey: "about.release21.ribbon.title",
+                bodyKey: "about.release21.ribbon.body",
+                systemImage: "text.append",
+                tint: .orange),
+            AboutReleaseNote(
+                titleKey: "about.release21.echo.title",
+                bodyKey: "about.release21.echo.body",
+                systemImage: "text.cursor",
+                tint: .purple),
+            AboutReleaseNote(
+                titleKey: "about.release21.command.title",
+                bodyKey: "about.release21.command.body",
+                systemImage: "command",
+                tint: .blue),
+            AboutReleaseNote(
+                titleKey: "about.release21.motion.title",
+                bodyKey: "about.release21.motion.body",
+                systemImage: "wand.and.stars",
+                tint: .pink),
+        ]
+    }
+
+    private var highlightNotes: [AboutReleaseNote] {
         [
             AboutReleaseNote(
                 titleKey: "about.release.cursor.title",
@@ -121,19 +146,12 @@ struct AboutSettingsPane: View {
                 }
             }
 
-            StudioCard("about.release.title", systemImage: "sparkles", tint: .indigo) {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(minimum: 275), spacing: 24, alignment: .topLeading),
-                        GridItem(.flexible(minimum: 275), spacing: 24, alignment: .topLeading),
-                    ],
-                    alignment: .leading,
-                    spacing: 16)
-                {
-                    ForEach(self.releaseNotes) { note in
-                        AboutReleaseNoteRow(note: note)
-                    }
-                }
+            StudioCard("about.release21.title", systemImage: "sparkles", tint: .indigo) {
+                AboutReleaseNoteGrid(notes: self.latestReleaseNotes)
+            }
+
+            StudioCard("about.highlights.title", systemImage: "star.fill", tint: .yellow) {
+                AboutReleaseNoteGrid(notes: self.highlightNotes)
 
                 StudioDivider()
 
@@ -282,6 +300,25 @@ private struct AboutReleaseNote: Identifiable {
 
     var id: String {
         self.titleKey
+    }
+}
+
+private struct AboutReleaseNoteGrid: View {
+    let notes: [AboutReleaseNote]
+
+    var body: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(minimum: 275), spacing: 24, alignment: .topLeading),
+                GridItem(.flexible(minimum: 275), spacing: 24, alignment: .topLeading),
+            ],
+            alignment: .leading,
+            spacing: 16)
+        {
+            ForEach(self.notes) { note in
+                AboutReleaseNoteRow(note: note)
+            }
+        }
     }
 }
 

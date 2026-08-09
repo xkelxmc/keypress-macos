@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Command zone** — both history modes now show modifiers, shortcuts, and system keys in a dedicated block with a repeat counter (⌘V ×3), positioned independently from the typed content
+- **Input key sizing and tint** — Space, Enter, Backspace, and Tab can render wide or narrow (with per-key overrides) and carry a subtle tone that separates them from letter keys
+- **Text echo timing controls** — Stacked mode exposes how long finished lines linger while typing and how quickly the text clears after a pause
+- **Zone snapping in the positioning editor** — the two blocks stick to each other and to screen anchors, and can now be placed tight into screen corners
+
+### Changed
+- **Horizontal History is now a true typing ribbon** — keys appear strictly in typing order (Space, Enter, and Tab included), letters follow Shift and Caps Lock casing, every press gets its own keycap, and the row scrolls with a conveyor animation that adapts its speed to the typing pace
+- **Stacked History now echoes real text** — typed characters render as large readable text on per-line plaques with inline ⏎ and ⇥ marks, Backspace genuinely erases, finished lines thin out behind the typing and the whole echo clears after a pause; nothing that left the screen ever comes back
+- **Overlay appearance and exit are designed motions** — the block rises in and settles out as one rigid unit, the window frame stays frozen during the exit, and hiding waits for the animation to finish
+- **Positioning editor treats zones as independent** — each history mode lays out its typed content and command zone separately per display, with a realistic three-line preview for Stacked mode
+- **Keyboard settings page cleaned up** — dead toggles removed, the All Keys / Shortcuts Only choice and the function/special key filters scoped to the Latest mode where they act, and subtitles rewritten to describe the current behavior
+
+### Fixed
+- **History no longer scrambles typing order** — Space and other special keys stop jumping into the middle of the row, repeated letters stop flashing in place of each other, and a full row shifts as one motion instead of sliding single keys
+- **Exit animation stutter on 60 Hz displays** — hiding the overlay no longer moves and resizes the window on every frame of the fade
+
 ## [2.0.0] - 2026-07-29
 
 ### Added

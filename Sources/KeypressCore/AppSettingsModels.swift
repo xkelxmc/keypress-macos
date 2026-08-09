@@ -43,6 +43,15 @@ public struct GeneralSettings: Codable, Sendable, Equatable {
 public enum KeyboardContentMode: String, CaseIterable, Codable, Sendable {
     case allKeys
     case shortcutsOnly
+
+    /// The same setting with Shortcuts Only taken off the table.
+    ///
+    /// A two-zone mode has already split input the way Shortcuts Only asks for — commands sit
+    /// in a zone of their own, beside the text — so honouring it there would only empty the
+    /// ribbon or the echo the mode exists for. Only Latest has anything to decide.
+    public var ignoringShortcutsOnly: KeyboardContentMode {
+        .allKeys
+    }
 }
 
 public enum HistoryLayout: String, CaseIterable, Codable, Sendable {
@@ -80,6 +89,18 @@ public struct KeyboardFilterSettings: Codable, Sendable, Equatable {
             return self.showSpecialKeys
         }
         return true
+    }
+
+    /// The same filters with the two category switches taken off the table.
+    ///
+    /// A two-zone mode routes a key by what it produces, not by which category it belongs to —
+    /// Enter, Tab and Space are text there — so hiding a whole category would punch holes in
+    /// the text being echoed. Only the standalone-modifier switch still has anything to decide.
+    public var ignoringKeyCategories: KeyboardFilterSettings {
+        KeyboardFilterSettings(
+            showStandaloneModifiers: self.showStandaloneModifiers,
+            showFunctionKeys: true,
+            showSpecialKeys: true)
     }
 }
 
@@ -220,15 +241,13 @@ public struct InputKeySettings: Codable, Sendable, Equatable {
     }
 }
 
-/// Which side of the horizontal-history widget the command zone gravitates to.
-public enum CommandZoneSide: String, CaseIterable, Codable, Sendable {
-    /// Follows the display placement's own horizontal anchor.
-    case auto
-    case left
-    case right
-}
-
 public struct KeyboardSettings: Codable, Sendable, Equatable {
+    /// Range the echo's line lifetime is held inside.
+    public static let textLineLifetimeRange: ClosedRange<TimeInterval> = 1...10
+
+    /// Range the echo's idle timeout is held inside.
+    public static let textIdleTimeoutRange: ClosedRange<TimeInterval> = 0.5...5
+
     public var enabled: Bool
     public var displayMode: DisplayMode
     public var contentMode: KeyboardContentMode
@@ -238,12 +257,15 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
     public var opacity: Double
     public var timeout: TimeInterval
     public var maxItems: Int
-    public var duplicateLetters: Bool
-    public var limitIncludesModifiers: Bool
     public var pressAnimationModifiers: Bool
     public var pressAnimationRegularKeys: Bool
     public var inputKeys: InputKeySettings
-    public var commandZoneSide: CommandZoneSide
+
+    /// How long an echo line stays once a newer one has taken its place.
+    public var textLineLifetime: TimeInterval
+
+    /// How long the echo stays up after the last thing typed or erased.
+    public var textIdleTimeout: TimeInterval
 
     public init(
         enabled: Bool = true,
@@ -255,12 +277,11 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
         opacity: Double = 1,
         timeout: TimeInterval = 1.5,
         maxItems: Int = 6,
-        duplicateLetters: Bool = true,
-        limitIncludesModifiers: Bool = true,
         pressAnimationModifiers: Bool = true,
         pressAnimationRegularKeys: Bool = true,
         inputKeys: InputKeySettings = InputKeySettings(),
-        commandZoneSide: CommandZoneSide = .auto)
+        textLineLifetime: TimeInterval = TextEchoState.defaultLineLifetime,
+        textIdleTimeout: TimeInterval = TextEchoState.defaultIdleTimeout)
     {
         self.enabled = enabled
         self.displayMode = displayMode
@@ -271,12 +292,11 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
         self.opacity = opacity.clamped(to: 0...1)
         self.timeout = timeout.clamped(to: 0.5...5)
         self.maxItems = max(3, min(12, maxItems))
-        self.duplicateLetters = duplicateLetters
-        self.limitIncludesModifiers = limitIncludesModifiers
         self.pressAnimationModifiers = pressAnimationModifiers
         self.pressAnimationRegularKeys = pressAnimationRegularKeys
         self.inputKeys = inputKeys
-        self.commandZoneSide = commandZoneSide
+        self.textLineLifetime = textLineLifetime.clamped(to: Self.textLineLifetimeRange)
+        self.textIdleTimeout = textIdleTimeout.clamped(to: Self.textIdleTimeoutRange)
     }
 
     func normalized() -> KeyboardSettings {
@@ -290,12 +310,11 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
             opacity: self.opacity,
             timeout: self.timeout,
             maxItems: self.maxItems,
-            duplicateLetters: self.duplicateLetters,
-            limitIncludesModifiers: self.limitIncludesModifiers,
             pressAnimationModifiers: self.pressAnimationModifiers,
             pressAnimationRegularKeys: self.pressAnimationRegularKeys,
             inputKeys: self.inputKeys,
-            commandZoneSide: self.commandZoneSide)
+            textLineLifetime: self.textLineLifetime,
+            textIdleTimeout: self.textIdleTimeout)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -308,12 +327,11 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
         case opacity
         case timeout
         case maxItems
-        case duplicateLetters
-        case limitIncludesModifiers
         case pressAnimationModifiers
         case pressAnimationRegularKeys
         case inputKeys
-        case commandZoneSide
+        case textLineLifetime
+        case textIdleTimeout
     }
 
     /// Decodes field by field so a settings file written by an older build — which has no
@@ -336,18 +354,24 @@ public struct KeyboardSettings: Codable, Sendable, Equatable {
             opacity: (try? container.decode(Double.self, forKey: .opacity)) ?? defaults.opacity,
             timeout: (try? container.decode(TimeInterval.self, forKey: .timeout)) ?? defaults.timeout,
             maxItems: (try? container.decode(Int.self, forKey: .maxItems)) ?? defaults.maxItems,
-            duplicateLetters: (try? container.decode(Bool.self, forKey: .duplicateLetters))
-                ?? defaults.duplicateLetters,
-            limitIncludesModifiers: (try? container.decode(Bool.self, forKey: .limitIncludesModifiers))
-                ?? defaults.limitIncludesModifiers,
             pressAnimationModifiers: (try? container.decode(Bool.self, forKey: .pressAnimationModifiers))
                 ?? defaults.pressAnimationModifiers,
             pressAnimationRegularKeys: (try? container.decode(Bool.self, forKey: .pressAnimationRegularKeys))
                 ?? defaults.pressAnimationRegularKeys,
             inputKeys: (try? container.decode(InputKeySettings.self, forKey: .inputKeys))
                 ?? defaults.inputKeys,
-            commandZoneSide: (try? container.decode(CommandZoneSide.self, forKey: .commandZoneSide))
-                ?? defaults.commandZoneSide)
+            textLineLifetime: (try? container.decode(TimeInterval.self, forKey: .textLineLifetime))
+                ?? defaults.textLineLifetime,
+            textIdleTimeout: (try? container.decode(TimeInterval.self, forKey: .textIdleTimeout))
+                ?? defaults.textIdleTimeout)
+    }
+
+    /// The content choice the running mode honours: Latest reads the setting, the two-zone
+    /// modes drop it on the way in.
+    public var effectiveContentMode: KeyboardContentMode {
+        self.presentation == .latest
+            ? self.contentMode
+            : self.contentMode.ignoringShortcutsOnly
     }
 
     public var presentation: KeyboardPresentation {
@@ -1254,16 +1278,24 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
     public var placements: [UUID: DisplayPlacement]
     public var fallbackPlacement: DisplayPlacement
 
-    /// Placement of the horizontal-history command zone, when the user has dragged it out of
-    /// the stacked default. An absent entry means the zone rides under the text ribbon.
+    /// Placement of a two-zone mode's command zone, when the display carries one. An absent
+    /// entry means the display has no zone pair yet.
     public var commandZonePlacements: [UUID: DisplayPlacement]
+
+    /// Which mode a display's zone pair was laid out for.
+    ///
+    /// The two two-zone modes need different room — one row of keycaps against three lines of
+    /// text — so a pair derived for one of them is wrong for the other. This is what lets the
+    /// running mode tell "someone else laid this out" from "this is mine, drags and all".
+    public var zoneLayoutPresentations: [UUID: KeyboardPresentation]
 
     public init(
         target: DisplayTarget = .followPointer,
         rememberedSelectedDisplayIDs: Set<UUID>? = nil,
         placements: [UUID: DisplayPlacement] = [:],
         fallbackPlacement: DisplayPlacement = .defaultPlacement,
-        commandZonePlacements: [UUID: DisplayPlacement] = [:])
+        commandZonePlacements: [UUID: DisplayPlacement] = [:],
+        zoneLayoutPresentations: [UUID: KeyboardPresentation] = [:])
     {
         self.target = target
         self.rememberedSelectedDisplayIDs = rememberedSelectedDisplayIDs
@@ -1271,6 +1303,7 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
         self.placements = placements.mapValues(\.normalized)
         self.fallbackPlacement = fallbackPlacement.normalized
         self.commandZonePlacements = commandZonePlacements.mapValues(\.normalized)
+        self.zoneLayoutPresentations = zoneLayoutPresentations
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1279,6 +1312,7 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
         case placements
         case fallbackPlacement
         case commandZonePlacements
+        case zoneLayoutPresentations
     }
 
     public init(from decoder: Decoder) throws {
@@ -1308,6 +1342,10 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
                 [UUID: DisplayPlacement].self,
                 forKey: .commandZonePlacements)) ?? [:])
             .mapValues(\.normalized)
+        self.zoneLayoutPresentations =
+            (try? container.decode(
+                [UUID: KeyboardPresentation].self,
+                forKey: .zoneLayoutPresentations)) ?? [:]
     }
 
     public func placement(for displayID: UUID) -> DisplayPlacement {
@@ -1336,6 +1374,28 @@ public struct DisplaySettings: Codable, Sendable, Equatable {
 
     public mutating func removeCommandZonePlacement(for displayID: UUID) {
         self.commandZonePlacements.removeValue(forKey: displayID)
+    }
+
+    /// Which mode this display's zone pair was laid out for.
+    ///
+    /// A display that carries a pair but no marker was laid out before the marker existed,
+    /// which can only have been by the mode that had two zones first.
+    public func zoneLayoutPresentation(for displayID: UUID) -> KeyboardPresentation? {
+        if let stored = self.zoneLayoutPresentations[displayID] {
+            return stored
+        }
+        return self.commandZonePlacements[displayID] == nil ? nil : .horizontalHistory
+    }
+
+    public mutating func setZoneLayoutPresentation(
+        _ presentation: KeyboardPresentation,
+        for displayID: UUID)
+    {
+        self.zoneLayoutPresentations[displayID] = presentation
+    }
+
+    public mutating func removeZoneLayoutPresentation(for displayID: UUID) {
+        self.zoneLayoutPresentations.removeValue(forKey: displayID)
     }
 }
 

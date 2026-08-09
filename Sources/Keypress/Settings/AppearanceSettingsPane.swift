@@ -931,14 +931,14 @@ struct KeyPreview: View {
         [
             KeySymbol(id: "shift-left", display: "⇧", isModifier: true),
             KeySymbol(id: "command-left", display: "⌘", isModifier: true),
-            self.config.keyboard.contentMode == .allKeys
+            self.config.keyboard.effectiveContentMode == .allKeys
                 ? KeySymbol(id: "key-40", display: "K")
                 : KeySymbol(id: "key-9", display: "V"),
         ]
     }
 
     private var contentModeTitle: String {
-        switch self.config.keyboard.contentMode {
+        switch self.config.keyboard.effectiveContentMode {
         case .allKeys:
             self.strings["keyboard.content.all"]
         case .shortcutsOnly:

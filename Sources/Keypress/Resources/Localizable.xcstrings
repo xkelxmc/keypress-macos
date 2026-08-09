@@ -451,6 +451,13 @@
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Содержимое" } }
       }
     },
+    "keyboard.filter.special.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Escape, Pfeiltasten, Rückschritt, Leertaste, Enter und Tab anzeigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show Escape, arrows, Backspace, Space, Enter and Tab." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra Escape, flechas, Retroceso, Espacio, Intro y Tabulador." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher Échap, les flèches, Retour arrière, Espace, Entrée et Tabulation." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать Escape, стрелки, Backspace, Space, Enter и Tab." } }
+    } },
     "keyboard.filters" : {
       "localizations" : {
         "de" : { "stringUnit" : { "state" : "translated", "value" : "Filter" } },
@@ -1192,12 +1199,75 @@
       "fr" : { "stringUnit" : { "state" : "translated", "value" : "Studio natif" } },
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нативная студия" } }
     } },
-    "about.release.title" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Neu in 2.0.0" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "What’s New in 2.0.0" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Novedades de 2.0.0" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nouveautés de la version 2.0.0" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Что нового в 2.0.0" } }
+    "about.highlights.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Highlights von Keypress 2" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keypress 2 Highlights" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Lo destacado de Keypress 2" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Points forts de Keypress 2" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Главное в Keypress 2" } }
+    } },
+    "about.release21.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Neu in 2.1" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "What’s New in 2.1" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Novedades de 2.1" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nouveautés de la version 2.1" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Что нового в 2.1" } }
+    } },
+    "about.release21.ribbon.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Textband" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Typing Ribbon" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cinta de escritura" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ruban de frappe" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лента набора" } }
+    } },
+    "about.release21.ribbon.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Tasten erscheinen exakt in der Tippreihenfolge samt Groß- und Kleinschreibung von Umschalt- und Feststelltaste, und das Band passt sein Tempo Ihrem Tippen an." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keys appear in exact typing order with Shift and Caps Lock casing, and the ribbon’s conveyor keeps pace with how fast you type." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Las teclas aparecen en el orden exacto de escritura, con las mayúsculas de Mayús y Bloq Mayús, y la cinta ajusta su ritmo al de tu escritura." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les touches apparaissent exactement dans l’ordre de frappe, avec la casse de Maj. et Verr. Maj., et le ruban adapte son rythme à votre vitesse de frappe." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Клавиши появляются строго в порядке набора, с учётом Shift и Caps Lock, а конвейер ленты подстраивает скорость под темп печати." } }
+    } },
+    "about.release21.echo.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Textecho" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Text Echo" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Eco de texto" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écho du texte" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Эхо текста" } }
+    } },
+    "about.release21.echo.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Der gestapelte Verlauf zeigt jetzt den getippten Text selbst – groß und gut lesbar. Rückschritt löscht wirklich, und nichts, was den Bildschirm verlassen hat, kehrt zurück." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stacked history now shows the typed text itself, large and readable. Backspace truly erases, and nothing that left the screen comes back." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "El historial apilado ahora muestra el propio texto escrito, grande y legible. Retroceso borra de verdad y nada de lo que salió de la pantalla vuelve." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "L’historique empilé affiche désormais le texte saisi lui-même, en grand et lisible. Retour arrière efface vraiment, et rien de ce qui a quitté l’écran ne revient." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "История стопкой теперь показывает сам набранный текст — крупно и разборчиво. Backspace действительно стирает, а ушедшее с экрана не возвращается." } }
+    } },
+    "about.release21.command.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Befehlsbereich" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Command Zone" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Zona de comandos" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Zone de commandes" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Зона команд" } }
+    } },
+    "about.release21.command.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Kurzbefehle und Systemtasten erhalten einen eigenen Block mit Wiederholungszähler (⌘V ×3) und eigener Position auf dem Bildschirm." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Shortcuts and system keys get their own block, with a repeat counter (⌘V ×3) and their own position on screen." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Los atajos y las teclas del sistema tienen su propio bloque, con contador de repeticiones (⌘V ×3) y su propia posición en pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les raccourcis et les touches système disposent de leur propre bloc, avec un compteur de répétitions (⌘V ×3) et leur propre position à l’écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сочетания и системные клавиши живут в отдельном блоке со счётчиком повторов (⌘V ×3) и собственным положением на экране." } }
+    } },
+    "about.release21.motion.title" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Feinere Bewegung" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Refined Motion" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Movimiento refinado" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mouvement affiné" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отточенная анимация" } }
+    } },
+    "about.release21.motion.body" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Das Overlay fährt als ein einziges Stück ein und aus – ohne Ruckeln auf jedem Display." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "The overlay rises in and settles out as one solid piece, without stutter on any display." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La superposición entra y sale como una sola pieza, sin saltos en ninguna pantalla." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "La superposition entre et sort d’un seul bloc, sans saccade sur aucun écran." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Оверлей появляется и уходит целиком, без рывков на любом дисплее." } }
     } },
     "about.version" : { "localizations" : {
       "de" : { "stringUnit" : { "state" : "translated", "value" : "Version %@ (Build %@)" } },
@@ -1710,19 +1780,33 @@
       "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher toutes les touches ou uniquement les combinaisons avec modificateurs." } },
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать все клавиши или только комбинации с модификаторами." } }
     } },
-    "keyboard.duplicates" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Doppelte Buchstaben" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Duplicate Letters" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Letras repetidas" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lettres répétées" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторяющиеся буквы" } }
+    "keyboard.echo.idleTimeout" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach Pause ausblenden" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear After Pause" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Borrar tras una pausa" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Effacer après une pause" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Уход после паузы" } }
     } },
-    "keyboard.duplicates.subtitle" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wiederholte Buchstaben im Verlauf behalten." } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep repeated letters in the history." } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Conserva las letras repetidas en el historial." } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Conserver les lettres répétées dans l’historique." } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сохранять повторяющиеся буквы в истории." } }
+    "keyboard.echo.idleTimeout.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wartezeit, bevor der Text verschwindet." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Idle time before the text clears." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tiempo de inactividad antes de que el texto desaparezca." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Temps d’inactivité avant l’effacement du texte." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сколько ждать без ввода, прежде чем текст исчезнет." } }
+    } },
+    "keyboard.echo.lineLifetime" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Lebensdauer der Zeilen" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Line Lifetime" } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Duración de las líneas" } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Durée de vie des lignes" } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Жизнь строк истории" } }
+    } },
+    "keyboard.echo.lineLifetime.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie lange fertige Zeilen sichtbar bleiben, während du weitertippst." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "How long finished lines stay while you keep typing." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuánto permanecen las líneas terminadas mientras sigues escribiendo." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Combien de temps les lignes terminées restent pendant que vous continuez à taper." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Как долго готовые строки остаются, пока вы продолжаете печатать." } }
     } },
     "keyboard.enabled.subtitle" : { "localizations" : {
       "de" : { "stringUnit" : { "state" : "translated", "value" : "Tastatureingaben visualisieren." } },
@@ -1737,6 +1821,13 @@
       "es" : { "stringUnit" : { "state" : "translated", "value" : "Teclas de función" } },
       "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches de fonction" } },
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Функциональные клавиши" } }
+    } },
+    "keyboard.filter.functions.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Drücken von F1–F20 anzeigen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show F1–F20 presses." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra las pulsaciones de F1–F20." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher les appuis sur F1–F20." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать нажатия F1–F20." } }
     } },
     "keyboard.filter.modifiers" : { "localizations" : {
       "de" : { "stringUnit" : { "state" : "translated", "value" : "Eigenständige Modifikatortasten" } },
@@ -1759,75 +1850,26 @@
       "fr" : { "stringUnit" : { "state" : "translated", "value" : "Touches spéciales" } },
       "ru" : { "stringUnit" : { "state" : "translated", "value" : "Специальные клавиши" } }
     } },
-    "keyboard.historyLayout" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Anordnung" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Layout" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Disposición" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Disposition" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Расположение" } }
-    } },
-    "keyboard.layout.horizontal" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Waagerecht" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Horizontal" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "En horizontal" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Horizontale" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Горизонтально" } }
-    } },
-    "keyboard.layout.stacked" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Gestapelt" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stacked" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Apilado" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Empilée" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Столбцом" } }
-    } },
-    "keyboard.limitModifiers" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Modifikatortasten mitzählen" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Limit Includes Modifiers" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Incluir modificadores en el límite" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Inclure les modificateurs dans la limite" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Учитывать модификаторы в лимите" } }
-    } },
-    "keyboard.limitModifiers.subtitle" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Modifikatortasten auf das Verlaufslimit anrechnen." } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Count modifier keys toward the history limit." } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuenta las teclas modificadoras para el límite del historial." } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compter les touches de modification dans la limite de l’historique." } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Учитывать клавиши-модификаторы в лимите истории." } }
-    } },
     "keyboard.maxKeys.subtitle" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Maximale Anzahl sichtbarer Verlaufseinträge." } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Maximum number of visible history items." } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Número máximo de elementos visibles del historial." } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nombre maximal d’éléments visibles dans l’historique." } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Максимальное число видимых элементов истории." } }
-    } },
-    "keyboard.mode.history" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Verlauf" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Historique" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "История" } }
-    } },
-    "keyboard.mode.single" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Einzeln" } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Single" } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Único" } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Unique" } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Одна комбинация" } }
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie viele Tastenkappen das Textband fasst." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "How many keycaps the ribbon holds." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuántas teclas caben en la cinta." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Combien de touches le ruban contient." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сколько кейкапов держит лента." } }
     } },
     "keyboard.mode.subtitle" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Den letzten Kurzbefehl oder einen fortlaufenden Verlauf anzeigen." } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Show the latest shortcut or a running history." } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra el último atajo o un historial continuo." } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Afficher le dernier raccourci ou un historique continu." } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показывать последнее сочетание или непрерывную историю." } }
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte Kombination, ein Tastenband oder ein Echo des getippten Textes." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest combo, a ribbon of keys, or an echo of the text you type." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "La última combinación, una cinta de teclas o un eco del texto que escribes." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Dernière combinaison, un ruban de touches ou un écho du texte saisi." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Последнее сочетание, лента клавиш или эхо набираемого текста." } }
     } },
     "keyboard.timeout.subtitle" : { "localizations" : {
-      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie lange losgelassene Tasten sichtbar bleiben." } },
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "How long released keys remain visible." } },
-      "es" : { "stringUnit" : { "state" : "translated", "value" : "Tiempo que permanecen visibles las teclas soltadas." } },
-      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Durée d’affichage des touches relâchées." } },
-      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Как долго отпущенные клавиши остаются видимыми." } }
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie lange losgelassene Tasten in den Tastenbereichen sichtbar bleiben." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "How long released keys stay visible in the key zones." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuánto permanecen visibles las teclas soltadas en las zonas de teclas." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Durée d’affichage des touches relâchées dans les zones de touches." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Как долго отпущенные клавиши видны в зонах клавиш." } }
     } },
     "pointer.drag" : { "localizations" : {
       "de" : { "stringUnit" : { "state" : "translated", "value" : "Ziehen" } },
@@ -3141,60 +3183,6 @@
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Tab" } }
       }
     },
-    "keyboard.commandZone" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Befehlsbereich" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Command Zone" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Zona de comandos" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Zone de commandes" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Зона команд" } }
-      }
-    },
-    "keyboard.commandZone.side" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Seite des Befehlsbereichs" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Command Zone Side" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Lado de la zona de comandos" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Côté de la zone de commandes" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сторона зоны команд" } }
-      }
-    },
-    "keyboard.commandZone.side.auto" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Automatisch" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Auto" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Automático" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Automatique" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Авто" } }
-      }
-    },
-    "keyboard.commandZone.side.left" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Links" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Left" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Izquierda" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Gauche" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Слева" } }
-      }
-    },
-    "keyboard.commandZone.side.right" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Rechts" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Right" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Derecha" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Droite" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Справа" } }
-      }
-    },
-    "keyboard.commandZone.side.subtitle" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "An welcher Seite Kurzbefehle unter dem Textband ausgerichtet werden." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Which side shortcuts line up with under the text ribbon." } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "El lado con el que se alinean los atajos bajo la cinta de texto." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Le côté sur lequel les raccourcis s’alignent sous le ruban de texte." } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "С какой стороны выравниваются сочетания под лентой текста." } }
-      }
-    },
     "keyboard.inputKeys" : {
       "localizations" : {
         "de" : { "stringUnit" : { "state" : "translated", "value" : "Eingabetasten" } },
@@ -3249,15 +3237,13 @@
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Узкая" } }
       }
     },
-    "keyboard.inputKeys.width.subtitle" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie breit Leertaste, Enter, Rückschritt und Tab erscheinen." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "How wide Space, Enter, Backspace, and Tab appear." } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuánto ocupan Espacio, Intro, Retroceso y Tabulador." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "La largeur d’Espace, Entrée, Retour arrière et Tabulation." } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Насколько широкими выглядят Space, Enter, Backspace и Tab." } }
-      }
-    },
+    "keyboard.inputKeys.width.subtitle" : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Wie breit Leertaste, Enter, Rückschritt und Tab als Tastenkappen erscheinen." } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "How wide Space, Enter, Backspace and Tab render as keycaps." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuánto ocupan Espacio, Intro, Retroceso y Tabulador como teclas." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "La largeur d’Espace, Entrée, Retour arrière et Tabulation en tant que touches." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Насколько широкими выглядят Space, Enter, Backspace и Tab в виде кейкапов." } }
+    } },
     "keyboard.inputKeys.width.wide" : {
       "localizations" : {
         "de" : { "stringUnit" : { "state" : "translated", "value" : "Breit" } },

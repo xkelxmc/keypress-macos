@@ -689,13 +689,60 @@ struct StudioDivider: View {
     }
 }
 
-struct StudioPreviewSurface<Content: View>: View {
+/// The replay control a preview hangs in its corner.
+///
+/// It is a piece of the surface's chrome rather than of the preview, so that it is placed
+/// against the block's own edge whatever the preview inside happens to measure.
+struct StudioPreviewReplayButton: View {
+    let label: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: self.action) {
+            Image(systemName: "arrow.counterclockwise")
+                .font(.system(size: 12, weight: .semibold))
+                .frame(width: 30, height: 30)
+                .background(Color.black.opacity(0.3), in: Circle())
+                .overlay {
+                    Circle()
+                        .strokeBorder(Color.white.opacity(0.13))
+                }
+                .contentShape(Circle())
+        }
+        .buttonStyle(StudioHoverButtonStyle(showsHoverSurface: false))
+        .foregroundStyle(.white.opacity(0.9))
+        .help(self.label)
+        .accessibilityLabel(self.label)
+    }
+}
+
+struct StudioPreviewSurface<Content: View, Accessory: View>: View {
     let height: CGFloat
+
+    /// Inset the accessory keeps from the surface's own edges. Chosen so a 30pt control still
+    /// clears the 14pt corner radius.
+    private static var accessoryInset: CGFloat {
+        9
+    }
+
     @ViewBuilder let content: () -> Content
 
-    init(height: CGFloat = 190, @ViewBuilder content: @escaping () -> Content) {
+    /// A control pinned to the surface's top-trailing corner.
+    ///
+    /// It belongs to the surface rather than to the preview inside it: a preview is drawn
+    /// scaled down but still lays out at full size, so anything anchored to the preview's own
+    /// bounds is anchored to something larger than the block it sits in — which is how the
+    /// replay button ended up hanging past the rounded corner.
+    @ViewBuilder let accessory: () -> Accessory
+
+    init(
+        height: CGFloat = 190,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder accessory: @escaping () -> Accessory = { EmptyView() })
+    {
         self.height = height
         self.content = content
+        self.accessory = accessory
     }
 
     var body: some View {
@@ -723,6 +770,10 @@ struct StudioPreviewSurface<Content: View>: View {
         .overlay {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(Color.white.opacity(0.075), lineWidth: 1)
+        }
+        .overlay(alignment: .topTrailing) {
+            self.accessory()
+                .padding(Self.accessoryInset)
         }
     }
 }

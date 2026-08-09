@@ -8,6 +8,12 @@ private let visibleHeight: CGFloat = 1000
 private let step = HorizontalHistoryZonePlacements.nominalZoneHeight
     + HorizontalHistoryZonePlacements.spacing
 
+/// Placements round-trip through normalized coordinates, so distances come back a few ulps
+/// off the whole numbers they were derived from.
+private func isClose(_ lhs: CGFloat, _ rhs: CGFloat, tolerance: CGFloat = 0.001) -> Bool {
+    abs(lhs - rhs) <= tolerance
+}
+
 private func derived(_ placement: DisplayPlacement) -> HorizontalHistoryZonePlacements {
     HorizontalHistoryZonePlacements.derived(
         from: placement,
@@ -137,6 +143,40 @@ struct HorizontalHistoryZonePlacementsTests {
         #expect(Self.verticalSeparation(large) > Self.verticalSeparation(small))
     }
 
+    /// The moving zone's height only enters the bracketing case, where both zones get an
+    /// explicit point. An anchored pair is separated by the height of the zone that stays,
+    /// which is the command zone in every mode.
+    @Test("A taller zone is bracketed further from its command zone")
+    func tallerZoneWidensTheBracket() {
+        let free = DisplayPlacement.custom(
+            center: NormalizedPoint(x: 0.5, y: 0.5),
+            fallbackAnchor: .bottomRight)
+
+        let oneRow = HorizontalHistoryZonePlacements.derived(
+            from: free,
+            visibleHeight: visibleHeight)
+        let threeLines = HorizontalHistoryZonePlacements.derived(
+            from: free,
+            visibleHeight: visibleHeight,
+            primaryZoneHeight: 150)
+
+        #expect(Self.verticalSeparation(threeLines) > Self.verticalSeparation(oneRow))
+        // Half of each zone plus the gap: neither can reach into the other.
+        #expect(
+            Self.verticalSeparation(threeLines)
+                >= (HorizontalHistoryZonePlacements.nominalZoneHeight + 150) / 2)
+    }
+
+    @Test("The text echo budgets all three of its lines")
+    func textEchoBudgetsThreeLines() {
+        #expect(
+            KeyboardPresentation.stackedHistory.primaryZoneNominalHeight
+                > KeyboardPresentation.horizontalHistory.primaryZoneNominalHeight)
+        #expect(
+            KeyboardPresentation.stackedHistory.primaryZoneNominalHeight
+                >= TextEchoStyle.zoneHeight(lineCount: TextEchoState.maxLines))
+    }
+
     @Test("Deriving twice from the same placement gives the same answer")
     func derivationIsStable() {
         let anchor = DisplayPlacement.anchor(
@@ -148,7 +188,7 @@ struct HorizontalHistoryZonePlacementsTests {
     }
 
     /// How far apart the two zones' centres end up, in points.
-    private static func verticalSeparation(_ pair: HorizontalHistoryZonePlacements) -> CGFloat {
+    static func verticalSeparation(_ pair: HorizontalHistoryZonePlacements) -> CGFloat {
         switch (pair.ribbon, pair.commandZone) {
         case let (.anchor(_, _, ribbonOffset), .anchor(_, _, commandOffset)):
             abs(CGFloat(ribbonOffset - commandOffset))
@@ -157,6 +197,245 @@ struct HorizontalHistoryZonePlacementsTests {
         default:
             0
         }
+    }
+}
+
+@Suite("Zone Layout Reconciliation")
+struct ZoneLayoutReconciliationTests {
+    private static let free = DisplayPlacement.custom(
+        center: NormalizedPoint(x: 0.5, y: 0.5),
+        fallbackAnchor: .bottomRight)
+
+    private static let displayID = UUID()
+
+    /// A display's stored state, assembled the way settings really hold it — so the marker's
+    /// own "no marker but a pair means mode 2" inference is exercised too.
+    private static func displays(
+        laidOutFor: KeyboardPresentation?,
+        placement: DisplayPlacement,
+        commandZonePlacement: DisplayPlacement?) -> DisplaySettings
+    {
+        var displays = DisplaySettings()
+        displays.setPlacement(placement, for: self.displayID)
+        if let commandZonePlacement {
+            displays.setCommandZonePlacement(commandZonePlacement, for: self.displayID)
+        }
+        if let laidOutFor {
+            displays.setZoneLayoutPresentation(laidOutFor, for: self.displayID)
+        }
+        return displays
+    }
+
+    private static func plan(
+        presentation: KeyboardPresentation,
+        laidOutFor: KeyboardPresentation?,
+        placement: DisplayPlacement,
+        commandZonePlacement: DisplayPlacement?) -> ZoneLayoutPlan
+    {
+        ZoneLayoutPlan.resolve(
+            presentation: presentation,
+            displays: self.displays(
+                laidOutFor: laidOutFor,
+                placement: placement,
+                commandZonePlacement: commandZonePlacement),
+            displayID: self.displayID,
+            scale: 1,
+            visibleHeight: visibleHeight)
+    }
+
+    @Test("Latest has nothing to lay out")
+    func latestHasNoZones() {
+        #expect(
+            Self.plan(
+                presentation: .latest,
+                laidOutFor: nil,
+                placement: .defaultPlacement,
+                commandZonePlacement: nil) == .none)
+    }
+
+    @Test("A display that has never carried a pair is derived from its widget placement")
+    func firstTimeDerivation() {
+        let plan = Self.plan(
+            presentation: .horizontalHistory,
+            laidOutFor: nil,
+            placement: Self.free,
+            commandZonePlacement: nil)
+
+        guard case let .relayout(placements) = plan else {
+            Issue.record("a display with no pair has to be laid out")
+            return
+        }
+        #expect(placements == HorizontalHistoryZonePlacements.derived(
+            from: Self.free,
+            visibleHeight: visibleHeight))
+    }
+
+    /// A layout the running mode made is that mode's own, drags and all — the whole point of
+    /// the marker is that a manual placement survives every later launch.
+    @Test("A pair laid out by the running mode is adopted untouched")
+    func sameModeKeepsManualPlacements() {
+        for presentation in [KeyboardPresentation.horizontalHistory, .stackedHistory] {
+            let dragged = DisplayPlacement.custom(
+                center: NormalizedPoint(x: 0.2, y: 0.8),
+                fallbackAnchor: .topLeft)
+            #expect(
+                Self.plan(
+                    presentation: presentation,
+                    laidOutFor: presentation,
+                    placement: dragged,
+                    commandZonePlacement: Self.free) == .adopt,
+                "\(presentation) should keep its own layout")
+        }
+    }
+
+    /// The bug this exists for: a free placement bracketed for one row of keycaps leaves the
+    /// zones 88pt apart, and three plaques of text need 141pt — so the echo used to be drawn
+    /// through the command zone.
+    @Test("A mode-2 pair is re-derived wide enough for the echo's three lines")
+    func modeTwoPairIsRelaidOutForTheEcho() {
+        let modeTwo = HorizontalHistoryZonePlacements.derived(
+            from: Self.free,
+            visibleHeight: visibleHeight)
+        #expect(isClose(HorizontalHistoryZonePlacementsTests.verticalSeparation(modeTwo), 88))
+
+        let plan = Self.plan(
+            presentation: .stackedHistory,
+            laidOutFor: .horizontalHistory,
+            placement: modeTwo.ribbon,
+            commandZonePlacement: modeTwo.commandZone)
+
+        guard case let .relayout(placements) = plan else {
+            Issue.record("a mode-2 pair has to be re-derived for the echo")
+            return
+        }
+        #expect(isClose(HorizontalHistoryZonePlacementsTests.verticalSeparation(placements), 141))
+    }
+
+    /// Symmetrical: going back leaves the ribbon its own, tighter pair rather than the echo's.
+    @Test("Going back to mode 2 re-derives the pair again")
+    func echoPairIsRelaidOutForTheRibbon() {
+        let echoPair = HorizontalHistoryZonePlacements.derived(
+            from: Self.free,
+            visibleHeight: visibleHeight,
+            primaryZoneHeight: KeyboardPresentation.stackedHistory.primaryZoneNominalHeight)
+
+        let plan = Self.plan(
+            presentation: .horizontalHistory,
+            laidOutFor: .stackedHistory,
+            placement: echoPair.ribbon,
+            commandZonePlacement: echoPair.commandZone)
+
+        guard case let .relayout(placements) = plan else {
+            Issue.record("an echo pair has to be re-derived for the ribbon")
+            return
+        }
+        #expect(isClose(HorizontalHistoryZonePlacementsTests.verticalSeparation(placements), 88))
+    }
+
+    /// Re-deriving reads the original spot back out of the pair, so switching back and forth
+    /// cannot walk the layout across the screen.
+    @Test("Switching modes repeatedly keeps the layout in the same place")
+    func repeatedSwitchesDoNotDrift() {
+        var placement = Self.free
+        var commandZone: DisplayPlacement?
+        var laidOutFor: KeyboardPresentation?
+        var seen: [DisplayPlacement] = []
+
+        for presentation in [
+            KeyboardPresentation.horizontalHistory,
+            .stackedHistory,
+            .horizontalHistory,
+            .stackedHistory,
+        ] {
+            guard case let .relayout(placements) = Self.plan(
+                presentation: presentation,
+                laidOutFor: laidOutFor,
+                placement: placement,
+                commandZonePlacement: commandZone)
+            else {
+                Issue.record("every mode change has to re-derive")
+                return
+            }
+            placement = placements.ribbon
+            commandZone = placements.commandZone
+            laidOutFor = presentation
+            seen.append(HorizontalHistoryZonePlacements.origin(
+                primary: placements.ribbon,
+                commandZone: placements.commandZone))
+        }
+
+        #expect(seen.allSatisfy { origin in
+            guard case let .custom(center, _) = origin,
+                  case let .custom(free, _) = Self.free
+            else {
+                return false
+            }
+            return isClose(CGFloat(center.x), CGFloat(free.x))
+                && isClose(CGFloat(center.y), CGFloat(free.y))
+        })
+    }
+
+    /// The upgrade path for someone who already ran mode 2: their settings carry a pair and no
+    /// marker at all. Mode 2 has to leave that layout exactly where they left it, and mode 3
+    /// has to re-derive it.
+    @Test("A pair written before the marker existed is mode 2's")
+    func absentMarkerIsAdoptedByModeTwoAndRelaidOutByModeThree() {
+        let modeTwo = HorizontalHistoryZonePlacements.derived(
+            from: Self.free,
+            visibleHeight: visibleHeight)
+
+        #expect(
+            Self.plan(
+                presentation: .horizontalHistory,
+                laidOutFor: nil,
+                placement: modeTwo.ribbon,
+                commandZonePlacement: modeTwo.commandZone) == .adopt)
+
+        guard case let .relayout(placements) = Self.plan(
+            presentation: .stackedHistory,
+            laidOutFor: nil,
+            placement: modeTwo.ribbon,
+            commandZonePlacement: modeTwo.commandZone)
+        else {
+            Issue.record("the echo has to re-derive a pair it did not lay out")
+            return
+        }
+        #expect(isClose(HorizontalHistoryZonePlacementsTests.verticalSeparation(placements), 141))
+    }
+
+    /// Settings written before the marker existed carry a pair and no marker. That pair can
+    /// only have come from the mode that had two zones first.
+    @Test("A pair with no marker is read as mode 2's")
+    func absentMarkerMeansModeTwo() throws {
+        let displayID = UUID()
+        var displays = DisplaySettings()
+        displays.setPlacement(Self.free, for: displayID)
+        displays.setCommandZonePlacement(Self.free, for: displayID)
+
+        let legacy = try JSONDecoder().decode(
+            DisplaySettings.self,
+            from: JSONEncoder().encode(displays))
+
+        #expect(legacy.zoneLayoutPresentations.isEmpty)
+        #expect(legacy.zoneLayoutPresentation(for: displayID) == .horizontalHistory)
+        #expect(legacy.zoneLayoutPresentation(for: UUID()) == nil)
+    }
+
+    @Test("The marker round-trips through settings")
+    func markerRoundTrips() throws {
+        let displayID = UUID()
+        var displays = DisplaySettings()
+        displays.setZoneLayoutPresentation(.stackedHistory, for: displayID)
+
+        let decoded = try JSONDecoder().decode(
+            DisplaySettings.self,
+            from: JSONEncoder().encode(displays))
+
+        #expect(decoded.zoneLayoutPresentation(for: displayID) == .stackedHistory)
+
+        var cleared = decoded
+        cleared.removeZoneLayoutPresentation(for: displayID)
+        #expect(cleared.zoneLayoutPresentation(for: displayID) == nil)
     }
 }
 
@@ -188,11 +467,11 @@ struct ZoneIndependenceTests {
         #expect(displays.placement(for: displayID) == ribbonPlacement)
     }
 
-    @Test("Only horizontal history carries a second window")
+    @Test("Both two-zone modes carry a second window, Latest does not")
     func windowCountPerPresentation() {
         #expect(KeyboardPresentation.horizontalHistory.usesSeparateCommandZoneWindow)
+        #expect(KeyboardPresentation.stackedHistory.usesSeparateCommandZoneWindow)
         #expect(KeyboardPresentation.latest.usesSeparateCommandZoneWindow == false)
-        #expect(KeyboardPresentation.stackedHistory.usesSeparateCommandZoneWindow == false)
     }
 
     @Test("Each display migrates on its own")

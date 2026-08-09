@@ -55,15 +55,6 @@ public final class HorizontalHistoryState: KeyEventSink {
 
     // MARK: - Properties
 
-    /// Modifiers that reroute every keypress into the command zone. Shift is absent on
-    /// purpose: it uppercases ribbon input instead of capturing it.
-    private static let commandModifierFlags: CGEventFlags = [
-        .maskCommand,
-        .maskAlternate,
-        .maskControl,
-        .maskSecondaryFn,
-    ]
-
     /// Special keys that still produce text and therefore belong to the ribbon.
     private static let textSpecialKeyIDs: Set<String> = ["space", "return", "enter", "tab"]
 
@@ -79,26 +70,22 @@ public final class HorizontalHistoryState: KeyEventSink {
     /// must not animate the older copies.
     public private(set) var pressedRibbonKeyIDs: Set<String> = []
 
+    /// The zone every non-text keypress lands in, shared with the other two-zone mode.
+    public let commandZone: CommandZoneState
+
     /// Command zone contents: held modifiers followed by the current combination.
     public var commandKeys: [PressedKey] {
-        self.commandState.pressedKeys
+        self.commandZone.keys
     }
 
-    /// How many times the displayed command was pressed in a row. `0` when the zone
-    /// shows no command, `1` for a single press; views draw the ×N badge above `1`.
-    ///
-    /// The count is matched against what is on screen right now: pressing a modifier
-    /// alone glues it onto a lingering combination, and the badge of the old command
-    /// must not survive that.
+    /// How many times the displayed command was pressed in a row.
     public var commandRepeatCount: Int {
-        guard self.hasCommandCombination else { return 0 }
-        return self.currentCommandSignature == self.commandSignature ? self.commandRepeats : 1
+        self.commandZone.repeatCount
     }
 
-    /// Id of the keycap that should carry the ×N badge — the last non-modifier key of
-    /// the displayed command.
+    /// Id of the keycap that should carry the ×N badge.
     public var commandRepeatKeyID: String? {
-        self.commandKeys.last { !$0.symbol.isModifier }?.id
+        self.commandZone.repeatKeyID
     }
 
     public var hasRibbonKeys: Bool {
@@ -106,7 +93,7 @@ public final class HorizontalHistoryState: KeyEventSink {
     }
 
     public var hasCommandKeys: Bool {
-        self.commandState.hasKeys
+        self.commandZone.hasKeys
     }
 
     public var hasKeys: Bool {
@@ -114,10 +101,10 @@ public final class HorizontalHistoryState: KeyEventSink {
     }
 
     public var keyTimeout: TimeInterval {
-        get { self.commandState.keyTimeout }
+        get { self.commandZone.keyTimeout }
         set {
-            let oldValue = self.commandState.keyTimeout
-            self.commandState.keyTimeout = newValue
+            let oldValue = self.commandZone.keyTimeout
+            self.commandZone.keyTimeout = newValue
             guard newValue != oldValue else { return }
             self.rearmRibbonTimeouts()
         }
@@ -135,64 +122,43 @@ public final class HorizontalHistoryState: KeyEventSink {
         }
     }
 
+    /// Content mode in force here. Shortcuts Only is dropped on the way in: the ribbon is the
+    /// typed text itself, and the command zone next to it already shows what that setting asks
+    /// for.
     public var contentMode: KeyboardContentMode {
-        get { self.commandState.contentMode }
-        set {
-            let changed = self.commandState.contentMode != newValue
-            self.commandState.contentMode = newValue
-            guard changed, newValue == .shortcutsOnly else { return }
-            self.clearRibbon()
-        }
+        get { self.commandZone.contentMode }
+        set { self.commandZone.contentMode = newValue.ignoringShortcutsOnly }
     }
 
+    /// Filters in force here. The F-key and special-key switches are dropped on the way in:
+    /// this mode routes by what a key produces, and ⏎, ⇥ and ␣ are text in the ribbon.
     public var filters: KeyboardFilterSettings {
-        get { self.commandState.filters }
-        set {
-            let changed = self.commandState.filters != newValue
-            self.commandState.filters = newValue
-            guard changed else { return }
-            self.reconcileRibbonFilters()
-        }
+        get { self.commandZone.filters }
+        set { self.commandZone.filters = newValue.ignoringKeyCategories }
     }
 
     /// Set of symbol ids for all keys that are physically pressed in the command zone.
     public var physicallyPressedKeys: Set<String> {
-        self.commandState.physicallyPressedKeys
+        self.commandZone.physicallyPressedKeys
     }
 
     /// Set of symbol ids for modifiers that are physically pressed.
     public var pressedModifierIds: Set<String> {
-        self.commandState.pressedModifierIds
+        self.commandZone.pressedModifierIds
     }
 
     /// Ids of the command zone keycaps whose key is physically down right now. Entry
     /// ids, like `pressedRibbonKeyIDs` — views must never match a press by symbol id.
     public var pressedCommandKeyIDs: Set<String> {
-        let physicallyPressed = self.commandState.physicallyPressedKeys
-        return Set(
-            self.commandKeys
-                .filter { physicallyPressed.contains($0.symbol.id) }
-                .map(\.id))
+        self.commandZone.pressedKeyIDs
     }
 
-    private let commandState: SingleKeyState
     private let isKeyDown: SingleKeyState.KeyDownProbe
 
     private var heldRibbonKeys: [String: HeldRibbonKey] = [:]
     private var ribbonSequence: UInt64 = 0
     private var timeoutTasks: [String: Task<Void, Never>] = [:]
     private var timeoutStartedAt: [String: TimeInterval] = [:]
-
-    private var commandSignature: String?
-    private var commandRepeats: Int = 0
-
-    private var hasCommandCombination: Bool {
-        self.commandKeys.contains { !$0.symbol.isModifier }
-    }
-
-    private var currentCommandSignature: String {
-        self.commandKeys.map(\.symbol.id).joined(separator: "+")
-    }
 
     private var settingsSnapshot: KeyboardSettings {
         KeyboardSettings(contentMode: self.contentMode, filters: self.filters)
@@ -206,15 +172,13 @@ public final class HorizontalHistoryState: KeyEventSink {
             CGEventSource.keyState(.combinedSessionState, key: $0)
         })
     {
-        self.commandState = SingleKeyState(isKeyDown: isKeyDown)
+        self.commandZone = CommandZoneState(isKeyDown: isKeyDown)
         self.isKeyDown = isKeyDown
         self.apply(settings)
     }
 
     // MARK: - Functions
 
-    /// Applies keyboard settings. `duplicateLetters` is deliberately ignored: the ribbon
-    /// mirrors typed text, so every press always gets its own keycap.
     public func apply(_ settings: KeyboardSettings) {
         self.keyTimeout = settings.timeout
         self.contentMode = settings.contentMode
@@ -226,7 +190,7 @@ public final class HorizontalHistoryState: KeyEventSink {
         guard let symbol else { return }
 
         guard !symbol.isModifier, event.type != .flagsChanged else {
-            self.commandState.processEvent(event, symbol: symbol)
+            self.commandZone.processModifierEvent(event, symbol: symbol)
             return
         }
 
@@ -242,20 +206,18 @@ public final class HorizontalHistoryState: KeyEventSink {
 
     public func clear() {
         self.clearRibbon()
-        self.commandState.clear()
-        self.commandSignature = nil
-        self.commandRepeats = 0
+        self.commandZone.clear()
     }
 
     /// Returns true if the modifier is physically pressed (not just visible).
     public func isModifierPressed(_ symbolId: String) -> Bool {
-        self.commandState.isModifierPressed(symbolId)
+        self.commandZone.isModifierPressed(symbolId)
     }
 
     // MARK: - Event handling
 
     private func handleKeyDown(event: KeyEvent, symbol: KeySymbol) {
-        self.commandState.reconcileHeldKeys()
+        self.commandZone.reconcileHeldKeys()
         self.dropStaleRibbonKeys()
 
         guard KeyboardEventFilter.disposition(
@@ -279,13 +241,11 @@ public final class HorizontalHistoryState: KeyEventSink {
         if let entryID = self.heldRibbonKeys.removeValue(forKey: symbol.id)?.entryID {
             self.pressedRibbonKeyIDs.remove(entryID)
         }
-        guard self.commandState.physicallyPressedKeys.contains(symbol.id) else { return }
-        self.commandState.processEvent(event, symbol: symbol)
+        self.commandZone.releaseIfTracked(event: event, symbol: symbol)
     }
 
     private func routesToRibbon(event: KeyEvent, symbol: KeySymbol) -> Bool {
-        guard self.contentMode == .allKeys else { return false }
-        guard event.modifiers.isDisjoint(with: Self.commandModifierFlags) else { return false }
+        guard !CommandZoneState.capturesInput(modifiers: event.modifiers) else { return false }
         return !symbol.isSpecial || Self.textSpecialKeyIDs.contains(symbol.id)
     }
 
@@ -352,15 +312,6 @@ public final class HorizontalHistoryState: KeyEventSink {
         self.ribbonKeys.removeFirst(overflow)
     }
 
-    private func reconcileRibbonFilters() {
-        let invalidIDs = self.ribbonKeys
-            .filter { !self.filters.includes($0.symbol) }
-            .map(\.id)
-        for keyID in invalidIDs {
-            self.removeRibbonKey(id: keyID)
-        }
-    }
-
     private func removeRibbonKey(id: String) {
         self.forgetRibbonKey(id: id)
         self.ribbonKeys.removeAll { $0.id == id }
@@ -394,20 +345,8 @@ public final class HorizontalHistoryState: KeyEventSink {
     // MARK: - Command zone
 
     private func registerCommand(event: KeyEvent, symbol: KeySymbol) {
-        let isKeyRepeat = self.commandState.physicallyPressedKeys.contains(symbol.id)
-        let previousSignature = self.commandSignature
-        let hadCombination = self.hasCommandCombination
-
         self.latestRibbonKeyID = nil
-        self.commandState.processReconciledEvent(event, symbol: symbol)
-
-        guard !isKeyRepeat else { return }
-
-        let signature = self.currentCommandSignature
-        self.commandRepeats = hadCombination && signature == previousSignature
-            ? self.commandRepeats + 1
-            : 1
-        self.commandSignature = signature
+        self.commandZone.register(event: event, symbol: symbol)
     }
 
     // MARK: - Timeouts

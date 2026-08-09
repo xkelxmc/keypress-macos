@@ -22,8 +22,9 @@ final class OverlayController {
     private var pointerInputMonitor: PointerInputMonitor?
     private var overlayWindows: [UUID: OverlayWindow] = [:]
 
-    /// Second window per display, carrying the horizontal-history command zone. It is a
-    /// window of its own so that the zone appearing or leaving can never move the ribbon.
+    /// Second window per display, carrying the command zone of whichever two-zone mode is
+    /// running. It is a window of its own so that the zone appearing or leaving can never move
+    /// the mode's own zone.
     private var commandZoneWindows: [UUID: OverlayWindow] = [:]
     private var secureInputTask: Task<Void, Never>?
     private var monitorHealthTask: Task<Void, Never>?
@@ -39,7 +40,7 @@ final class OverlayController {
     // Key state (one of these will be used based on display mode)
     private var horizontalHistoryState: HorizontalHistoryState?
     private var singleKeyState: SingleKeyState?
-    private var stackedHistoryState: StackedHistoryState?
+    private var textEchoState: TextEchoState?
 
     // Screen observers
     private var screenParametersObserver: Any?
@@ -67,6 +68,18 @@ final class OverlayController {
         self.overlayWindows[displayID]?.frame
     }
 
+    /// The command zone the running mode shares, or nil in a mode that has none.
+    private var commandZoneState: CommandZoneState? {
+        switch self.config.keyboard.presentation {
+        case .latest:
+            nil
+        case .horizontalHistory:
+            self.horizontalHistoryState?.commandZone
+        case .stackedHistory:
+            self.textEchoState?.commandZone
+        }
+    }
+
     /// Current key state reference for common operations.
     private var currentKeyState: (any KeyEventSink)? {
         switch self.config.keyboard.presentation {
@@ -75,7 +88,7 @@ final class OverlayController {
         case .horizontalHistory:
             self.horizontalHistoryState
         case .stackedHistory:
-            self.stackedHistoryState
+            self.textEchoState
         }
     }
 
@@ -168,7 +181,7 @@ final class OverlayController {
         self.currentKeyState?.clear()
         self.horizontalHistoryState = nil
         self.singleKeyState = nil
-        self.stackedHistoryState = nil
+        self.textEchoState = nil
         self.secureInputEnabled = false
     }
 
@@ -226,7 +239,7 @@ final class OverlayController {
     /// Updates history mode settings.
     func updateHistorySettings() {
         self.horizontalHistoryState?.apply(self.config.keyboard)
-        self.stackedHistoryState?.apply(self.config.keyboard)
+        self.textEchoState?.apply(self.config.keyboard)
     }
 
     /// Updates single mode settings.
@@ -396,7 +409,7 @@ final class OverlayController {
         }
 
         for display in displays {
-            self.migrateZonePlacementsIfNeeded(for: display)
+            self.reconcileZoneLayout(for: display)
 
             let window: OverlayWindow
             if let existingWindow = self.overlayWindows[display.id] {
@@ -459,47 +472,57 @@ final class OverlayController {
             }
             return OverlayWindow(
                 horizontalHistoryState: horizontalHistoryState,
-                config: self.config,
-                zone: .ribbon)
+                config: self.config)
         case .stackedHistory:
-            guard let stackedHistoryState = self.stackedHistoryState else {
-                print("[Keypress] ERROR: StackedHistoryState not created - cannot create overlay")
+            guard let textEchoState = self.textEchoState else {
+                print("[Keypress] ERROR: TextEchoState not created - cannot create overlay")
                 return nil
             }
             return OverlayWindow(
-                stackedHistoryState: stackedHistoryState,
+                textEchoState: textEchoState,
                 config: self.config)
         }
     }
 
-    /// Gives the display its own explicit placement for each zone, once.
+    /// Gives the display an explicit placement for each zone, laid out for the running mode.
     ///
     /// Both zones need a placement of their own for either to stay put while the other comes
-    /// and goes. A display arriving in this mode carries a single placement from whatever it
-    /// was showing before, so the pair is derived from it and written back immediately — the
-    /// stored command-zone placement is what marks the display as done.
-    private func migrateZonePlacementsIfNeeded(for display: ConnectedDisplay) {
-        guard self.config.keyboard.presentation.usesSeparateCommandZoneWindow,
-              self.config.displays.commandZonePlacement(for: display.id) == nil
-        else {
-            return
-        }
-
-        let placements = HorizontalHistoryZonePlacements.derived(
-            from: self.config.displays.placement(for: display.id),
+    /// and goes. A display arriving in a two-zone mode carries a single placement from whatever
+    /// it was showing before, so the pair is derived from it and written back immediately.
+    ///
+    /// A display that already carries a pair is left completely alone while the mode that laid
+    /// it out is the one running, and re-derived when a different two-zone mode takes over —
+    /// the two need different amounts of room.
+    private func reconcileZoneLayout(for display: ConnectedDisplay) {
+        let presentation = self.config.keyboard.presentation
+        let plan = ZoneLayoutPlan.resolve(
+            presentation: presentation,
+            displays: self.config.displays,
+            displayID: display.id,
             scale: self.config.size.scaleFactor,
             visibleHeight: display.screen.visibleFrame.height)
 
-        self.config.displays.setPlacement(placements.ribbon, for: display.id)
-        self.config.displays.setCommandZonePlacement(placements.commandZone, for: display.id)
+        switch plan {
+        case .none:
+            return
+        case .adopt:
+            break
+        case let .relayout(placements):
+            self.config.displays.setPlacement(placements.ribbon, for: display.id)
+            self.config.displays.setCommandZonePlacement(placements.commandZone, for: display.id)
+        }
+
+        // Written even when nothing moved, so a display laid out before the marker existed
+        // stops being guessed at on every pass.
+        if self.config.displays.zoneLayoutPresentations[display.id] != presentation {
+            self.config.displays.setZoneLayoutPresentation(presentation, for: display.id)
+        }
     }
 
-    /// Creates or tears down the display's command-zone window. In horizontal history it is
-    /// always present; every other mode has none.
+    /// Creates or tears down the display's command-zone window. Both two-zone modes always
+    /// have one; Latest has none.
     private func reconcileCommandZoneWindow(for display: ConnectedDisplay) {
-        guard self.config.keyboard.presentation.usesSeparateCommandZoneWindow,
-              let horizontalHistoryState = self.horizontalHistoryState
-        else {
+        guard let commandZoneState = self.commandZoneState else {
             self.commandZoneWindows.removeValue(forKey: display.id)?
                 .hideOverlay(OverlayHideReason.presentationChanged.style)
             return
@@ -509,10 +532,7 @@ final class OverlayController {
         if let existingWindow = self.commandZoneWindows[display.id] {
             window = existingWindow
         } else {
-            window = OverlayWindow(
-                horizontalHistoryState: horizontalHistoryState,
-                config: self.config,
-                zone: .commands)
+            window = OverlayWindow(commandZoneState: commandZoneState, config: self.config)
             self.commandZoneWindows[display.id] = window
         }
 
@@ -555,7 +575,7 @@ final class OverlayController {
     private func createKeyState() {
         self.horizontalHistoryState = nil
         self.singleKeyState = nil
-        self.stackedHistoryState = nil
+        self.textEchoState = nil
 
         switch self.config.keyboard.presentation {
         case .latest:
@@ -567,7 +587,7 @@ final class OverlayController {
         case .horizontalHistory:
             self.horizontalHistoryState = HorizontalHistoryState(settings: self.config.keyboard)
         case .stackedHistory:
-            self.stackedHistoryState = StackedHistoryState(settings: self.config.keyboard)
+            self.textEchoState = TextEchoState(settings: self.config.keyboard)
         }
     }
 
@@ -700,7 +720,6 @@ final class OverlayController {
         if previous.keyboard.size != settings.keyboard.size
             || keyboardAppearanceChanged
             || previous.keyboard.inputKeys != settings.keyboard.inputKeys
-            || previous.keyboard.commandZoneSide != settings.keyboard.commandZoneSide
         {
             for window in self.allOverlayWindows {
                 window.refreshContentSize()

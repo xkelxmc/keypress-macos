@@ -106,6 +106,49 @@ enum KeypressTiming {
         quietReset: stored("KeypressConveyorQuietReset", default: 0.5, in: 0.05...5),
         smoothing: stored("KeypressConveyorSmoothing", default: 0.4, in: 0.05...1))
 
+    // MARK: - Text echo
+
+    /// The stack's single step when a line is born or leaves: every surviving line moves by
+    /// one slot together, exactly once.
+    static var textEchoLines: Animation {
+        self.slowed(.easeOut(duration: 0.2))
+    }
+
+    /// A new line fading in where it will live. It does not travel — the block below it
+    /// already moved to make the room.
+    static var textEchoLineEnter: Animation {
+        self.slowed(.easeOut(duration: 0.16))
+    }
+
+    /// A leaving line's fade. Deliberately a fraction of its drift: a plaque still visible at
+    /// the end of its travel would be floating clear of the stack with nothing holding it.
+    static let textEchoLineFadeDuration: TimeInterval = 0.08
+
+    static var textEchoLineFade: Animation {
+        self.slowed(.easeIn(duration: self.textEchoLineFadeDuration))
+    }
+
+    static let textEchoLineDriftDuration: TimeInterval = 0.28
+
+    static var textEchoLineDriftCurve: Animation {
+        self.slowed(.easeOut(duration: self.textEchoLineDriftDuration))
+    }
+
+    /// How far a leaving line travels, away from the block. A distance, so slow motion leaves
+    /// it alone.
+    static let textEchoLineDrift: CGFloat = 18
+
+    /// How far a leaving line has actually travelled at the moment it becomes invisible.
+    ///
+    /// This is the number that decides whether anything is ever seen crossing the overlay's
+    /// clipping edge — the full drift is not, because the fade is over long before the drift
+    /// is. Slow motion stretches both together, so it cancels and does not appear here. The
+    /// curve is the same one the drift animates on, read rather than approximated.
+    static var textEchoLineDriftAtFadeOut: CGFloat {
+        let progress = min(1, self.textEchoLineFadeDuration / self.textEchoLineDriftDuration)
+        return CGFloat(UnitCurve.easeOut.value(at: progress)) * self.textEchoLineDrift
+    }
+
     // MARK: - Keycap press
 
     static func press(_ effect: KeyboardPressEffect) -> Animation {

@@ -7,6 +7,8 @@ struct KeyboardSettingsPane: View {
     @Environment(\.studioStrings) private var strings
     @Bindable var config: KeypressConfig
 
+    @State private var replayTrigger = 0
+
     var body: some View {
         if self.config.keyboard.enabled {
             StudioPreviewPage(
@@ -16,7 +18,13 @@ struct KeyboardSettingsPane: View {
                     StudioPreviewSurface(height: 166) {
                         KeyboardPresentationDemo(
                             config: self.config,
-                            replayLabel: self.strings["onboarding.keyboard.replay"])
+                            replayTrigger: self.replayTrigger)
+                    } accessory: {
+                        StudioPreviewReplayButton(
+                            label: self.strings["onboarding.keyboard.replay"])
+                        {
+                            self.replayTrigger += 1
+                        }
                     }
                 },
                 content: { self.settingsControls })
@@ -53,31 +61,49 @@ struct KeyboardSettingsPane: View {
                 }
             }
 
-            StudioDivider()
+            // A two-zone mode has already split input the way Shortcuts Only asks for, so the
+            // choice belongs to Latest alone.
+            if self.config.keyboard.presentation == .latest {
+                StudioDivider()
 
-            SettingsRow("keyboard.content", subtitleKey: "keyboard.content.subtitle") {
-                Picker("", selection: self.$config.keyboard.contentMode) {
-                    Text(self.strings["keyboard.content.all"]).tag(KeyboardContentMode.allKeys)
-                    Text(self.strings["keyboard.content.shortcuts"]).tag(KeyboardContentMode.shortcutsOnly)
+                SettingsRow("keyboard.content", subtitleKey: "keyboard.content.subtitle") {
+                    Picker("", selection: self.$config.keyboard.contentMode) {
+                        Text(self.strings["keyboard.content.all"]).tag(KeyboardContentMode.allKeys)
+                        Text(self.strings["keyboard.content.shortcuts"]).tag(KeyboardContentMode.shortcutsOnly)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(width: 210)
                 }
-                .labelsHidden()
-                .pickerStyle(.segmented)
-                .frame(width: 210)
             }
 
             StudioDivider()
 
-            SettingsRow("keyboard.timeout", subtitleKey: "keyboard.timeout.subtitle") {
-                HStack(spacing: 8) {
-                    Slider(value: self.$config.keyboard.timeout, in: 0.5...5.0, step: 0.5)
-                        .frame(width: 150)
-                    Text(self.config.keyboard.timeout, format: .number.precision(.fractionLength(1)))
-                        .monospacedDigit()
-                        .frame(width: 26, alignment: .trailing)
-                    Text(self.strings["unit.seconds"])
-                        .foregroundStyle(.secondary)
-                }
-                .font(.caption)
+            self.secondsRow(
+                "keyboard.timeout",
+                subtitleKey: "keyboard.timeout.subtitle",
+                value: self.$config.keyboard.timeout,
+                range: 0.5...5)
+
+            // The echo's two clocks sit with the timeout they stand beside: all three say how
+            // long something stays on screen, and reading one without the others tells you
+            // little.
+            if self.config.keyboard.presentation == .stackedHistory {
+                StudioDivider()
+
+                self.secondsRow(
+                    "keyboard.echo.lineLifetime",
+                    subtitleKey: "keyboard.echo.lineLifetime.subtitle",
+                    value: self.$config.keyboard.textLineLifetime,
+                    range: KeyboardSettings.textLineLifetimeRange)
+
+                StudioDivider()
+
+                self.secondsRow(
+                    "keyboard.echo.idleTimeout",
+                    subtitleKey: "keyboard.echo.idleTimeout.subtitle",
+                    value: self.$config.keyboard.textIdleTimeout,
+                    range: KeyboardSettings.textIdleTimeoutRange)
             }
         }
 
@@ -87,17 +113,23 @@ struct KeyboardSettingsPane: View {
                 subtitleKey: "keyboard.filter.modifiers.subtitle",
                 binding: self.$config.keyboard.filters.showStandaloneModifiers)
 
-            StudioDivider()
+            // The two-zone modes route a key by what it produces, so a category switch has
+            // nothing to decide there and is not offered.
+            if self.config.keyboard.presentation == .latest {
+                StudioDivider()
 
-            self.filterRow(
-                "keyboard.filter.functions",
-                binding: self.$config.keyboard.filters.showFunctionKeys)
+                self.filterRow(
+                    "keyboard.filter.functions",
+                    subtitleKey: "keyboard.filter.functions.subtitle",
+                    binding: self.$config.keyboard.filters.showFunctionKeys)
 
-            StudioDivider()
+                StudioDivider()
 
-            self.filterRow(
-                "keyboard.filter.special",
-                binding: self.$config.keyboard.filters.showSpecialKeys)
+                self.filterRow(
+                    "keyboard.filter.special",
+                    subtitleKey: "keyboard.filter.special.subtitle",
+                    binding: self.$config.keyboard.filters.showSpecialKeys)
+            }
         }
 
         StudioCard("keyboard.inputKeys", systemImage: "space", tint: .indigo) {
@@ -130,22 +162,8 @@ struct KeyboardSettingsPane: View {
                 binding: self.$config.keyboard.inputKeys.highlight)
         }
 
+        // The echo's line count is fixed, so only the ribbon has a length to set.
         if self.config.keyboard.presentation == .horizontalHistory {
-            StudioCard("keyboard.commandZone", systemImage: "rectangle.split.1x2", tint: .purple) {
-                SettingsRow("keyboard.commandZone.side", subtitleKey: "keyboard.commandZone.side.subtitle") {
-                    Picker("", selection: self.$config.keyboard.commandZoneSide) {
-                        Text(self.strings["keyboard.commandZone.side.auto"]).tag(CommandZoneSide.auto)
-                        Text(self.strings["keyboard.commandZone.side.left"]).tag(CommandZoneSide.left)
-                        Text(self.strings["keyboard.commandZone.side.right"]).tag(CommandZoneSide.right)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .frame(width: 210)
-                }
-            }
-        }
-
-        if self.config.keyboard.presentation != .latest {
             StudioCard(
                 "keyboard.history",
                 systemImage: "text.line.last.and.arrowtriangle.forward",
@@ -160,22 +178,6 @@ struct KeyboardSettingsPane: View {
                             .monospacedDigit()
                     }
                     .frame(width: 92)
-                }
-
-                StudioDivider()
-
-                self.switchRow(
-                    "keyboard.duplicates",
-                    subtitleKey: "keyboard.duplicates.subtitle",
-                    binding: self.$config.keyboard.duplicateLetters)
-
-                if self.config.keyboard.presentation == .horizontalHistory {
-                    StudioDivider()
-
-                    self.switchRow(
-                        "keyboard.limitModifiers",
-                        subtitleKey: "keyboard.limitModifiers.subtitle",
-                        binding: self.$config.keyboard.limitIncludesModifiers)
                 }
             }
         }
@@ -255,6 +257,26 @@ struct KeyboardSettingsPane: View {
         binding: Binding<Bool>) -> some View
     {
         self.switchRow(titleKey, subtitleKey: subtitleKey, binding: binding)
+    }
+
+    private func secondsRow(
+        _ titleKey: String,
+        subtitleKey: String,
+        value: Binding<TimeInterval>,
+        range: ClosedRange<TimeInterval>) -> some View
+    {
+        SettingsRow(titleKey, subtitleKey: subtitleKey) {
+            HStack(spacing: 8) {
+                Slider(value: value, in: range, step: 0.5)
+                    .frame(width: 150)
+                Text(value.wrappedValue, format: .number.precision(.fractionLength(1)))
+                    .monospacedDigit()
+                    .frame(width: 30, alignment: .trailing)
+                Text(self.strings["unit.seconds"])
+                    .foregroundStyle(.secondary)
+            }
+            .font(.caption)
+        }
     }
 
     private func inputKeyWidthRow(_ key: InputKey) -> some View {

@@ -8,26 +8,13 @@ struct KeyboardContentModeTests {
     @Test("Function keys remain visible without modifiers in shortcuts-only mode")
     @MainActor
     func functionKeyOverride() {
-        let states: [any KeyStateProtocol] = [
-            KeyState(),
-            SingleKeyState(),
-            StackedHistoryState(),
-        ]
+        let state = SingleKeyState()
+        state.contentMode = .shortcutsOnly
 
-        for state in states {
-            if let state = state as? KeyState {
-                state.contentMode = .shortcutsOnly
-            } else if let state = state as? SingleKeyState {
-                state.contentMode = .shortcutsOnly
-            } else if let state = state as? StackedHistoryState {
-                state.contentMode = .shortcutsOnly
-            }
+        state.processEvent(
+            KeyEvent(type: .keyDown, keyCode: 0x7A, modifiers: []),
+            symbol: self.functionKey)
 
-            state.processEvent(
-                KeyEvent(type: .keyDown, keyCode: 0x7A, modifiers: []),
-                symbol: self.functionKey)
-
-            #expect(state.pressedKeys.contains { $0.symbol.id == self.functionKey.id })
-        }
+        #expect(state.pressedKeys.contains { $0.symbol.id == self.functionKey.id })
     }
 }

@@ -415,9 +415,11 @@ struct HorizontalHistoryStateRoutingTests {
         #expect(state.commandKeys.map(\.symbol.display) == ["⌫"])
     }
 
-    @Test("Shortcuts-only mode keeps the ribbon empty and the command zone working")
+    /// This mode already splits input the way Shortcuts Only asks for, so the setting has
+    /// nothing left to decide here and is dropped on the way in.
+    @Test("Shortcuts-only has no effect: the ribbon and the command zone both keep working")
     @MainActor
-    func shortcutsOnlyKeepsRibbonEmpty() {
+    func contentModeHasNoEffect() {
         let state = HorizontalHistoryState(
             settings: KeyboardSettings(contentMode: .shortcutsOnly),
             isKeyDown: { _ in false })
@@ -425,29 +427,31 @@ struct HorizontalHistoryStateRoutingTests {
         press(state, Keys.codeA, Keys.letterA)
         press(state, Keys.codeSpace, Keys.space)
 
-        #expect(state.ribbonKeys.isEmpty)
+        #expect(state.contentMode == .allKeys)
+        #expect(state.ribbonKeys.map(\.display) == ["a", "␣"])
 
         state.processEvent(
             KeyEvent(type: .flagsChanged, keyCode: Keys.codeCommand, modifiers: .maskCommand),
             symbol: Keys.command)
         press(state, Keys.codeC, Keys.letterC, modifiers: .maskCommand)
 
-        #expect(state.ribbonKeys.isEmpty)
+        #expect(state.ribbonKeys.map(\.display) == ["a", "␣"])
         #expect(state.commandKeys.map(\.symbol.display) == ["⌘", "C"])
     }
 
-    @Test("Switching to shortcuts-only clears the ribbon")
+    @Test("Switching to shortcuts-only leaves the ribbon exactly as it stands")
     @MainActor
-    func switchingToShortcutsOnlyClearsRibbon() {
+    func switchingToShortcutsOnlyLeavesRibbonAlone() {
         let state = HorizontalHistoryState(isKeyDown: { _ in false })
 
         press(state, Keys.codeA, Keys.letterA)
-        #expect(state.hasRibbonKeys)
+        let latestID = state.latestRibbonKeyID
 
         state.contentMode = .shortcutsOnly
 
-        #expect(state.ribbonKeys.isEmpty)
-        #expect(state.latestRibbonKeyID == nil)
+        #expect(state.contentMode == .allKeys)
+        #expect(state.ribbonKeys.map(\.display) == ["a"])
+        #expect(state.latestRibbonKeyID == latestID)
     }
 }
 
@@ -599,32 +603,37 @@ struct HorizontalHistoryStateCommandZoneTests {
 
 @Suite("HorizontalHistoryState Filter Tests")
 struct HorizontalHistoryStateFilterTests {
-    @Test("showFunctionKeys=false hides F-keys from both zones")
+    /// F-keys land in the command zone here, and the F-key filter must not empty it.
+    @Test("The function-key filter has no effect on either zone")
     @MainActor
-    func functionKeysFiltered() {
+    func functionKeyFilterHasNoEffect() {
         var settings = KeyboardSettings()
         settings.filters.showFunctionKeys = false
         let state = HorizontalHistoryState(settings: settings, isKeyDown: { _ in false })
 
         press(state, 0x7A, Keys.functionOne)
 
-        #expect(state.ribbonKeys.isEmpty)
-        #expect(state.commandKeys.isEmpty)
+        #expect(state.commandKeys.map(\.symbol.display) == ["F1"])
+        #expect(state.filters.showFunctionKeys)
     }
 
-    @Test("showSpecialKeys=false hides special keys from both zones")
+    /// The ribbon routes by what a key produces — ␣ is text here — so the special-key filter
+    /// has nothing to decide and must not take keys out of the row.
+    @Test("The special-key filter has no effect on either zone")
     @MainActor
-    func specialKeysFiltered() {
+    func specialKeyFilterHasNoEffect() {
         var settings = KeyboardSettings()
         settings.filters.showSpecialKeys = false
         let state = HorizontalHistoryState(settings: settings, isKeyDown: { _ in false })
 
         press(state, 0x35, Keys.escape)
+        #expect(state.commandKeys.map(\.symbol.display) == ["ESC"])
+
         press(state, Keys.codeSpace, Keys.space)
         press(state, Keys.codeA, Keys.letterA)
 
-        #expect(state.commandKeys.isEmpty)
-        #expect(state.ribbonKeys.map(\.display) == ["a"])
+        #expect(state.ribbonKeys.map(\.display) == ["␣", "a"])
+        #expect(state.filters.showSpecialKeys)
     }
 
     @Test("showStandaloneModifiers=false hides a held modifier but keeps ribbon casing")
@@ -643,9 +652,9 @@ struct HorizontalHistoryStateFilterTests {
         #expect(state.ribbonKeys.map(\.display) == ["A"])
     }
 
-    @Test("Turning a filter off removes matching ribbon entries and keeps the order")
+    @Test("Turning a category filter off leaves the ribbon exactly as it stands")
     @MainActor
-    func filterChangeReconcilesRibbon() {
+    func filterChangeLeavesRibbonAlone() {
         let state = HorizontalHistoryState(isKeyDown: { _ in false })
 
         press(state, Keys.codeA, Keys.letterA)
@@ -657,7 +666,7 @@ struct HorizontalHistoryStateFilterTests {
         filters.showSpecialKeys = false
         state.filters = filters
 
-        #expect(state.ribbonKeys.map(\.display) == ["a", "b"])
+        #expect(state.ribbonKeys.map(\.display) == ["a", "␣", "b"])
     }
 
     @Test("apply() propagates keyboard settings to both zones")
@@ -667,12 +676,15 @@ struct HorizontalHistoryStateFilterTests {
 
         state.apply(KeyboardSettings(
             contentMode: .shortcutsOnly,
-            filters: KeyboardFilterSettings(showFunctionKeys: false),
+            filters: KeyboardFilterSettings(
+                showStandaloneModifiers: false,
+                showFunctionKeys: false),
             timeout: 3,
             maxItems: 9))
 
-        #expect(state.contentMode == .shortcutsOnly)
-        #expect(state.filters.showFunctionKeys == false)
+        #expect(state.contentMode == .allKeys)
+        #expect(state.filters.showStandaloneModifiers == false)
+        #expect(state.filters.showFunctionKeys)
         #expect(state.keyTimeout == 3)
         #expect(state.maxItems == 9)
     }

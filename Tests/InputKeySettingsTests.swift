@@ -139,8 +139,8 @@ struct InputKeyTintTests {
 
 @Suite("Settings Backward Compatibility")
 struct SettingsBackwardCompatibilityTests {
-    /// A settings document as written by a build that predates the input-key and
-    /// command-zone fields.
+    /// A settings document as written by a build that predates the input-key and echo-timing
+    /// fields, and still carries the two history switches that have since been removed.
     private static let legacyDocument = """
     {
       "schemaVersion": 4,
@@ -188,8 +188,6 @@ struct SettingsBackwardCompatibilityTests {
         #expect(settings.opacity == 0.8)
         #expect(settings.timeout == 2.5)
         #expect(settings.maxItems == 9)
-        #expect(settings.duplicateLetters == false)
-        #expect(settings.limitIncludesModifiers == false)
         #expect(settings.pressAnimationModifiers == false)
         #expect(settings.pressAnimationRegularKeys)
         #expect(settings.filters.showStandaloneModifiers == false)
@@ -205,7 +203,27 @@ struct SettingsBackwardCompatibilityTests {
         #expect(settings.inputKeys.widthMode == .wide)
         #expect(settings.inputKeys.highlight)
         #expect(settings.inputKeys.widths == InputKeyWidths())
-        #expect(settings.commandZoneSide == .auto)
+        #expect(settings.textLineLifetime == TextEchoState.defaultLineLifetime)
+        #expect(settings.textIdleTimeout == TextEchoState.defaultIdleTimeout)
+    }
+
+    /// Fields that no longer exist are simply not read: a document still carrying them has to
+    /// decode without complaint, and without dragging anything else down with it.
+    @Test("Removed fields in a stored document are ignored")
+    func removedFieldsAreIgnored() throws {
+        let data = try #require(Self.legacyDocument.data(using: .utf8))
+        let settings = try JSONDecoder().decode(AppSettings.self, from: data).keyboard
+
+        #expect(settings == KeyboardSettings(
+            displayMode: .history,
+            filters: KeyboardFilterSettings(
+                showStandaloneModifiers: false,
+                showFunctionKeys: false),
+            size: .large,
+            opacity: 0.8,
+            timeout: 2.5,
+            maxItems: 9,
+            pressAnimationModifiers: false))
     }
 
     @Test("A display document without command-zone placements decodes to none")

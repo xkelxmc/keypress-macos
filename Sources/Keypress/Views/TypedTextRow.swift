@@ -2,148 +2,73 @@ import AppKit
 import KeypressCore
 import SwiftUI
 
-struct StackedHistoryVisualizationView: View {
-    var keyState: StackedHistoryState
-    let config: KeypressConfig
-    @ObservedObject var layoutState: OverlayLayoutState
+// MARK: - TypedTextPlaqueStyle
 
-    private var keyboardTheme: KeyboardTheme {
-        self.config.effectiveTheme(isSystemDark: self.systemIsDark).keyboard
-    }
+/// The metrics of one line's plaque.
+///
+/// A plaque is deliberately not the keyboard container: keycaps belong to keys, and a keyboard
+/// frame drawn under a sentence reads as a keyboard that has swallowed a paragraph. Each line
+/// carries its own neutral surface instead, and the lines stack with a gap between them.
+enum TypedTextPlaqueStyle {
+    /// Wide enough that a two-character line is still a plaque rather than a speck.
+    static let minimumWidth: CGFloat = 48
 
-    var body: some View {
-        self.content
-    }
+    static let horizontalPadding: CGFloat = 16
 
-    @ViewBuilder
-    private var content: some View {
-        if self.keyState.entries.isEmpty {
-            self.anchorKeys
-        } else {
-            switch self.layoutState.stackedHistoryLayout.verticalAnchor {
-            case .top:
-                VStack(alignment: self.horizontalAlignment, spacing: 8) {
-                    self.anchorKeys
-                    self.historyRows(Array(self.keyState.entries.reversed()))
-                }
-            case .bottom:
-                VStack(alignment: self.horizontalAlignment, spacing: 8) {
-                    self.historyRows(self.keyState.entries)
-                    self.anchorKeys
-                }
-            case .center:
-                switch self.layoutState.stackedHistoryLayout.horizontalAnchor {
-                case .leading:
-                    HStack(alignment: .center, spacing: 10) {
-                        self.anchorKeys
-                        self.historyRows(self.keyState.entries)
-                    }
-                case .trailing:
-                    HStack(alignment: .center, spacing: 10) {
-                        self.historyRows(self.keyState.entries)
-                        self.anchorKeys
-                    }
-                case .center:
-                    self.centeredHistory
-                }
-            }
-        }
-    }
-
-    private var anchorKeys: some View {
-        KeyVisualizationContent(
-            pressedKeys: self.keyState.pressedKeys,
-            physicallyPressedKeys: self.keyState.physicallyPressedKeys,
-            hasKeys: self.keyState.hasAnchorKeys,
-            config: self.config)
-    }
-
-    private func historyRows(_ entries: [StackedHistoryEntry]) -> some View {
-        VStack(alignment: self.horizontalAlignment, spacing: 8) {
-            ForEach(entries) { entry in
-                self.historyRow(entry)
-                    .transition(.opacity)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func historyRow(_ entry: StackedHistoryEntry) -> some View {
-        switch entry.kind {
-        case .text:
-            StackedHistoryTextRow(
-                text: entry.text,
-                theme: self.keyboardTheme)
-        case .shortcut:
-            KeyVisualizationContent(
-                pressedKeys: entry.keys,
-                physicallyPressedKeys: [],
-                hasKeys: true,
-                config: self.config)
-        }
-    }
-
-    private var centeredHistory: some View {
-        let newestFirst = Array(self.keyState.entries.reversed())
-        let above = newestFirst.enumerated().compactMap { index, entry in
-            index.isMultiple(of: 2) ? entry : nil
-        }
-        let below = newestFirst.enumerated().compactMap { index, entry in
-            index.isMultiple(of: 2) ? nil : entry
-        }
-        let orderedAbove = Array(above.reversed())
-
-        return VStack(alignment: self.horizontalAlignment, spacing: 8) {
-            ZStack(alignment: Alignment(horizontal: self.horizontalAlignment, vertical: .bottom)) {
-                self.historyRows(orderedAbove)
-                self.historyRows(below)
-                    .hidden()
-            }
-            self.anchorKeys
-            ZStack(alignment: Alignment(horizontal: self.horizontalAlignment, vertical: .top)) {
-                self.historyRows(below)
-                self.historyRows(orderedAbove)
-                    .hidden()
-            }
-        }
-    }
-
-    private var horizontalAlignment: HorizontalAlignment {
-        switch self.layoutState.stackedHistoryLayout.horizontalAnchor {
-        case .leading: .leading
-        case .center: .center
-        case .trailing: .trailing
-        }
-    }
-
-    private var systemIsDark: Bool {
-        guard let appearance = NSApp?.effectiveAppearance else { return true }
-        return appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-    }
-}
-
-struct StackedHistoryTextRow: View {
-    let text: String
-    let theme: KeyboardTheme
-
-    var body: some View {
-        Text(self.text)
-            .font(self.textFont)
-            .foregroundStyle(self.theme.textColor.color)
-            .lineLimit(1)
-            .frame(minWidth: 48, minHeight: Self.height(for: self.theme), alignment: .leading)
-            .padding(.horizontal, 16)
-            .background {
-                HistoryTextSurface(theme: self.theme)
-            }
-    }
-
+    /// How tall a plaque is under a theme, at the reference type size.
     static func height(for theme: KeyboardTheme) -> CGFloat {
         switch theme.material {
         case .minimal: 34
         case .monochrome: 42
         case .classic: 52
         case .graphite, .aluminum, .glass, .gaming, .neon: 48
+        }
+    }
+}
+
+// MARK: - TypedTextPlaque
+
+/// One line of typed text on a surface of its own.
+///
+/// The content is a caller's `Text` rather than a string, because the live echo draws one
+/// styled run per line — its Enter and Tab marks are dimmed in place, inside the same line.
+struct TypedTextPlaque<Content: View>: View {
+    let theme: KeyboardTheme
+
+    /// Overrides the theme's plaque height, for type larger than the reference size.
+    var minimumHeight: CGFloat?
+
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        self.content()
+            .lineLimit(1)
+            .frame(
+                minWidth: TypedTextPlaqueStyle.minimumWidth,
+                minHeight: self.minimumHeight ?? TypedTextPlaqueStyle.height(for: self.theme),
+                alignment: .leading)
+            .padding(.horizontal, TypedTextPlaqueStyle.horizontalPadding)
+            .background {
+                HistoryTextSurface(theme: self.theme)
+            }
+    }
+}
+
+// MARK: - TypedTextRow
+
+/// A line of plain typed text on its plaque, at the reference type size.
+///
+/// What the marketing screenshots, the promo film and the settings preview use to stand in for
+/// typed text without driving a real state machine.
+struct TypedTextRow: View {
+    let text: String
+    let theme: KeyboardTheme
+
+    var body: some View {
+        TypedTextPlaque(theme: self.theme) {
+            Text(self.text)
+                .font(self.textFont)
+                .foregroundStyle(self.theme.textColor.color)
         }
     }
 

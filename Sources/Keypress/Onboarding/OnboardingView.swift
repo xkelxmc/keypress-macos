@@ -694,6 +694,8 @@ private struct OnboardingKeyboardStep: View {
     @Environment(\.studioStrings) private var strings
     @Bindable var session: OnboardingSession
 
+    @State private var replayTrigger = 0
+
     private let themes = ThemeSelection.allCases.filter { $0 != .custom }
 
     var body: some View {
@@ -708,10 +710,21 @@ private struct OnboardingKeyboardStep: View {
                     KeyboardPresentationDemo(
                         config: self.session.config,
                         reduceMotion: self.session.reduceMotion,
-                        replayLabel: self.strings["onboarding.keyboard.replay"])
+                        replayTrigger: self.replayTrigger)
                 }
-                .frame(height: 118)
+                .frame(height: KeyboardPresentationDemo.onboardingSurfaceHeight)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                // Anchored to the block, not to the preview inside it: a preview lays out at
+                // full size and is only drawn scaled down, so its own bounds are the wrong
+                // thing to hang a corner control on.
+                .overlay(alignment: .topTrailing) {
+                    StudioPreviewReplayButton(
+                        label: self.strings["onboarding.keyboard.replay"])
+                    {
+                        self.replayTrigger += 1
+                    }
+                    .padding(9)
+                }
 
                 HStack(spacing: 10) {
                     ForEach(KeyboardPresentation.allCases, id: \.self) { presentation in
@@ -719,29 +732,33 @@ private struct OnboardingKeyboardStep: View {
                     }
                 }
 
-                HStack {
-                    Text(self.strings["keyboard.content"])
-                        .font(.callout.weight(.semibold))
-                    Spacer()
-                    Picker(
-                        self.strings["keyboard.content"],
-                        selection: Binding(
-                            get: { self.session.config.keyboard.contentMode },
-                            set: { contentMode in
-                                var keyboard = self.session.config.keyboard
-                                keyboard.contentMode = contentMode
-                                self.session.config.keyboard = keyboard
-                            })) {
-                        Text(self.strings["keyboard.content.all"])
-                            .tag(KeyboardContentMode.allKeys)
-                        Text(self.strings["keyboard.content.shortcuts"])
-                            .tag(KeyboardContentMode.shortcutsOnly)
+                // A two-zone mode has already split input the way Shortcuts Only asks for, so
+                // the choice belongs to Latest alone.
+                if self.session.config.keyboard.presentation == .latest {
+                    HStack {
+                        Text(self.strings["keyboard.content"])
+                            .font(.callout.weight(.semibold))
+                        Spacer()
+                        Picker(
+                            self.strings["keyboard.content"],
+                            selection: Binding(
+                                get: { self.session.config.keyboard.contentMode },
+                                set: { contentMode in
+                                    var keyboard = self.session.config.keyboard
+                                    keyboard.contentMode = contentMode
+                                    self.session.config.keyboard = keyboard
+                                })) {
+                            Text(self.strings["keyboard.content.all"])
+                                .tag(KeyboardContentMode.allKeys)
+                            Text(self.strings["keyboard.content.shortcuts"])
+                                .tag(KeyboardContentMode.shortcutsOnly)
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.segmented)
+                        .frame(width: 280)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .frame(width: 280)
+                    .padding(.horizontal, 3)
                 }
-                .padding(.horizontal, 3)
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text(self.strings["appearance.theme"])
@@ -809,86 +826,6 @@ private struct OnboardingKeyboardStep: View {
 
     private func isSelected(_ presentation: KeyboardPresentation) -> Bool {
         self.session.config.keyboard.presentation == presentation
-    }
-}
-
-@MainActor
-struct OnboardingPresentationArtwork: View {
-    let presentation: KeyboardPresentation
-    let contentMode: KeyboardContentMode
-
-    private let shift = OnboardingMiniKey(label: "⇧", width: 31)
-    private let command = OnboardingMiniKey(label: "⌘", width: 31)
-
-    var body: some View {
-        switch self.presentation {
-        case .latest:
-            HStack(spacing: 4) {
-                self.shift
-                self.command
-                self.key
-            }
-        case .horizontalHistory:
-            HStack(spacing: 4) {
-                self.shift
-                self.command
-                if self.contentMode == .allKeys {
-                    OnboardingMiniKey(label: "H", width: 23)
-                    OnboardingMiniKey(label: "I", width: 23)
-                } else {
-                    OnboardingMiniKey(label: "C", width: 23)
-                }
-                self.key
-            }
-        case .stackedHistory:
-            VStack(spacing: 3) {
-                if self.contentMode == .allKeys {
-                    Text("HELLO")
-                        .font(.system(size: 8, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 74, height: 17)
-                        .background(
-                            Color.primary.opacity(0.055),
-                            in: RoundedRectangle(cornerRadius: 5, style: .continuous))
-                } else {
-                    self.chord(key: OnboardingMiniKey(label: "C", width: 23))
-                }
-                self.chord(key: self.key)
-            }
-        }
-    }
-
-    private func chord(key: OnboardingMiniKey) -> some View {
-        HStack(spacing: 4) {
-            self.shift
-            self.command
-            key
-        }
-    }
-
-    private var key: OnboardingMiniKey {
-        OnboardingMiniKey(
-            label: self.contentMode == .allKeys ? "K" : "V",
-            width: 23)
-    }
-}
-
-private struct OnboardingMiniKey: View {
-    let label: String
-    let width: CGFloat
-
-    var body: some View {
-        Text(self.label)
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .frame(width: self.width, height: 22)
-            .background(
-                Color.primary.opacity(0.075),
-                in: RoundedRectangle(cornerRadius: 5, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.13))
-            }
     }
 }
 
