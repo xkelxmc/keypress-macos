@@ -17,11 +17,12 @@ jobs:
           sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
           xcodebuild -version
 
-      # Pinned: unpinned brew installs pick up new lint rules and break CI on untouched code
+      # Pinned: unpinned brew installs pick up new lint rules and break CI on untouched code.
+      # Keep in step with the brew versions used locally, or `bun run check` disagrees with CI.
       - name: Install lint tools
         env:
-          SWIFTFORMAT_VERSION: "0.59.1"
-          SWIFTLINT_VERSION: "0.63.2"
+          SWIFTFORMAT_VERSION: "0.62.1"
+          SWIFTLINT_VERSION: "0.65.0"
         run: |
           curl -fsSL -o "$RUNNER_TEMP/swiftformat.zip" \
             "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
