@@ -7,15 +7,15 @@
     "idle": {
       "row": 0,
       "start": 0,
-      "count": 8,
+      "count": 16,
       "fps": 8,
-      "loop": true,
+      "loop": false,
       "reversible": false
     },
     "typing": {
       "row": 1,
       "start": 0,
-      "count": 8,
+      "count": 16,
       "fps": 12,
       "loop": true,
       "reversible": false
@@ -23,16 +23,16 @@
     "sleepTransition": {
       "row": 2,
       "start": 0,
-      "count": 8,
-      "fps": 8,
+      "count": 16,
+      "fps": 16,
       "loop": false,
       "reversible": true
     },
     "sleep": {
       "row": 3,
       "start": 0,
-      "count": 8,
-      "fps": 4,
+      "count": 16,
+      "fps": 8,
       "loop": true,
       "reversible": false
     },
