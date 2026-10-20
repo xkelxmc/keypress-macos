@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Update KeyboardShortcuts to 3.1.0 to fix shortcut recording on macOS 27, including interrupted recording and lost input events.
+- Fix menu highlighting delays and function-key shortcuts while menus are open through the KeyboardShortcuts update.
+- Support compiled string catalogs in SwiftPM localization checks.
+
 ## [2.1.0] - 2026-08-10
 
 ### Added

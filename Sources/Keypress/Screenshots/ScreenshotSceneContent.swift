@@ -612,7 +612,7 @@ private struct StudioSceneView: View {
                 Color.clear
             }
         }
-        .aspectRatio(contentMode: .fit)
+        .scaledToFit()
         .frame(width: 980 * StudioSceneMetrics.scale)
         .shadow(color: Color.black.opacity(0.6), radius: 52, y: 30)
         .shadow(color: Color.black.opacity(0.24), radius: 9, y: 4)

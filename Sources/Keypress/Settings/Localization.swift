@@ -24,10 +24,11 @@ struct StudioStrings: Equatable, Sendable {
 
     func hasLocalizedValue(for key: String) -> Bool {
         #if SWIFT_PACKAGE
-        return Self.catalog[key]?[self.activeLanguageCode] != nil
-        #else
-        self.bundle.localizedString(forKey: key, value: nil, table: nil) != key
+        if !Self.catalog.isEmpty {
+            return Self.catalog[key]?[self.activeLanguageCode] != nil
+        }
         #endif
+        return self.bundle.localizedString(forKey: key, value: nil, table: nil) != key
     }
 
     private var activeLanguageCode: String {
